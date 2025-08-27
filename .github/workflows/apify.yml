@@ -15,7 +15,7 @@ jobs:
 
       - name: Call Apify LinkedIn scraper
         run: |
-          curl "https://api.apify.com/v2/actor-tasks/YOUR_ACTOR_ID/runs?token=${{ secrets.APIFY_TOKEN }}" \
+          curl "https://api.apify.com/v2/actor-tasks/RlohkdKEoyP93C7Jm/runs?token=${{ secrets.APIFY_TOKEN }}" \
           -X POST -H "Content-Type: application/json" \
           -d '{}'
 
