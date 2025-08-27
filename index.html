@@ -95,13 +95,11 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
-  // load your dataset from GitHub
   map.addSource('earlystage', {
     type: 'geojson',
     data: 'https://raw.githubusercontent.com/DanielsmitserKeen/Dutch_Sourcing_Map/main/nl_earlystage_map.geojson'
   });
 
-  // points
   map.addLayer({
     id: 'points',
     type: 'circle',
@@ -124,7 +122,6 @@ map.on('load', () => {
     }
   });
 
-  // labels
   map.addLayer({
     id: 'labels',
     type: 'symbol',
@@ -141,7 +138,6 @@ map.on('load', () => {
     }
   });
 
-  // click handler for sidebar
   map.on('click', 'points', (e) => {
     const props = e.features[0].properties;
 
@@ -149,23 +145,24 @@ map.on('load', () => {
     document.getElementById('sidebar-address').textContent = props.address || '';
     document.getElementById('sidebar-description').textContent = props.description || '';
 
-    // Parse startups (handle both JSON string and array)
     const list = document.getElementById('sidebar-startups');
     list.innerHTML = '';
-    if (props.startups) {
-      let startups;
+
+    // ✅ Use recent_posts now
+    if (props.recent_posts) {
+      let posts;
       try {
-        startups = typeof props.startups === "string"
-          ? JSON.parse(props.startups)
-          : props.startups;  // already array
+        posts = typeof props.recent_posts === "string"
+          ? JSON.parse(props.recent_posts)
+          : props.recent_posts;
       } catch (err) {
-        console.warn("Could not parse startups for", props.name, props.startups);
-        startups = [];
+        console.warn("Could not parse posts for", props.name, props.recent_posts);
+        posts = [];
       }
 
-      startups.forEach(s => {
+      posts.forEach(p => {
         const li = document.createElement('li');
-        li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a>`;
+        li.innerHTML = `<a href="${p.url || '#'}" target="_blank">${p.name}</a> (${p.date || ''})`;
         list.appendChild(li);
       });
     }
@@ -180,7 +177,6 @@ map.on('load', () => {
     map.getCanvas().style.cursor = '';
   });
 
-  // close sidebar when clicking empty space
   map.on('click', (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
     if (!features.length) {
@@ -189,7 +185,6 @@ map.on('load', () => {
   });
 });
 
-// filters
 function filterCategory(cat) {
   map.setFilter('points', ['==', ['get', 'category'], cat]);
   map.setFilter('labels', ['==', ['get', 'category'], cat]);
@@ -198,8 +193,6 @@ function resetFilter() {
   map.setFilter('points', null);
   map.setFilter('labels', null);
 }
-
-// close sidebar
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
 }
