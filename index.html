@@ -44,6 +44,12 @@
   .sidebar.open {
     transform: translateX(0);
   }
+  .sidebar h2 {
+    margin-top: 0;
+  }
+  .sidebar ul {
+    padding-left: 20px;
+  }
   .close-btn {
     float: right;
     cursor: pointer;
@@ -73,6 +79,9 @@
   <button class="close-btn" onclick="closeSidebar()">×</button>
   <h2 id="sidebar-title"></h2>
   <p id="sidebar-address"></p>
+  <p id="sidebar-description"></p>
+  <h3>Latest Startups</h3>
+  <ul id="sidebar-startups"></ul>
 </div>
 
 <script>
@@ -86,11 +95,13 @@ const map = new mapboxgl.Map({
 });
 
 map.on('load', () => {
+  // load your dataset from GitHub
   map.addSource('earlystage', {
     type: 'geojson',
-    data: 'nl_earlystage_map.geojson' // must be in same folder
+    data: 'https://raw.githubusercontent.com/DanielsmitserKeen/Dutch_Sourcing_Map/main/nl_earlystage_map.geojson'
   });
 
+  // points
   map.addLayer({
     id: 'points',
     type: 'circle',
@@ -113,6 +124,7 @@ map.on('load', () => {
     }
   });
 
+  // labels
   map.addLayer({
     id: 'labels',
     type: 'symbol',
@@ -129,11 +141,29 @@ map.on('load', () => {
     }
   });
 
-  // Show name + address in sidebar
+  // click handler for sidebar
   map.on('click', 'points', (e) => {
     const props = e.features[0].properties;
-    document.getElementById('sidebar-title').textContent = props.name || '';
+
+    document.getElementById('sidebar-title').textContent = props.name;
     document.getElementById('sidebar-address').textContent = props.address || '';
+    document.getElementById('sidebar-description').textContent = props.description || '';
+
+    // Parse startups (if stored as JSON string in GeoJSON)
+    const list = document.getElementById('sidebar-startups');
+    list.innerHTML = '';
+    if (props.startups) {
+      try {
+        JSON.parse(props.startups).forEach(s => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> (${s.date})`;
+          list.appendChild(li);
+        });
+      } catch (err) {
+        console.warn("Could not parse startups for", props.name);
+      }
+    }
+
     document.getElementById('sidebar').classList.add('open');
   });
 
@@ -144,7 +174,7 @@ map.on('load', () => {
     map.getCanvas().style.cursor = '';
   });
 
-  // Close sidebar when clicking elsewhere
+  // close sidebar when clicking on map background
   map.on('click', (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
     if (!features.length) {
@@ -153,6 +183,7 @@ map.on('load', () => {
   });
 });
 
+// filters
 function filterCategory(cat) {
   map.setFilter('points', ['==', ['get', 'category'], cat]);
   map.setFilter('labels', ['==', ['get', 'category'], cat]);
@@ -161,6 +192,8 @@ function resetFilter() {
   map.setFilter('points', null);
   map.setFilter('labels', null);
 }
+
+// close sidebar
 function closeSidebar() {
   document.getElementById('sidebar').classList.remove('open');
 }
