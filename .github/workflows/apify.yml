@@ -1,42 +1,51 @@
-
-name: Update Startups from Apify
+name: Update Startups from Apify + OpenAI
 
 on:
+  workflow_dispatch:   # run manually
   schedule:
-    - cron: "0 7 * * *"   # runs every day at 07:00 UTC
-  workflow_dispatch:       # allow manual runs
+    - cron: "0 7 * * *"   # run every day at 07:00 UTC
 
 jobs:
-  fetch-apify:
+  scrape:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout repo
-        uses: actions/checkout@v3
+    - name: Checkout repo
+      uses: actions/checkout@v3
 
-      - name: Call Apify LinkedIn scraper
-        run: |
-          curl "https://api.apify.com/v2/actor-tasks/RlohkdKEoyP93C7Jm/runs?token=${{ secrets.APIFY_TOKEN }}" \
-          -X POST -H "Content-Type: application/json" \
-          -d '{}'
+    - name: Call Apify LinkedIn scraper
+      run: |
+        curl "https://api.apify.com/v2/actor-tasks/RlohkdKEoyP93C7Jm/runs?token=${{ secrets.APIFY_TOKEN }}" \
+        -X POST -H "Content-Type: application/json" \
+        -d '{}'
 
-      - name: Download Apify results
-        run: |
-          curl -L "https://api.apify.com/v2/datasets/LEg32mFq23ckSwMj7/items?token=${{ secrets.APIFY_TOKEN }}" \
-          -o apify_results.json
+    - name: Wait for scraper to run
+      run: sleep 20
 
-      - name: Install Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: '3.x'
+    - name: Download Apify results
+      run: |
+        curl -L "https://api.apify.com/v2/datasets/LEg32mFq23ckSwMj7/items?token=${{ secrets.APIFY_TOKEN }}" \
+        -o apify_results.json
 
-      - name: Update GeoJSON with Apify data
-        run: |
-          python .github/scripts/merge_apify.py
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.x'
 
-      - name: Commit changes
-        run: |
-          git config --global user.name "github-actions"
-          git config --global user.email "actions@github.com"
-          git add nl_earlystage_map.geojson
-          git commit -m "Update startups from Apify" || echo "No changes"
-          git push
+    - name: Install dependencies
+      run: |
+        pip install openai
+
+    - name: Process startups with OpenAI
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      run: |
+        python .github/scripts/process_startups.py
+
+    - name: Commit changes
+      run: |
+        git config --global user.name "github-actions"
+        git config --global user.email "github-actions@github.com"
+        git add nl_earlystage_map.geojson
+        git commit -m "Auto-update startups with OpenAI extraction" || echo "No changes"
+        git push
