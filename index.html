@@ -149,19 +149,25 @@ map.on('load', () => {
     document.getElementById('sidebar-address').textContent = props.address || '';
     document.getElementById('sidebar-description').textContent = props.description || '';
 
-    // Parse startups (if stored as JSON string in GeoJSON)
+    // Parse startups (handle both JSON string and array)
     const list = document.getElementById('sidebar-startups');
     list.innerHTML = '';
     if (props.startups) {
+      let startups;
       try {
-        JSON.parse(props.startups).forEach(s => {
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> (${s.date})`;
-          list.appendChild(li);
-        });
+        startups = typeof props.startups === "string"
+          ? JSON.parse(props.startups)
+          : props.startups;  // already array
       } catch (err) {
-        console.warn("Could not parse startups for", props.name);
+        console.warn("Could not parse startups for", props.name, props.startups);
+        startups = [];
       }
+
+      startups.forEach(s => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a>`;
+        list.appendChild(li);
+      });
     }
 
     document.getElementById('sidebar').classList.add('open');
@@ -174,7 +180,7 @@ map.on('load', () => {
     map.getCanvas().style.cursor = '';
   });
 
-  // close sidebar when clicking on map background
+  // close sidebar when clicking empty space
   map.on('click', (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
     if (!features.length) {
@@ -201,4 +207,3 @@ function closeSidebar() {
 
 </body>
 </html>
-
