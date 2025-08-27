@@ -49,7 +49,14 @@
   }
   .sidebar ul {
     padding-left: 20px;
-  }
+    }
+  .close-btn {
+    float: right;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    background: none;
+    }
 </style>
 </head>
 <body>
@@ -176,7 +183,13 @@ function resetFilter() {
   map.setFilter('points', null);
   map.setFilter('labels', null);
 }
+
+// close sidebar
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
 </script>
 
 </body>
 </html>
+
