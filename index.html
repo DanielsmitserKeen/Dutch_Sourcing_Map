@@ -32,13 +32,16 @@
 <div id="map"></div>
 <div class="filter-group">
   <button onclick="filterCategory('Incubator')">Incubators</button>
-  <button onclick="filterCategory('Venture Builder')">Venture Builder</button>
+  <button onclick="filterCategory('Venture Builder')">Venture Builders</button>
   <button onclick="filterCategory('University Venture Arm')">Uni Venture Arms</button>
-  <button onclick="filterCategory('Pre-seed VC')">Pre-seed VCs</button>
-  <button onclick="filterCategory('Accelerator/VC')">Accelerator</button>
+  <button onclick="filterCategory('VC (Pre-seed/Seed)')">Pre-seed/Seed VCs</button>
+  <button onclick="filterCategory('Accelerator/VC')">Accelerators</button>
+  <button onclick="filterCategory('Student VC')">Student VCs</button>
+  <button onclick="filterCategory('Pre-seed VC')">Pre-seed VCs (Antler)</button>
   <button onclick="filterCategory('University')">Universities</button>
   <button onclick="resetFilter()">Show All</button>
 </div>
+
 
 <script>
 mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuaWVsc21pdHNlciIsImEiOiJjbWVzb3ZpM3IwMmw4MmxxdWthMWM1bmx3In0.c64qRBtiX33E0UD7Ex8_eA';
@@ -112,6 +115,7 @@ function resetFilter() {
 
 </body>
 </html>
+
 
 
 
