@@ -21,7 +21,7 @@ jobs:
 
       - name: Download Apify results
         run: |
-          curl -L "https://api.apify.com/v2/datasets/YOUR_DATASET_ID/items?token=${{ secrets.APIFY_TOKEN }}" \
+          curl -L "https://api.apify.com/v2/datasets/LEg32mFq23ckSwMj7/items?token=${{ secrets.APIFY_TOKEN }}" \
           -o apify_results.json
 
       - name: Install Python
