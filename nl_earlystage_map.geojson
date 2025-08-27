@@ -6,9 +6,16 @@
       "properties": {
         "name": "YES!Delft",
         "category": "Incubator",
-        "address": "Molengraaffsingel 12, 2629 JD Delft"
+        "address": "Molengraaffsingel 12, 2629 JD Delft",
+        "startups": "[]"
       },
-      "geometry": { "type": "Point", "coordinates": [4.3717, 51.9989] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.3717,
+          51.9989
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -17,7 +24,13 @@
         "category": "Incubator",
         "address": "Burgemeester Oudlaan 50, 3062 PA Rotterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.5297, 51.9175] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.5297,
+          51.9175
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -26,7 +39,13 @@
         "category": "Incubator",
         "address": "Waldorpstraat 5, 2521 CA Den Haag"
       },
-      "geometry": { "type": "Point", "coordinates": [4.3270, 52.0677] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.327,
+          52.0677
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -35,7 +54,13 @@
         "category": "Incubator",
         "address": "Princetonlaan 6, 3584 CB Utrecht"
       },
-      "geometry": { "type": "Point", "coordinates": [5.1760, 52.0938] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.176,
+          52.0938
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -44,7 +69,13 @@
         "category": "Venture Builder",
         "address": "High Tech Campus 27, 5656 AE Eindhoven"
       },
-      "geometry": { "type": "Point", "coordinates": [5.4560, 51.4133] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.456,
+          51.4133
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -53,7 +84,13 @@
         "category": "University Venture Arm",
         "address": "Van der Burghweg 1, 2628 CS Delft"
       },
-      "geometry": { "type": "Point", "coordinates": [4.3725, 51.9990] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.3725,
+          51.999
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -62,7 +99,13 @@
         "category": "University Venture Arm",
         "address": "Heidelberglaan 8, 3584 CS Utrecht"
       },
-      "geometry": { "type": "Point", "coordinates": [5.1755, 52.0855] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.1755,
+          52.0855
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -71,7 +114,13 @@
         "category": "University Venture Arm",
         "address": "Kadijk 4, 9747 AT Groningen"
       },
-      "geometry": { "type": "Point", "coordinates": [6.5333, 53.2194] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.5333,
+          53.2194
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -80,7 +129,13 @@
         "category": "Accelerator/VC",
         "address": "Overhoeksplein 1, 1031 KS Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.9036, 52.3792] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.9036,
+          52.3792
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -89,7 +144,13 @@
         "category": "VC (Pre-seed/Seed)",
         "address": "Duivendrechtsekade 80B, 5e verdieping, 1096 AH Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.9230, 52.3460] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.923,
+          52.346
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -98,7 +159,13 @@
         "category": "VC (Pre-seed/Seed)",
         "address": "Eerste Kostverlorenkade 4, 1052 EL Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.8850, 52.3570] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.885,
+          52.357
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -107,7 +174,13 @@
         "category": "VC (Pre-seed/Seed)",
         "address": "Fred. Roeskestraat 115, 1076 EE Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.8780, 52.3530] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.878,
+          52.353
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -116,7 +189,13 @@
         "category": "VC (Pre-seed/Seed)",
         "address": "Keizersgracht 482, 1017 EG Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.8909, 52.3642] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8909,
+          52.3642
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -125,7 +204,13 @@
         "category": "VC (Seed/Early-stage)",
         "address": "Bisonspoor 3002-D801, 3605 LT Maarssen (Utrecht area)"
       },
-      "geometry": { "type": "Point", "coordinates": [5.0410, 52.1390] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          5.041,
+          52.139
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -134,7 +219,13 @@
         "category": "VC (Pre-seed/Seed)",
         "address": "Prins Hendrikkade 21E, 1012 TL Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.9005, 52.3770] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.9005,
+          52.377
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -143,7 +234,13 @@
         "category": "Student VC",
         "address": "Science Park 402, 1098 XH Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.9510, 52.3560] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.951,
+          52.356
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -152,7 +249,13 @@
         "category": "Pre-seed VC",
         "address": "Prins Hendrikkade 21E, 1012 TL Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.9005, 52.3770] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.9005,
+          52.377
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -161,7 +264,13 @@
         "category": "University",
         "address": "Mekelweg 5, 2628 CC Delft"
       },
-      "geometry": { "type": "Point", "coordinates": [4.3717, 51.9995] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.3717,
+          51.9995
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -170,7 +279,13 @@
         "category": "University",
         "address": "Drienerlolaan 5, 7522 NB Enschede"
       },
-      "geometry": { "type": "Point", "coordinates": [6.8497, 52.2396] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          6.8497,
+          52.2396
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -179,7 +294,13 @@
         "category": "University",
         "address": "Rapenburg 70, 2311 EZ Leiden"
       },
-      "geometry": { "type": "Point", "coordinates": [4.4909, 52.1601] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.4909,
+          52.1601
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -188,7 +309,13 @@
         "category": "University",
         "address": "De Boelelaan 1105, 1081 HV Amsterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.8656, 52.3342] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.8656,
+          52.3342
+        ]
+      }
     },
     {
       "type": "Feature",
@@ -197,7 +324,13 @@
         "category": "University",
         "address": "Burgemeester Oudlaan 50, 3062 PA Rotterdam"
       },
-      "geometry": { "type": "Point", "coordinates": [4.5297, 51.9175] }
+      "geometry": {
+        "type": "Point",
+        "coordinates": [
+          4.5297,
+          51.9175
+        ]
+      }
     }
   ]
 }
