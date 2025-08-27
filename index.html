@@ -44,12 +44,6 @@
   .sidebar.open {
     transform: translateX(0);
   }
-  .sidebar h2 {
-    margin-top: 0;
-  }
-  .sidebar ul {
-    padding-left: 20px;
-  }
   .close-btn {
     float: right;
     cursor: pointer;
@@ -79,9 +73,6 @@
   <button class="close-btn" onclick="closeSidebar()">×</button>
   <h2 id="sidebar-title"></h2>
   <p id="sidebar-address"></p>
-  <p id="sidebar-description"></p>
-  <h3>Latest Startups</h3>
-  <ul id="sidebar-startups"></ul>
 </div>
 
 <script>
@@ -138,34 +129,12 @@ map.on('load', () => {
     }
   });
 
+  // Show name and address in sidebar when clicking a point
   map.on('click', 'points', (e) => {
     const props = e.features[0].properties;
 
-    document.getElementById('sidebar-title').textContent = props.name;
+    document.getElementById('sidebar-title').textContent = props.name || '';
     document.getElementById('sidebar-address').textContent = props.address || '';
-    document.getElementById('sidebar-description').textContent = props.description || '';
-
-    const list = document.getElementById('sidebar-startups');
-    list.innerHTML = '';
-
-    // ✅ Use recent_posts now
-    if (props.recent_posts) {
-      let posts;
-      try {
-        posts = typeof props.recent_posts === "string"
-          ? JSON.parse(props.recent_posts)
-          : props.recent_posts;
-      } catch (err) {
-        console.warn("Could not parse posts for", props.name, props.recent_posts);
-        posts = [];
-      }
-
-      posts.forEach(p => {
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="${p.url || '#'}" target="_blank">${p.name}</a> (${p.date || ''})`;
-        list.appendChild(li);
-      });
-    }
 
     document.getElementById('sidebar').classList.add('open');
   });
@@ -177,6 +146,7 @@ map.on('load', () => {
     map.getCanvas().style.cursor = '';
   });
 
+  // Close sidebar when clicking outside points
   map.on('click', (e) => {
     const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
     if (!features.length) {
