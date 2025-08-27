@@ -43,16 +43,21 @@ mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuaWVsc21pdHNlciIsImEiOiJjbWVzb3ZpM3IwMmw4M
 
 const map = new mapboxgl.Map({
   container: 'map',
-  style: 'mapbox://styles/danielsmitser/cmetoftdv008701r6f0xv58ko', // ✅ your custom style
+  // ✅ Use a guaranteed working style:
+  style: 'mapbox://styles/mapbox/light-v11',
+  
+  // ❌ Uncomment this if you make your custom style public:
+  // style: 'mapbox://styles/danielsmitser/cmetoftdv008701r6f0xv58ko',
+
   center: [5.1214, 52.0907], // Center on NL
   zoom: 7
 });
 
 map.on('load', () => {
-  // load your dataset
+  // load your dataset from GitHub
   map.addSource('earlystage', {
     type: 'geojson',
-    data: 'nl_earlystage_map.json' // ✅ host this file or use a relative path if served
+    data: 'https://raw.githubusercontent.com/danielsmisterkeen/Dutch_Sourcing_Map/main/nl_earlystage_map.geojson'
   });
 
   // points
