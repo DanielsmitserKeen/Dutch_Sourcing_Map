@@ -1,35 +1,33 @@
 import json
 
-# Load existing GeoJSON
-with open("nl_earlystage_map.geojson", "r", encoding="utf-8") as f:
-    geojson = json.load(f)
-
 # Load Apify results
 with open("apify_results.json", "r", encoding="utf-8") as f:
     apify_data = json.load(f)
 
-# Group posts by company/page
+# Load GeoJSON
+with open("nl_earlystage_map.geojson", "r", encoding="utf-8") as f:
+    geojson = json.load(f)
+
+# Group posts by profileName (Apify field)
 posts_by_company = {}
 for item in apify_data:
-    company = item.get("profileName") or item.get("authorName") or "Unknown"
+    company = item.get("profileName", "").strip()
     post = {
-        "name": item.get("text", "Untitled Post")[:80] + "...",
+        "name": item.get("text", "Untitled Post"),
         "url": item.get("url", "#"),
         "date": item.get("time", "")
     }
-    posts_by_company.setdefault(company, []).append(post)
+    if company:
+        posts_by_company.setdefault(company, []).append(post)
 
-# Inject posts into GeoJSON features
+# Attach posts into matching features in GeoJSON
 for feature in geojson["features"]:
-    name = feature["properties"]["name"]
-    # Try to match YES!Delft etc. with scraped posts
-    if "YES!Delft" in name and "YES!Delft" in posts_by_company:
-        feature["properties"]["recent_posts"] = posts_by_company["YES!Delft"]
-    elif "UtrechtInc" in name and "UtrechtInc" in posts_by_company:
-        feature["properties"]["recent_posts"] = posts_by_company["UtrechtInc"]
-    elif "Rockstart" in name and "Rockstart" in posts_by_company:
-        feature["properties"]["recent_posts"] = posts_by_company["Rockstart"]
+    org_name = feature["properties"].get("name", "").strip()
+    if org_name in posts_by_company:
+        feature["properties"]["recent_posts"] = posts_by_company[org_name][:5]  # limit to 5
 
 # Save updated GeoJSON
 with open("nl_earlystage_map.geojson", "w", encoding="utf-8") as f:
-    json.dump(geojson, f, indent=2)
+    json.dump(geojson, f, indent=2, ensure_ascii=False)
+
+print("✅ GeoJSON updated with recent posts from Apify")
