@@ -49,14 +49,14 @@
   }
   .sidebar ul {
     padding-left: 20px;
-    }
+  }
   .close-btn {
     float: right;
     cursor: pointer;
     font-size: 18px;
     border: none;
     background: none;
-    }
+  }
 </style>
 </head>
 <body>
@@ -76,6 +76,7 @@
 
 <!-- Sidebar -->
 <div id="sidebar" class="sidebar">
+  <button class="close-btn" onclick="closeSidebar()">×</button>
   <h2 id="sidebar-title"></h2>
   <p id="sidebar-address"></p>
   <p id="sidebar-description"></p>
@@ -172,6 +173,14 @@ map.on('load', () => {
   map.on('mouseleave', 'points', () => {
     map.getCanvas().style.cursor = '';
   });
+
+  // close sidebar when clicking on map background
+  map.on('click', (e) => {
+    const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
+    if (!features.length) {
+      closeSidebar();
+    }
+  });
 });
 
 // filters
@@ -192,4 +201,3 @@ function closeSidebar() {
 
 </body>
 </html>
-
