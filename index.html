@@ -48,7 +48,20 @@
     margin-top: 0;
   }
   .sidebar ul {
-    padding-left: 20px;
+    padding-left: 0;
+    list-style: none;
+  }
+  .sidebar li {
+    margin-bottom: 6px;
+  }
+  .sidebar li a {
+    font-weight: bold;
+    text-decoration: none;
+    color: #1f77b4;
+  }
+  .sidebar li small {
+    color: #555;
+    margin-left: 4px;
   }
   .close-btn {
     float: right;
@@ -172,17 +185,26 @@ map.on('load', () => {
     document.getElementById('sidebar-address').textContent = props.address || '';
     document.getElementById('sidebar-description').textContent = props.description || '';
 
-    // 🔹 Load startups from Google Sheet instead of GeoJSON
     const list = document.getElementById('sidebar-startups');
     list.innerHTML = '';
 
     try {
       const startups = await loadStartupsFromCSV();
-      startups.forEach(s => {
-        const li = document.createElement('li');
-        li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> (${s.date})`;
-        list.appendChild(li);
-      });
+
+      // 🔹 Filter startups by source column matching the clicked location
+      const filtered = startups.filter(s => s.source && s.source.trim() === props.name.trim());
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<li><i>No startups listed yet for this location.</i></li>";
+      } else {
+        // newest first (if date exists)
+        filtered.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+        filtered.forEach(s => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> <small>${s.date || ""}</small>`;
+          list.appendChild(li);
+        });
+      }
     } catch (err) {
       console.warn("Could not load startups from sheet", err);
     }
