@@ -57,6 +57,11 @@
     border: none;
     background: none;
   }
+  /* Scrollable startup list */
+  .startup-list {
+    max-height: 250px;
+    overflow-y: auto;
+  }
 </style>
 </head>
 <body>
@@ -81,7 +86,7 @@
   <p id="sidebar-address"></p>
   <p id="sidebar-description"></p>
   <h3>Latest Startups</h3>
-  <ul id="sidebar-startups"></ul>
+  <ul id="sidebar-startups" class="startup-list"></ul>
 </div>
 
 <script>
@@ -93,6 +98,24 @@ const map = new mapboxgl.Map({
   center: [5.1214, 52.0907], // Center on NL
   zoom: 7
 });
+
+// 🔹 Helper: Load startups from your Google Sheet CSV
+async function loadStartupsFromCSV() {
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?output=csv";
+  const res = await fetch(url);
+  const text = await res.text();
+
+  const rows = text.split("\n").slice(1); // skip header
+  return rows.map(r => {
+    const cols = r.split(",");
+    return {
+      name: cols[0],
+      url: cols[1],
+      date: cols[2],
+      source: cols[3]
+    };
+  }).filter(r => r.name && r.name !== "name");
+}
 
 map.on('load', () => {
   // load your dataset from GitHub
@@ -142,26 +165,26 @@ map.on('load', () => {
   });
 
   // click handler for sidebar
-  map.on('click', 'points', (e) => {
+  map.on('click', 'points', async (e) => {
     const props = e.features[0].properties;
 
     document.getElementById('sidebar-title').textContent = props.name;
     document.getElementById('sidebar-address').textContent = props.address || '';
     document.getElementById('sidebar-description').textContent = props.description || '';
 
-    // Parse startups (if stored as JSON string in GeoJSON)
+    // 🔹 Load startups from Google Sheet instead of GeoJSON
     const list = document.getElementById('sidebar-startups');
     list.innerHTML = '';
-    if (props.startups) {
-      try {
-        JSON.parse(props.startups).forEach(s => {
-          const li = document.createElement('li');
-          li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> (${s.date})`;
-          list.appendChild(li);
-        });
-      } catch (err) {
-        console.warn("Could not parse startups for", props.name);
-      }
+
+    try {
+      const startups = await loadStartupsFromCSV();
+      startups.forEach(s => {
+        const li = document.createElement('li');
+        li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> (${s.date})`;
+        list.appendChild(li);
+      });
+    } catch (err) {
+      console.warn("Could not load startups from sheet", err);
     }
 
     document.getElementById('sidebar').classList.add('open');
