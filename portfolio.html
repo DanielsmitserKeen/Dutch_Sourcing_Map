@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Portfolio Companies News</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #333;
+      padding: 30px;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 2.4em;
+      font-weight: 700;
+      color: #1f77b4;
+      margin-bottom: 10px;
+    }
+
+    p.subtitle {
+      text-align: center;
+      font-size: 1.1em;
+      color: #555;
+      margin-bottom: 40px;
+    }
+
+    .company {
+      margin-bottom: 40px;
+    }
+
+    .company h2 {
+      font-size: 1.6em;
+      color: #1f77b4;
+      margin-bottom: 15px;
+      border-bottom: 2px solid #eee;
+      padding-bottom: 5px;
+    }
+
+    .news-item {
+      background: #fafafa;
+      border-radius: 10px;
+      padding: 15px 20px;
+      margin-bottom: 12px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: all 0.2s ease;
+    }
+
+    .news-item:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+    }
+
+    .news-item a {
+      font-weight: bold;
+      text-decoration: none;
+      color: #1f77b4;
+      font-size: 1.05em;
+    }
+
+    .news-item a:hover {
+      text-decoration: underline;
+    }
+
+    .date {
+      display: block;
+      margin-top: 6px;
+      font-size: 0.9em;
+      color: #777;
+    }
+
+    /* Back home link */
+    .back-home {
+      display: inline-block;
+      margin-bottom: 25px;
+      text-decoration: none;
+      background: #1f77b4;
+      color: white;
+      padding: 10px 15px;
+      border-radius: 6px;
+      font-weight: bold;
+      transition: background 0.2s ease;
+    }
+
+    .back-home:hover {
+      background: #125080;
+    }
+  </style>
+</head>
+<body>
+  <a href="index.html" class="back-home">⬅ Back Home</a>
+
+  <h1>Portfolio Companies News</h1>
+  <p class="subtitle">Latest updates and highlights from our portfolio companies.</p>
+
+  <div id="news-container">Loading...</div>
+
+  <script>
+  async function loadNews() {
+    // 👇 Replace this with your published Google Sheet CSV link
+    const url = "YOUR_GOOGLE_SHEET_CSV_LINK";
+    const res = await fetch(url);
+    const text = await res.text();
+
+    const rows = text.split("\n").slice(1); // skip header
+    const data = rows.map(r => {
+      const cols = r.split(",");
+      return {
+        company: cols[0],
+        url: cols[1],
+        date: cols[2],
+        summary: cols[3]
+      };
+    }).filter(r => r.company);
+
+    // group by company
+    const grouped = {};
+    data.forEach(item => {
+      if (!grouped[item.company]) grouped[item.company] = [];
+      grouped[item.company].push(item);
+    });
+
+    const container = document.getElementById("news-container");
+    container.innerHTML = "";
+
+    Object.keys(grouped).forEach(company => {
+      const div = document.createElement("div");
+      div.className = "company";
+      div.innerHTML = `<h2>${company}</h2>`;
+      grouped[company].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+      grouped[company].forEach(news => {
+        div.innerHTML += `
+          <div class="news-item">
+            <a href="${news.url}" target="_blank">${news.summary}</a>
+            <span class="date">${news.date || ""}</span>
+          </div>`;
+      });
+      container.appendChild(div);
+    });
+  }
+
+  loadNews();
+  </script>
+</body>
+</html>
