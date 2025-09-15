@@ -31,56 +31,22 @@
 
     .company {
       margin-bottom: 40px;
+      padding: 20px;
+      background: #fafafa;
+      border-radius: 10px;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
     }
 
     .company h2 {
       font-size: 1.6em;
       color: #1f77b4;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    .company .linkedin {
-      font-size: 0.9em;
-      margin-bottom: 15px;
-      display: block;
-    }
-
-    .company .linkedin a {
-      color: #555;
-      text-decoration: none;
-    }
-    .company .linkedin a:hover {
-      text-decoration: underline;
-    }
-
-    .news-item {
-      background: #fafafa;
-      border-radius: 10px;
-      padding: 15px 20px;
-      margin-bottom: 15px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-      transition: all 0.2s ease;
-    }
-
-    .news-item:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
-    }
-
-    .news-summary {
+    .summary {
       font-size: 1.05em;
-      margin-bottom: 8px;
-    }
-
-    .news-link {
-      display: inline-block;
-      font-weight: bold;
-      color: #1f77b4;
-      text-decoration: none;
-    }
-
-    .news-link:hover {
-      text-decoration: underline;
+      line-height: 1.5;
+      color: #444;
     }
 
     /* Back home link */
@@ -105,7 +71,7 @@
   <a href="index.html" class="back-home">⬅ Back Home</a>
 
   <h1>Portfolio Companies News</h1>
-  <p class="subtitle">Latest updates and highlights from our portfolio companies.</p>
+  <p class="subtitle">Weekly highlights from our portfolio companies.</p>
 
   <div id="news-container">Loading...</div>
 
@@ -120,39 +86,29 @@
       const cols = r.split(",");
       return {
         company: cols[0],
-        linkedin: cols[1],
-        summary: cols[2],
-        url: cols[3]
+        summary: cols[2]  // Only take summary
       };
-    }).filter(r => r.company);
+    }).filter(r => r.company && r.summary);
 
     // group by company
     const grouped = {};
     data.forEach(item => {
-      if (!grouped[item.company]) grouped[item.company] = { linkedin: item.linkedin, news: [] };
-      grouped[item.company].news.push(item);
+      if (!grouped[item.company]) grouped[item.company] = [];
+      grouped[item.company].push(item);
     });
 
     const container = document.getElementById("news-container");
     container.innerHTML = "";
 
+    // For each company, only show the latest summary
     Object.keys(grouped).forEach(company => {
       const div = document.createElement("div");
       div.className = "company";
-      div.innerHTML = `<h2>${company}</h2>`;
-
-      if (grouped[company].linkedin) {
-        div.innerHTML += `<div class="linkedin"><a href="${grouped[company].linkedin}" target="_blank">Company LinkedIn →</a></div>`;
-      }
-
-      grouped[company].news.forEach(news => {
-        div.innerHTML += `
-          <div class="news-item">
-            <div class="news-summary">${news.summary}</div>
-            <a class="news-link" href="${news.url}" target="_blank">Read more →</a>
-          </div>`;
-      });
-
+      const latest = grouped[company][0]; // take first entry
+      div.innerHTML = `
+        <h2>${company}</h2>
+        <p class="summary">${latest.summary}</p>
+      `;
       container.appendChild(div);
     });
   }
