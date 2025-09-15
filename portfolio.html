@@ -4,9 +4,8 @@
   <meta charset="utf-8" />
   <title>Portfolio Companies News</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
     body {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       background: #f5f7fa;
@@ -44,7 +43,7 @@
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 25px;
     }
 
@@ -72,16 +71,6 @@
       line-height: 1.5;
       color: #444;
     }
-
-    @media (max-width: 600px) {
-      header {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      header nav {
-        margin-top: 10px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -98,35 +87,22 @@
   <script>
   async function loadNews() {
     const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?gid=1831605405&single=true&output=csv";
-    const res = await fetch(url);
-    const text = await res.text();
 
-    const rows = text.split("\n").slice(1); // skip header
-    const data = rows.map(r => {
-      const cols = r.split(",");
-      return {
-        company: cols[0],
-        summary: cols[2] // your sheet: A=Company, B=LinkedIn, C=Summary, D=Sources
-      };
-    }).filter(r => r.company && r.summary);
+    const response = await fetch(url);
+    const csv = await response.text();
 
-    // group by company, only keep latest summary
-    const grouped = {};
-    data.forEach(item => {
-      if (!grouped[item.company]) {
-        grouped[item.company] = item.summary;
-      }
-    });
+    const parsed = Papa.parse(csv, { header: true });
+    const rows = parsed.data.filter(r => r.Company && r.Summary);
 
     const container = document.getElementById("news-container");
     container.innerHTML = "";
 
-    Object.keys(grouped).forEach(company => {
+    rows.forEach(row => {
       const div = document.createElement("div");
       div.className = "card";
       div.innerHTML = `
-        <h2>${company}</h2>
-        <p class="summary">${grouped[company]}</p>
+        <h2>${row.Company}</h2>
+        <p class="summary">${row.Summary}</p>
       `;
       container.appendChild(div);
     });
