@@ -36,16 +36,28 @@
     .company h2 {
       font-size: 1.6em;
       color: #1f77b4;
+      margin-bottom: 10px;
+    }
+
+    .company .linkedin {
+      font-size: 0.9em;
       margin-bottom: 15px;
-      border-bottom: 2px solid #eee;
-      padding-bottom: 5px;
+      display: block;
+    }
+
+    .company .linkedin a {
+      color: #555;
+      text-decoration: none;
+    }
+    .company .linkedin a:hover {
+      text-decoration: underline;
     }
 
     .news-item {
       background: #fafafa;
       border-radius: 10px;
       padding: 15px 20px;
-      margin-bottom: 12px;
+      margin-bottom: 15px;
       box-shadow: 0 3px 8px rgba(0,0,0,0.08);
       transition: all 0.2s ease;
     }
@@ -55,22 +67,20 @@
       box-shadow: 0 6px 15px rgba(0,0,0,0.12);
     }
 
-    .news-item a {
-      font-weight: bold;
-      text-decoration: none;
-      color: #1f77b4;
+    .news-summary {
       font-size: 1.05em;
+      margin-bottom: 8px;
     }
 
-    .news-item a:hover {
+    .news-link {
+      display: inline-block;
+      font-weight: bold;
+      color: #1f77b4;
+      text-decoration: none;
+    }
+
+    .news-link:hover {
       text-decoration: underline;
-    }
-
-    .date {
-      display: block;
-      margin-top: 6px;
-      font-size: 0.9em;
-      color: #777;
     }
 
     /* Back home link */
@@ -101,8 +111,7 @@
 
   <script>
   async function loadNews() {
-    // 👇 Replace this with your published Google Sheet CSV link
-    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?gid=1831605405&single=true&output=csv"
+    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?gid=1831605405&single=true&output=csv";
     const res = await fetch(url);
     const text = await res.text();
 
@@ -111,17 +120,17 @@
       const cols = r.split(",");
       return {
         company: cols[0],
-        url: cols[1],
-        date: cols[2],
-        summary: cols[3]
+        linkedin: cols[1],
+        summary: cols[2],
+        url: cols[3]
       };
     }).filter(r => r.company);
 
     // group by company
     const grouped = {};
     data.forEach(item => {
-      if (!grouped[item.company]) grouped[item.company] = [];
-      grouped[item.company].push(item);
+      if (!grouped[item.company]) grouped[item.company] = { linkedin: item.linkedin, news: [] };
+      grouped[item.company].news.push(item);
     });
 
     const container = document.getElementById("news-container");
@@ -131,14 +140,19 @@
       const div = document.createElement("div");
       div.className = "company";
       div.innerHTML = `<h2>${company}</h2>`;
-      grouped[company].sort((a,b) => (b.date || "").localeCompare(a.date || ""));
-      grouped[company].forEach(news => {
+
+      if (grouped[company].linkedin) {
+        div.innerHTML += `<div class="linkedin"><a href="${grouped[company].linkedin}" target="_blank">Company LinkedIn →</a></div>`;
+      }
+
+      grouped[company].news.forEach(news => {
         div.innerHTML += `
           <div class="news-item">
-            <a href="${news.url}" target="_blank">${news.summary}</a>
-            <span class="date">${news.date || ""}</span>
+            <div class="news-summary">${news.summary}</div>
+            <a class="news-link" href="${news.url}" target="_blank">Read more →</a>
           </div>`;
       });
+
       container.appendChild(div);
     });
   }
