@@ -6,30 +6,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    /* ---------- Global Styles ---------- */
     body {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
       background: #f5f7fa;
       color: #333;
-      margin: 0;
-      padding: 0 20px 50px;
+      padding: 30px;
     }
 
-    /* ---------- Header ---------- */
     header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 25px 0;
-      margin-bottom: 30px;
-      border-bottom: 2px solid #e0e6ef;
+      margin-bottom: 40px;
     }
 
     header h1 {
       font-size: 2em;
       font-weight: 700;
       color: #1f77b4;
-      margin: 0;
     }
 
     header nav a {
@@ -38,82 +32,44 @@
       font-weight: bold;
       color: #1f77b4;
       background: #eaf3fb;
-      padding: 8px 14px;
-      border-radius: 8px;
-      transition: all 0.25s ease;
+      padding: 8px 12px;
+      border-radius: 6px;
+      transition: background 0.2s ease;
     }
 
     header nav a:hover {
-      background: #1f77b4;
-      color: #fff;
+      background: #d2e8f8;
     }
 
-    /* ---------- Grid Layout ---------- */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
       gap: 25px;
     }
 
-    /* ---------- Card Styles ---------- */
     .card {
       background: #fff;
-      border-radius: 14px;
+      border-radius: 12px;
       padding: 20px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      transition: transform 0.25s ease, box-shadow 0.25s ease;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
     }
 
     .card:hover {
-      transform: translateY(-6px);
-      box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+      transform: translateY(-4px);
+      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
     }
 
     .card h2 {
-      font-size: 1.3em;
+      font-size: 1.4em;
       color: #1f77b4;
-      margin: 0 0 12px;
+      margin-bottom: 12px;
     }
 
     .summary {
       font-size: 1em;
-      line-height: 1.6;
+      line-height: 1.5;
       color: #444;
-      margin-bottom: 15px;
-      display: -webkit-box;
-      -webkit-line-clamp: 6; /* Limit lines */
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .card-footer {
-      display: flex;
-      justify-content: flex-end;
-    }
-
-    .read-more {
-      font-size: 0.9em;
-      color: #1f77b4;
-      text-decoration: none;
-      font-weight: 600;
-      transition: color 0.2s ease;
-    }
-
-    .read-more:hover {
-      color: #0f4c81;
-    }
-
-    /* ---------- Responsive Tweaks ---------- */
-    @media (max-width: 600px) {
-      header h1 {
-        font-size: 1.5em;
-      }
-      .card h2 {
-        font-size: 1.1em;
-      }
     }
   </style>
 </head>
@@ -147,9 +103,6 @@
       div.innerHTML = `
         <h2>${row.Company}</h2>
         <p class="summary">${row.Summary}</p>
-        <div class="card-footer">
-          <a href="${row.Link || '#'}" target="_blank" class="read-more">🔗 Read more</a>
-        </div>
       `;
       container.appendChild(div);
     });
