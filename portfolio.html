@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Portfolio Companies Newsroom</title>
+  <title>Portfolio Companies News</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -22,8 +22,8 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 300%;       /* very wide so animation scrolls smoothly */
-      height: 100%;      /* exactly full viewport height */
+      width: 300%;
+      height: 100%;
       background: url("https://images.unsplash.com/photo-1536514498073-50e69d39c6cf?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0") repeat-x;
       background-size: cover;
       z-index: -2;
@@ -35,13 +35,13 @@
       to { transform: translateX(-50%); }
     }
 
-    /* Dark overlay for readability */
+    /* Blue overlay instead of dark */
     body::after {
       content: "";
       position: fixed;
       top: 0; left: 0;
       width: 100%; height: 100%;
-      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
+      background: linear-gradient(to bottom, rgba(30,90,170,0.4), rgba(10,40,120,0.6));
       z-index: -1;
     }
 
@@ -54,16 +54,16 @@
     header h1 {
       font-size: 3em;
       font-weight: 800;
-      color: #ffffff;
-      text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      color: #e6f3ff;
+      text-shadow: 0 4px 12px rgba(0,40,80,0.6);
       margin-bottom: 15px;
     }
 
     header p {
       font-size: 1.3em;
       font-weight: 300;
-      color: #d9e6f2;
-      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
+      color: #b3d9ff;
+      text-shadow: 0 2px 6px rgba(0,40,80,0.6);
       margin: 0;
     }
 
@@ -75,28 +75,28 @@
     }
 
     .card {
-      background: rgba(0,0,0,0.6);
+      background: rgba(0,30,80,0.6); /* deep blue glass look */
       border-radius: 14px;
       padding: 20px;
-      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      box-shadow: 0 6px 15px rgba(0,30,80,0.4);
       transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .card:hover {
       transform: translateY(-6px);
-      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
+      box-shadow: 0 12px 25px rgba(0,60,140,0.6);
     }
 
     .card h2 {
       font-size: 1.5em;
-      color: #4db8ff;
+      color: #66ccff;
       margin-bottom: 12px;
     }
 
     .summary {
       font-size: 1em;
       line-height: 1.5;
-      color: #f0f0f0;
+      color: #e6f3ff;
       margin-bottom: 12px;
     }
 
@@ -110,16 +110,16 @@
       padding: 6px 12px;
       font-size: 0.85em;
       color: #fff;
-      background: rgba(77,184,255,0.2);
-      border: 1px solid #4db8ff;
+      background: rgba(102,204,255,0.2);
+      border: 1px solid #66ccff;
       border-radius: 6px;
       text-decoration: none;
       transition: background 0.3s ease, color 0.3s ease;
     }
 
     .source-btn:hover {
-      background: #4db8ff;
-      color: #fff;
+      background: #66ccff;
+      color: #003366;
     }
   </style>
 </head>
@@ -127,7 +127,7 @@
 
   <header>
     <h1>🌐 Portfolio Companies Newsroom</h1>
-    <p>We deliver today’s stories, and build insights for tomorrow.</p>
+    <p>Refreshes on mondays and thursdays.</p>
   </header>
 
   <div id="news-container" class="grid">Loading...</div>
