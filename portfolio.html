@@ -8,72 +8,79 @@
   <style>
     body {
       font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-      background: #f5f7fa;
-      color: #333;
-      padding: 30px;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Moving cloud background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 200%;
+      height: 200%;
+      background: url("https://i.ibb.co/JpQw8Jt/clouds-bg.jpg") repeat-x;
+      background-size: cover;
+      z-index: -1;
+      animation: moveClouds 60s linear infinite;
+    }
+
+    @keyframes moveClouds {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
     }
 
     header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 40px;
+      text-align: center;
+      padding: 40px 20px 20px;
     }
 
     header h1 {
-      font-size: 2em;
+      font-size: 2.5em;
       font-weight: 700;
-      color: #1f77b4;
-    }
-
-    header nav a {
-      margin-left: 15px;
-      text-decoration: none;
-      font-weight: bold;
-      color: #1f77b4;
-      background: #eaf3fb;
-      padding: 8px 12px;
-      border-radius: 6px;
-      transition: background 0.2s ease;
-    }
-
-    header nav a:hover {
-      background: #d2e8f8;
+      color: #ffffff;
+      text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+      margin: 0;
     }
 
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
       gap: 25px;
+      padding: 30px;
     }
 
     .card {
-      background: #fff;
-      border-radius: 12px;
+      background: rgba(0,0,0,0.6);
+      border-radius: 14px;
       padding: 20px;
-      box-shadow: 0 3px 8px rgba(0,0,0,0.08);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 15px rgba(0,0,0,0.12);
+      transform: translateY(-6px);
+      box-shadow: 0 12px 25px rgba(0,0,0,0.4);
     }
 
     .card h2 {
-      font-size: 1.4em;
-      color: #1f77b4;
+      font-size: 1.5em;
+      color: #4db8ff;
       margin-bottom: 12px;
     }
 
     .summary {
       font-size: 1em;
       line-height: 1.5;
-      color: #444;
+      color: #f0f0f0;
       margin-bottom: 12px;
     }
 
-    /* NEW: style for source buttons */
     .sources {
       margin-top: 10px;
     }
@@ -81,22 +88,27 @@
     .source-btn {
       display: inline-block;
       margin: 3px 5px 0 0;
-      padding: 5px 10px;
+      padding: 6px 12px;
       font-size: 0.85em;
-      color: #1f77b4;
-      background: #eaf3fb;
+      color: #fff;
+      background: rgba(77,184,255,0.2);
+      border: 1px solid #4db8ff;
       border-radius: 6px;
       text-decoration: none;
-      transition: background 0.2s ease;
+      transition: background 0.3s ease, color 0.3s ease;
     }
 
     .source-btn:hover {
-      background: #d2e8f8;
+      background: #4db8ff;
+      color: #fff;
     }
   </style>
 </head>
 <body>
 
+  <header>
+    <h1>🌐 Portfolio Companies Newsroom</h1>
+  </header>
 
   <div id="news-container" class="grid">Loading...</div>
 
