@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>Portfolio Companies News</title>
+  <title>Portfolio Companies Newsroom</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
@@ -22,12 +22,12 @@
       position: fixed;
       top: 0;
       left: 0;
-      width: 130%;
-      height: 130%;
-      background: url("https://images.unsplash.com/photo-1536514498073-50e69d39c6cf?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D") repeat-x;
+      width: 300%;       /* very wide so animation scrolls smoothly */
+      height: 100%;      /* exactly full viewport height */
+      background: url("https://images.unsplash.com/photo-1536514498073-50e69d39c6cf?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0") repeat-x;
       background-size: cover;
-      z-index: -1;
-      animation: moveClouds 60s linear infinite;
+      z-index: -2;
+      animation: moveClouds 90s linear infinite;
     }
 
     @keyframes moveClouds {
@@ -35,16 +35,35 @@
       to { transform: translateX(-50%); }
     }
 
+    /* Dark overlay for readability */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.5), rgba(0,0,0,0.7));
+      z-index: -1;
+    }
+
+    /* Hero-style header */
     header {
       text-align: center;
-      padding: 40px 20px 20px;
+      padding: 80px 20px 60px;
     }
 
     header h1 {
-      font-size: 2.5em;
-      font-weight: 700;
+      font-size: 3em;
+      font-weight: 800;
       color: #ffffff;
-      text-shadow: 0 3px 8px rgba(0,0,0,0.5);
+      text-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      margin-bottom: 15px;
+    }
+
+    header p {
+      font-size: 1.3em;
+      font-weight: 300;
+      color: #d9e6f2;
+      text-shadow: 0 2px 6px rgba(0,0,0,0.6);
       margin: 0;
     }
 
@@ -108,6 +127,7 @@
 
   <header>
     <h1>🌐 Portfolio Companies Newsroom</h1>
+    <p>We deliver today’s stories, and build insights for tomorrow.</p>
   </header>
 
   <div id="news-container" class="grid">Loading...</div>
