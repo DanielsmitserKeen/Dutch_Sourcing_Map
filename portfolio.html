@@ -70,6 +70,28 @@
       font-size: 1em;
       line-height: 1.5;
       color: #444;
+      margin-bottom: 12px;
+    }
+
+    /* NEW: style for source buttons */
+    .sources {
+      margin-top: 10px;
+    }
+
+    .source-btn {
+      display: inline-block;
+      margin: 3px 5px 0 0;
+      padding: 5px 10px;
+      font-size: 0.85em;
+      color: #1f77b4;
+      background: #eaf3fb;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.2s ease;
+    }
+
+    .source-btn:hover {
+      background: #d2e8f8;
     }
   </style>
 </head>
@@ -100,9 +122,20 @@
     rows.forEach(row => {
       const div = document.createElement("div");
       div.className = "card";
+
+      // split sources into array
+      let sourcesHTML = "";
+      if (row.Sources) {
+        const links = row.Sources.split(",");
+        sourcesHTML = `<div class="sources">` + 
+          links.map((l,i) => `<a href="${l.trim()}" target="_blank" class="source-btn">🔗 Source ${i+1}</a>`).join("") + 
+          `</div>`;
+      }
+
       div.innerHTML = `
         <h2>${row.Company}</h2>
         <p class="summary">${row.Summary}</p>
+        ${sourcesHTML}
       `;
       container.appendChild(div);
     });
