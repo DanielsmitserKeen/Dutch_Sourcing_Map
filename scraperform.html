@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scraper Form</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+    .form-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.6rem;
+      color: #0077cc;
+    }
+    label {
+      display: block;
+      margin: 1rem 0 0.5rem;
+      font-weight: bold;
+    }
+    input, select {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background: #0077cc;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+  </style>
+</head>
+<body>
+  <div class="form-container">
+    <h2>Scraper Form</h2>
+    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
+      
+      <!-- Country -->
+      <label for="country">Country</label>
+      <select id="country" name="country" required>
+        <option value="">Select a country...</option>
+        <option value="Netherlands">Netherlands</option>
+        <option value="Germany">Germany</option>
+        <option value="France">France</option>
+        <option value="UK">United Kingdom</option>
+        <option value="USA">USA</option>
+      </select>
+
+      <!-- Number of LinkedIn company pages -->
+      <label for="linkedin_pages_limit">Number of LinkedIn Pages</label>
+      <input type="number" id="linkedin_pages_limit" name="linkedin_pages_limit" min="1" max="100" value="20" required/>
+
+      <!-- Posts per LinkedIn page -->
+      <label for="posts_per_page">Posts per Page</label>
+      <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="50" value="10" required/>
+
+      <button type="submit">Run Scraper</button>
+    </form>
+  </div>
+</body>
+</html>
