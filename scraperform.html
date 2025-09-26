@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Scraper Form</title>
+  <title>Scraper Forms</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background: #f4f6f9;
       display: flex;
-      align-items: center;
+      align-items: flex-start;
       justify-content: center;
-      height: 100vh;
+      gap: 2rem;
+      padding: 2rem;
       margin: 0;
     }
     .form-container {
@@ -112,8 +113,10 @@
   </style>
 </head>
 <body>
+
+  <!-- LinkedIn Scraper Form -->
   <div class="form-container">
-    <h2>Scraper Form</h2>
+    <h2>LinkedIn Scraper</h2>
     <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
 
       <!-- Country -->
@@ -165,12 +168,21 @@
       <!-- Hidden input to send industries to backend -->
       <input type="hidden" id="industriesInput" name="industries" />
 
+      <button type="submit">Run LinkedIn Scraper</button>
+    </form>
+  </div>
+
+  <!-- Substack Scraper Form -->
+  <div class="form-container">
+    <h2>Substack Scraper</h2>
+    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/38add8c0-f1e3-4c96-a923-204772eee281" method="POST">
+
       <!-- Substack Links -->
       <label for="substack_links">Substack Links (one per line)</label>
-      <textarea id="substack_links" name="substack_links" rows="5" placeholder="https://example.substack.com/p/post-1
+      <textarea id="substack_links" name="substack_links" rows="10" placeholder="https://example.substack.com/p/post-1
 https://example.substack.com/p/post-2"></textarea>
 
-      <button type="submit">Run Scraper</button>
+      <button type="submit">Run Substack Scraper</button>
     </form>
   </div>
 
