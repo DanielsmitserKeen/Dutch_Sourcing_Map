@@ -138,9 +138,7 @@
   <!-- LinkedIn Scraper Form -->
   <div class="form-container">
     <h2>LinkedIn Scraper</h2>
-    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
-
-      <!-- Country -->
+    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
       <label for="country">Country</label>
       <select id="country" name="country" required>
         <option value="">Select a country...</option>
@@ -151,15 +149,12 @@
         <option value="USA">USA</option>
       </select>
 
-      <!-- Number of LinkedIn company pages -->
       <label for="linkedin_pages_limit">Number of LinkedIn Pages</label>
       <input type="number" id="linkedin_pages_limit" name="linkedin_pages_limit" min="1" max="100" value="20" required/>
 
-      <!-- Posts per LinkedIn page -->
       <label for="posts_per_page">Posts per Page</label>
       <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="50" value="10" required/>
 
-      <!-- Industry Multi-select -->
       <label for="industries">Industry</label>
       <div class="multi-select" id="industrySelect">
         <div class="selected-options" onclick="toggleOptions()">Select industries...</div>
@@ -199,11 +194,11 @@
 
     <label for="newLink">Add New Link</label>
     <input type="text" id="newLink" placeholder="https://example.substack.com/p/post"/>
-    <!-- Add link would need Apps Script or manual sheet editing -->
+    <button onclick="addLink()">Add Link</button>
   </div>
 
   <script>
-    // Multi-select logic
+    // Multi-select logic for LinkedIn
     const industrySelect = document.getElementById("industrySelect");
     const selectedContainer = industrySelect.querySelector(".selected-options");
     const optionsList = industrySelect.querySelector(".options-list");
@@ -244,31 +239,56 @@
       }
     });
 
-    // Substack link display (CSV fetch)
-    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=182007855&single=true&output=csv";
+    // Substack logic using Google Apps Script API
+    const apiUrl = "https://script.google.com/macros/s/AKfycbzh8cRquFrlbzP0RvPwSsjcMm4PbllglA-vhPIh4Jrur5_8RChS4xiggsMlhpwBi2e2/exec";
 
     async function fetchLinks() {
-      const res = await fetch(sheetUrl);
-      const csvText = await res.text();
-
-      const rows = csvText.split("\n").slice(1); // skip header
-      const links = rows
-        .map(row => row.split(",")[0].trim())
-        .filter(link => link && link.startsWith("http"));
-
-      renderLinks(links);
+      try {
+        const res = await fetch(apiUrl);
+        const data = await res.json();
+        renderLinks(data);
+      } catch (err) {
+        console.error("Error fetching links:", err);
+      }
     }
 
     function renderLinks(links) {
       const list = document.getElementById("linksList");
       list.innerHTML = "";
+      if (!links || links.length === 0) {
+        list.innerHTML = "<li>No links yet</li>";
+        return;
+      }
       links.forEach(link => {
         const li = document.createElement("li");
-        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
+        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>
+                        <button onclick="removeLink('${link}')">Remove</button>`;
         list.appendChild(li);
       });
     }
 
+    async function addLink() {
+      const link = document.getElementById("newLink").value.trim();
+      if (!link) return;
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "add", link })
+      });
+      document.getElementById("newLink").value = "";
+      fetchLinks();
+    }
+
+    async function removeLink(link) {
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "remove", link })
+      });
+      fetchLinks();
+    }
+
+    // Load links on page load
     fetchLinks();
   </script>
 </body>
