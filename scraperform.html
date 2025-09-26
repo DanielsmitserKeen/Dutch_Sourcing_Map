@@ -1,50 +1,251 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Scraper Dashboard</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Scraper Forms</title>
   <style>
-    body { font-family: Arial, sans-serif; display: flex; gap: 2rem; padding: 2rem; }
-    .form-container { flex: 1; border: 1px solid #ddd; padding: 1rem; border-radius: 8px; }
-    h2 { color: #0077cc; }
-    ul { list-style: none; padding: 0; }
-    li { margin: 0.5rem 0; display: flex; justify-content: space-between; }
-    button { margin-left: 1rem; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      gap: 2rem;
+      padding: 2rem;
+      margin: 0;
+    }
+    .form-container {
+      background: white;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      max-width: 450px;
+      width: 100%;
+    }
+    h2 {
+      margin-top: 0;
+      text-align: center;
+      font-size: 1.6rem;
+      color: #0077cc;
+    }
+    label {
+      display: block;
+      margin: 1rem 0 0.5rem;
+      font-weight: bold;
+    }
+    input, select, textarea {
+      width: 100%;
+      padding: 0.6rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+    }
+    button {
+      margin-top: 1.5rem;
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1rem;
+      font-weight: bold;
+      color: white;
+      background: #0077cc;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+    button:hover {
+      background: #005fa3;
+    }
+    /* Multi-select styles */
+    .multi-select {
+      position: relative;
+      width: 100%;
+    }
+    .selected-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-height: 42px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .selected-options span {
+      background: #0077cc;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .selected-options span button {
+      background: none;
+      border: none;
+      color: #fff;
+      margin-left: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .options-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      display: none;
+      z-index: 10;
+    }
+    .options-list div {
+      padding: 0.6rem;
+      cursor: pointer;
+    }
+    .options-list div:hover {
+      background: #f0f0f0;
+    }
+    /* Substack list styling */
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      margin: 0.5rem 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    li button {
+      width: auto;
+      padding: 0.3rem 0.6rem;
+      margin: 0;
+      font-size: 0.9rem;
+      background: #cc0000;
+    }
+    li button:hover {
+      background: #990000;
+    }
   </style>
 </head>
 <body>
 
   <!-- LinkedIn Scraper Form -->
   <div class="form-container">
-    <h2>🔍 LinkedIn Scraper</h2>
-    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/38add8c0-f1e3-4c96-a923-204772eee281" method="POST">
-      <label>Country:</label><br>
-      <input type="text" name="country" placeholder="Netherlands"><br><br>
+    <h2>LinkedIn Scraper</h2>
+    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
 
-      <label>LinkedIn Pages Limit:</label><br>
-      <input type="number" name="linkedin_pages_limit" value="5"><br><br>
+      <!-- Country -->
+      <label for="country">Country</label>
+      <select id="country" name="country" required>
+        <option value="">Select a country...</option>
+        <option value="Netherlands">Netherlands</option>
+        <option value="Germany">Germany</option>
+        <option value="France">France</option>
+        <option value="UK">United Kingdom</option>
+        <option value="USA">USA</option>
+      </select>
 
-      <label>Posts Per Page:</label><br>
-      <input type="number" name="posts_per_page" value="10"><br><br>
+      <!-- Number of LinkedIn company pages -->
+      <label for="linkedin_pages_limit">Number of LinkedIn Pages</label>
+      <input type="number" id="linkedin_pages_limit" name="linkedin_pages_limit" min="1" max="100" value="20" required/>
 
-      <label>Industries:</label><br>
-      <input type="text" name="industries" placeholder="Fintech, AI, SaaS"><br><br>
+      <!-- Posts per LinkedIn page -->
+      <label for="posts_per_page">Posts per Page</label>
+      <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="50" value="10" required/>
 
-      <button type="submit">Run Scraper</button>
+      <!-- Industry Multi-select -->
+      <label for="industries">Industry</label>
+      <div class="multi-select" id="industrySelect">
+        <div class="selected-options" onclick="toggleOptions()">Select industries...</div>
+        <div class="options-list">
+          <div data-value="SaaS">SaaS (Software-as-a-Service)</div>
+          <div data-value="Enterprise Software">Enterprise Software</div>
+          <div data-value="AI & Machine Learning">AI & Machine Learning</div>
+          <div data-value="Cybersecurity">Cybersecurity</div>
+          <div data-value="Data Analytics">Data Analytics & BI</div>
+          <div data-value="Cloud Infrastructure">Cloud Infrastructure & DevOps</div>
+          <div data-value="FinTech">FinTech</div>
+          <div data-value="HealthTech">HealthTech</div>
+          <div data-value="EdTech">EdTech</div>
+          <div data-value="HRTech">HRTech</div>
+          <div data-value="MarTech">MarketingTech</div>
+          <div data-value="Supply Chain Tech">Supply Chain & Logistics Tech</div>
+          <div data-value="E-commerce Tech">E-commerce & Retail Tech</div>
+          <div data-value="LegalTech">LegalTech</div>
+          <div data-value="PropTech">PropTech</div>
+          <div data-value="AgriTech">AgriTech</div>
+          <div data-value="ClimateTech">ClimateTech</div>
+          <div data-value="IndustrialTech">IndustrialTech</div>
+          <div data-value="IoT">IoT Platforms</div>
+          <div data-value="Productivity Tools">Collaboration & Productivity tech</div>
+        </div>
+      </div>
+      <!-- Hidden input to send industries to backend -->
+      <input type="hidden" id="industriesInput" name="industries" />
+
+      <button type="submit">Run LinkedIn Scraper</button>
     </form>
   </div>
 
-  <!-- Substack Links Manager -->
+  <!-- Substack Scraper Manager -->
   <div class="form-container">
-    <h2>📑 Current Substack Links</h2>
+    <h2>Substack Links</h2>
     <ul id="linksList"></ul>
 
-    <h3>Add New Link</h3>
-    <input type="text" id="newLink" placeholder="https://example.substack.com/p/post" size="40"/>
-    <button onclick="addLink()">Add</button>
+    <label for="newLink">Add New Link</label>
+    <input type="text" id="newLink" placeholder="https://example.substack.com/p/post"/>
+    <button onclick="addLink()">Add Link</button>
   </div>
 
   <script>
+    // Multi-select logic
+    const industrySelect = document.getElementById("industrySelect");
+    const selectedContainer = industrySelect.querySelector(".selected-options");
+    const optionsList = industrySelect.querySelector(".options-list");
+    const hiddenInput = document.getElementById("industriesInput");
+    let selectedValues = [];
+
+    function toggleOptions() {
+      optionsList.style.display = optionsList.style.display === "block" ? "none" : "block";
+    }
+
+    optionsList.addEventListener("click", function(e) {
+      const value = e.target.getAttribute("data-value");
+      if (value && !selectedValues.includes(value)) {
+        selectedValues.push(value);
+
+        const tag = document.createElement("span");
+        tag.textContent = value;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "x";
+        removeBtn.onclick = function(ev) {
+          ev.stopPropagation();
+          selectedValues = selectedValues.filter(v => v !== value);
+          tag.remove();
+          hiddenInput.value = selectedValues.join(",");
+        };
+        tag.appendChild(removeBtn);
+
+        selectedContainer.appendChild(tag);
+        hiddenInput.value = selectedValues.join(",");
+      }
+      optionsList.style.display = "none";
+    });
+
+    document.addEventListener("click", function(e) {
+      if (!industrySelect.contains(e.target)) {
+        optionsList.style.display = "none";
+      }
+    });
+
+    // Substack live manager logic
     const getUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/substack-get";
     const updateUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/substack-update";
 
@@ -60,7 +261,7 @@
       links.forEach(link => {
         const li = document.createElement("li");
         li.innerHTML = `<a href="${link}" target="_blank">${link}</a>
-                        <button onclick="removeLink('${link}')">❌ Remove</button>`;
+                        <button onclick="removeLink('${link}')">Remove</button>`;
         list.appendChild(li);
       });
     }
@@ -88,6 +289,5 @@
 
     fetchLinks();
   </script>
-
 </body>
 </html>
