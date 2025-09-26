@@ -33,7 +33,7 @@
       margin: 1rem 0 0.5rem;
       font-weight: bold;
     }
-    input, select {
+    input, select, textarea {
       width: 100%;
       padding: 0.6rem;
       border: 1px solid #ccc;
@@ -164,6 +164,11 @@
       </div>
       <!-- Hidden input to send industries to backend -->
       <input type="hidden" id="industriesInput" name="industries" />
+
+      <!-- Substack Links -->
+      <label for="substack_links">Substack Links (one per line)</label>
+      <textarea id="substack_links" name="substack_links" rows="5" placeholder="https://example.substack.com/p/post-1
+https://example.substack.com/p/post-2"></textarea>
 
       <button type="submit">Run Scraper</button>
     </form>
