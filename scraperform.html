@@ -19,7 +19,7 @@
       padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      max-width: 400px;
+      max-width: 450px;
       width: 100%;
     }
     h2 {
@@ -55,13 +55,67 @@
     button:hover {
       background: #005fa3;
     }
+    /* Multi-select styles */
+    .multi-select {
+      position: relative;
+      width: 100%;
+    }
+    .selected-options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+      padding: 0.4rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      min-height: 42px;
+      cursor: pointer;
+      background: #fff;
+    }
+    .selected-options span {
+      background: #0077cc;
+      color: #fff;
+      padding: 0.3rem 0.6rem;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      font-size: 0.9rem;
+    }
+    .selected-options span button {
+      background: none;
+      border: none;
+      color: #fff;
+      margin-left: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .options-list {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      max-height: 200px;
+      overflow-y: auto;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: white;
+      display: none;
+      z-index: 10;
+    }
+    .options-list div {
+      padding: 0.6rem;
+      cursor: pointer;
+    }
+    .options-list div:hover {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body>
   <div class="form-container">
     <h2>Scraper Form</h2>
     <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST">
-      
+
       <!-- Country -->
       <label for="country">Country</label>
       <select id="country" name="country" required>
@@ -81,8 +135,80 @@
       <label for="posts_per_page">Posts per Page</label>
       <input type="number" id="posts_per_page" name="posts_per_page" min="1" max="50" value="10" required/>
 
+      <!-- Industry Multi-select -->
+      <label for="industries">Industry</label>
+      <div class="multi-select" id="industrySelect">
+        <div class="selected-options" onclick="toggleOptions()">Select industries...</div>
+        <div class="options-list">
+          <div data-value="SaaS">SaaS (Software-as-a-Service)</div>
+          <div data-value="Enterprise Software">Enterprise Software</div>
+          <div data-value="AI & Machine Learning">AI & Machine Learning</div>
+          <div data-value="Cybersecurity">Cybersecurity</div>
+          <div data-value="Data Analytics">Data Analytics & BI</div>
+          <div data-value="Cloud Infrastructure">Cloud Infrastructure & DevOps</div>
+          <div data-value="FinTech">FinTech</div>
+          <div data-value="HealthTech">HealthTech</div>
+          <div data-value="EdTech">EdTech</div>
+          <div data-value="HRTech">HRTech</div>
+          <div data-value="MarTech">MarketingTech</div>
+          <div data-value="Supply Chain Tech">Supply Chain & Logistics</div>
+          <div data-value="E-commerce Tech">E-commerce & Retail Tech</div>
+          <div data-value="LegalTech">LegalTech</div>
+          <div data-value="PropTech">PropTech</div>
+          <div data-value="AgriTech">AgriTech</div>
+          <div data-value="ClimateTech">ClimateTech</div>
+          <div data-value="IndustrialTech">IndustrialTech</div>
+          <div data-value="IoT">IoT Platforms</div>
+          <div data-value="Productivity Tools">Collaboration & Productivity</div>
+        </div>
+      </div>
+      <!-- Hidden input to send industries to backend -->
+      <input type="hidden" id="industriesInput" name="industries" />
+
       <button type="submit">Run Scraper</button>
     </form>
   </div>
+
+  <script>
+    const industrySelect = document.getElementById("industrySelect");
+    const selectedContainer = industrySelect.querySelector(".selected-options");
+    const optionsList = industrySelect.querySelector(".options-list");
+    const hiddenInput = document.getElementById("industriesInput");
+    let selectedValues = [];
+
+    function toggleOptions() {
+      optionsList.style.display = optionsList.style.display === "block" ? "none" : "block";
+    }
+
+    optionsList.addEventListener("click", function(e) {
+      const value = e.target.getAttribute("data-value");
+      if (value && !selectedValues.includes(value)) {
+        selectedValues.push(value);
+
+        const tag = document.createElement("span");
+        tag.textContent = value;
+
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "x";
+        removeBtn.onclick = function(ev) {
+          ev.stopPropagation();
+          selectedValues = selectedValues.filter(v => v !== value);
+          tag.remove();
+          hiddenInput.value = selectedValues.join(",");
+        };
+        tag.appendChild(removeBtn);
+
+        selectedContainer.appendChild(tag);
+        hiddenInput.value = selectedValues.join(",");
+      }
+      optionsList.style.display = "none";
+    });
+
+    document.addEventListener("click", function(e) {
+      if (!industrySelect.contains(e.target)) {
+        optionsList.style.display = "none";
+      }
+    });
+  </script>
 </body>
 </html>
