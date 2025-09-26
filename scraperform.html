@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Substack Links Manager</title>
+  <title>Scraper Dashboard</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 2rem; }
+    body { font-family: Arial, sans-serif; display: flex; gap: 2rem; padding: 2rem; }
+    .form-container { flex: 1; border: 1px solid #ddd; padding: 1rem; border-radius: 8px; }
     h2 { color: #0077cc; }
     ul { list-style: none; padding: 0; }
     li { margin: 0.5rem 0; display: flex; justify-content: space-between; }
@@ -12,12 +13,36 @@
   </style>
 </head>
 <body>
-  <h2>📑 Current Substack Links</h2>
-  <ul id="linksList"></ul>
 
-  <h3>Add New Link</h3>
-  <input type="text" id="newLink" placeholder="https://example.substack.com/p/post" size="50"/>
-  <button onclick="addLink()">Add</button>
+  <!-- LinkedIn Scraper Form -->
+  <div class="form-container">
+    <h2>🔍 LinkedIn Scraper</h2>
+    <form action="https://danielsmitserkeen.app.n8n.cloud/webhook-test/38add8c0-f1e3-4c96-a923-204772eee281" method="POST">
+      <label>Country:</label><br>
+      <input type="text" name="country" placeholder="Netherlands"><br><br>
+
+      <label>LinkedIn Pages Limit:</label><br>
+      <input type="number" name="linkedin_pages_limit" value="5"><br><br>
+
+      <label>Posts Per Page:</label><br>
+      <input type="number" name="posts_per_page" value="10"><br><br>
+
+      <label>Industries:</label><br>
+      <input type="text" name="industries" placeholder="Fintech, AI, SaaS"><br><br>
+
+      <button type="submit">Run Scraper</button>
+    </form>
+  </div>
+
+  <!-- Substack Links Manager -->
+  <div class="form-container">
+    <h2>📑 Current Substack Links</h2>
+    <ul id="linksList"></ul>
+
+    <h3>Add New Link</h3>
+    <input type="text" id="newLink" placeholder="https://example.substack.com/p/post" size="40"/>
+    <button onclick="addLink()">Add</button>
+  </div>
 
   <script>
     const getUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/substack-get";
@@ -61,8 +86,8 @@
       fetchLinks();
     }
 
-    // Load links on page load
     fetchLinks();
   </script>
+
 </body>
 </html>
