@@ -186,7 +186,6 @@
           <div data-value="Productivity Tools">Collaboration & Productivity tech</div>
         </div>
       </div>
-      <!-- Hidden input to send industries to backend -->
       <input type="hidden" id="industriesInput" name="industries" />
 
       <button type="submit">Run LinkedIn Scraper</button>
@@ -200,7 +199,7 @@
 
     <label for="newLink">Add New Link</label>
     <input type="text" id="newLink" placeholder="https://example.substack.com/p/post"/>
-    <button onclick="addLink()">Add Link</button>
+    <!-- Add link would need Apps Script or manual sheet editing -->
   </div>
 
   <script>
@@ -245,14 +244,19 @@
       }
     });
 
-    // Substack live manager logic
-    const getUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/substack-get37fh32f7r";
-    const updateUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/substack-post37fh32f7r";
+    // Substack link display (CSV fetch)
+    const sheetUrl = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=182007855&single=true&output=csv";
 
     async function fetchLinks() {
-      const res = await fetch(getUrl);
-      const data = await res.json();
-      renderLinks(data);
+      const res = await fetch(sheetUrl);
+      const csvText = await res.text();
+
+      const rows = csvText.split("\n").slice(1); // skip header
+      const links = rows
+        .map(row => row.split(",")[0].trim())
+        .filter(link => link && link.startsWith("http"));
+
+      renderLinks(links);
     }
 
     function renderLinks(links) {
@@ -260,31 +264,9 @@
       list.innerHTML = "";
       links.forEach(link => {
         const li = document.createElement("li");
-        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>
-                        <button onclick="removeLink('${link}')">Remove</button>`;
+        li.innerHTML = `<a href="${link}" target="_blank">${link}</a>`;
         list.appendChild(li);
       });
-    }
-
-    async function addLink() {
-      const link = document.getElementById("newLink").value.trim();
-      if (!link) return;
-      await fetch(updateUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "add", link })
-      });
-      document.getElementById("newLink").value = "";
-      fetchLinks();
-    }
-
-    async function removeLink(link) {
-      await fetch(updateUrl, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "remove", link })
-      });
-      fetchLinks();
     }
 
     fetchLinks();
