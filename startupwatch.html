@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StartupSphere Navigator</title>
+  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#FFFFFF',
+            secondary: '#3B82F6',
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .industry-box:hover {
+      transform: translateY(-3px);
+    }
+  </style>
+</head>
+<body class="bg-primary font-sans antialiased">
+  <!-- Navigation -->
+  <nav class="bg-primary shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <i data-feather="compass" class="text-secondary h-8 w-8"></i>
+            <span class="ml-2 text-xl font-bold text-gray-800">StartupSphere</span>
+          </div>
+        </div>
+        <div class="flex items-center space-x-4">
+          <a href="#" class="text-gray-700 hover:text-secondary px-3 py-2 rounded-md text-sm font-medium">Home</a>
+          <a href="#" class="text-gray-700 hover:text-secondary px-3 py-2 rounded-md text-sm font-medium">Browse</a>
+          <button class="bg-secondary text-white px-4 py-2 rounded-md text-sm font-medium hover:bg-blue-600 transition duration-300">
+            Add Startup
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <div class="relative bg-primary">
+    <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8">
+      <div class="text-center">
+        <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
+          Explore your industry
+        </h1>
+        <p class="mt-4 text-lg text-gray-500">Browse startups by sector and discover the future of innovation</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Industry Tabs -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
+    <div class="flex flex-wrap justify-center gap-2">
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">All</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Consumer markets</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Energy, utilities & resources</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Financial services</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Government & public sector</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Health industries</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Industrials & services</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Private capital</button>
+      <button class="px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100">Technology, media & telecom</button>
+    </div>
+  </div>
+
+  <!-- Industry Grid -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+    <div class="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Aerospace, defence & security</h3>
+        <p class="mt-2 text-sm text-gray-600">The sector is moving rapidly. Rethink business models, enhance digital capabilities and invest in cutting-edge technologies.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Asset & wealth management</h3>
+        <p class="mt-2 text-sm text-gray-600">The future of asset and wealth management is about reinvention, not just adaptation.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Automotive</h3>
+        <p class="mt-2 text-sm text-gray-600">The shift to electric and autonomous vehicles is transforming the industry. Rethink infrastructure and invest in AI.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Banking & capital markets</h3>
+        <p class="mt-2 text-sm text-gray-600">Success belongs to those who act boldly, build trust and reshape financial services for a new era.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Business services</h3>
+        <p class="mt-2 text-sm text-gray-600">From logistics to digital solutions, automation and AI are reshaping business services globally.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+
+      <div class="industry-box">
+        <h3 class="text-lg font-bold text-gray-900">Chemicals</h3>
+        <p class="mt-2 text-sm text-gray-600">Embrace fresh thinking, sustainability and innovation to deliver high-quality products while meeting regulation.</p>
+        <a href="#" class="mt-3 inline-flex items-center text-secondary text-sm font-medium">Learn more →</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    feather.replace();
+  </script>
+</body>
+</html>
