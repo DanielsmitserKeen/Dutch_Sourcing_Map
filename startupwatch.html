@@ -141,14 +141,15 @@
         container.innerHTML = `<p class="text-gray-500 col-span-full">Searching...</p>`;
 
         try {
-          const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook/08c1ad29-f35b-44b4-a85d-1a54c3a6cfd5/chat", {
+          // 🚨 Replace with your POST webhook endpoint, not a chat endpoint
+          const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook-test/startup-search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ chatInput: query })
+            body: JSON.stringify({ query })
           });
           const data = await res.json();
 
-          // Expecting n8n returns array of rows with company_name, industry, domain
+          // Expecting webhook returns array of rows with company_name, industry, domain
           renderGrid(data);
         } catch (err) {
           container.innerHTML = `<p class="text-red-500 col-span-full">Error fetching results.</p>`;
