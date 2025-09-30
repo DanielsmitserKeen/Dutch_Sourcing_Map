@@ -200,47 +200,59 @@
     // Initialize feather icons
     feather.replace();
 
-    // ----- COUNTRY CHIP LOGIC -----
-    const selectedCountries = [];
-    const countriesInput = document.getElementById('countriesInput');
-    const countryChips = document.getElementById('countryChips');
+    // ----- INDUSTRY CHIP LOGIC -----
+    const selectedIndustries = [];
+    const industriesInput = document.getElementById('industriesInput');
+    const industryChips = document.getElementById('industryChips');
 
-    function toggleCountry(country) {
-      const index = selectedCountries.indexOf(country);
+    function toggleIndustry(industry) {
+      const index = selectedIndustries.indexOf(industry);
       if (index === -1) {
-        selectedCountries.push(country);
+        selectedIndustries.push(industry);
       } else {
-        selectedCountries.splice(index, 1);
+        selectedIndustries.splice(index, 1);
       }
-      updateCountryChips();
-      countriesInput.value = selectedCountries.join(',');
+      updateIndustryChips();
+      industriesInput.value = selectedIndustries.join(',');
     }
 
-    function updateCountryChips() {
-      countryChips.innerHTML = '';
-      selectedCountries.forEach(country => {
+    function updateIndustryChips() {
+      industryChips.innerHTML = '';
+      selectedIndustries.forEach(industry => {
         const chip = document.createElement('div');
-        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm';
-        chip.innerHTML = `${country} <button onclick="removeCountry('${country}')" class="ml-1 text-green-600 hover:text-green-800">&times;</button>`;
-        countryChips.appendChild(chip);
+        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm';
+        chip.innerHTML = `${industry} <button onclick="removeIndustry('${industry}')" class="ml-1 text-blue-600 hover:text-blue-800">&times;</button>`;
+        industryChips.appendChild(chip);
       });
 
-      if (selectedCountries.length === 0) {
+      if (selectedIndustries.length === 0) {
         const placeholder = document.createElement('div');
         placeholder.className = 'text-gray-500 text-sm';
-        placeholder.textContent = 'No countries selected';
-        countryChips.appendChild(placeholder);
+        placeholder.textContent = 'No industries selected';
+        industryChips.appendChild(placeholder);
       }
     }
 
-    function removeCountry(country) {
-      const index = selectedCountries.indexOf(country);
+    function removeIndustry(industry) {
+      const index = selectedIndustries.indexOf(industry);
       if (index !== -1) {
-        selectedCountries.splice(index, 1);
-        updateCountryChips();
-        countriesInput.value = selectedCountries.join(',');
+        selectedIndustries.splice(index, 1);
+        updateIndustryChips();
+        industriesInput.value = selectedIndustries.join(',');
       }
     }
+
+    function addCustomIndustry() {
+      const input = document.getElementById('customIndustryInput');
+      const value = input.value.trim();
+      if (value && !selectedIndustries.includes(value)) {
+        selectedIndustries.push(value);
+        updateIndustryChips();
+        industriesInput.value = selectedIndustries.join(',');
+        input.value = ''; // clear input
+      }
+    }
+
 
 
     // Substack Manager → send links to n8n
