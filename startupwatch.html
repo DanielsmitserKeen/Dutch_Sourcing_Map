@@ -39,34 +39,38 @@
   </div>
 
   <script>
-    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?output=csv";
-    const WEBHOOK_URL = "https://danielsmitserkeen.app.n8n.cloud/webhook/startup-search";
+    const CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?output=csv";
+
+    // IMPORTANT: Use your production webhook URL here
+    const WEBHOOK_URL =
+      "https://danielsmitserskeen.app.n8n.cloud/webhook/startup-search";
 
     let startups = [];
     let industries = new Set();
 
-    // Load CSV
+    // Load CSV data
     Papa.parse(CSV_URL, {
       download: true,
       header: true,
       complete: (results) => {
-        startups = results.data.filter(s => s.company_name); // drop empty rows
+        startups = results.data.filter((s) => s.company_name); // drop empty rows
         // collect industries
-        startups.forEach(s => {
+        startups.forEach((s) => {
           if (s.industry) {
-            s.industry.split(",").forEach(i => industries.add(i.trim()));
+            s.industry.split(",").forEach((i) => industries.add(i.trim()));
           }
         });
         renderFilters();
         renderGrid(startups);
-      }
+      },
     });
 
     // Render industry checkboxes
     function renderFilters() {
       const container = document.getElementById("industry-filters");
       container.innerHTML = "";
-      [...industries].sort().forEach(ind => {
+      [...industries].sort().forEach((ind) => {
         const id = ind.replace(/\s+/g, "-");
         const div = document.createElement("div");
         div.innerHTML = `
@@ -78,21 +82,22 @@
       });
 
       // add listeners
-      document.querySelectorAll(".industry-checkbox").forEach(cb => {
+      document.querySelectorAll(".industry-checkbox").forEach((cb) => {
         cb.addEventListener("change", applyFilters);
       });
     }
 
     // Apply sidebar filters
     function applyFilters() {
-      const selected = [...document.querySelectorAll(".industry-checkbox:checked")]
-        .map(cb => cb.value);
+      const selected = [...document.querySelectorAll(".industry-checkbox:checked")].map(
+        (cb) => cb.value
+      );
       if (selected.length === 0) {
         renderGrid(startups);
         return;
       }
-      const filtered = startups.filter(s =>
-        s.industry && selected.some(ind => s.industry.includes(ind))
+      const filtered = startups.filter(
+        (s) => s.industry && selected.some((ind) => s.industry.includes(ind))
       );
       renderGrid(filtered);
     }
@@ -109,21 +114,23 @@
       }
       noResults.classList.add("hidden");
 
-      data.forEach(s => {
+      data.forEach((s) => {
         const card = document.createElement("div");
         card.className = "bg-white rounded-lg shadow p-4";
         card.innerHTML = `
           <h3 class="font-bold text-lg">${s.company_name}</h3>
           <p class="text-sm text-gray-600">${s.industry || "No industry listed"}</p>
-          ${s.domain
-            ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>`
-            : `<span class="text-gray-400">No domain</span>`}
+          ${
+            s.domain
+              ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>`
+              : `<span class="text-gray-400">No domain</span>`
+          }
         `;
         results.appendChild(card);
       });
     }
 
-    // Chat search
+    // Chat search (queries webhook)
     document.getElementById("chatSearch").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         const query = e.target.value.trim();
@@ -132,23 +139,23 @@
         fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ query })
+          body: JSON.stringify({ query }),
         })
-          .then(res => res.json())
-          .then(data => {
+          .then((res) => res.json())
+          .then((data) => {
             console.log("✅ Webhook response:", data);
             const companies =
               data.companies ||
               (Array.isArray(data) && data[0].companies) ||
               [];
 
-            const matched = startups.filter(s =>
+            const matched = startups.filter((s) =>
               companies.includes(s.company_name)
             );
 
             renderGrid(matched);
           })
-          .catch(err => {
+          .catch((err) => {
             console.error("❌ Error fetching results:", err);
             document.getElementById("noResults").classList.remove("hidden");
           });
