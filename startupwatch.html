@@ -141,7 +141,6 @@
         container.innerHTML = `<p class="text-gray-500 col-span-full">Searching...</p>`;
 
         try {
-          // 🚨 Replace with your POST webhook endpoint, not a chat endpoint
           const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook-test/startup-search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -149,8 +148,12 @@
           });
           const data = await res.json();
 
-          // Expecting webhook returns array of rows with company_name, industry, domain
-          renderGrid(data);
+          // Expecting { companies: ["Amplio", "Circularise"] }
+          const matched = startups.filter(s =>
+            data.companies && data.companies.includes(s.company_name)
+          );
+
+          renderGrid(matched);
         } catch (err) {
           container.innerHTML = `<p class="text-red-500 col-span-full">Error fetching results.</p>`;
           console.error(err);
@@ -160,3 +163,4 @@
   </script>
 </body>
 </html>
+
