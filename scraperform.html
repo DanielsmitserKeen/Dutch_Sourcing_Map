@@ -59,16 +59,42 @@
         </div>
         
         <form action="https://danielsmitserkeen.app.n8n.cloud/webhook/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST" class="space-y-4">
+          <!-- Country selector -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-            <select name="country" required class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <option value="">Select a country...</option>
+            <select name="countries" multiple required 
+                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
               <option value="Netherlands">Netherlands</option>
               <option value="Germany">Germany</option>
               <option value="France">France</option>
+              <option value="Italy">Italy</option>
+              <option value="Spain">Spain</option>
+              <option value="Poland">Poland</option>
+              <option value="Romania">Romania</option>
+              <option value="Belgium">Belgium</option>
+              <option value="Czech Republic">Czech Republic</option>
+              <option value="Greece">Greece</option>
+              <option value="Portugal">Portugal</option>
+              <option value="Sweden">Sweden</option>
+              <option value="Hungary">Hungary</option>
+              <option value="Austria">Austria</option>
+              <option value="Bulgaria">Bulgaria</option>
+              <option value="Denmark">Denmark</option>
+              <option value="Finland">Finland</option>
+              <option value="Slovakia">Slovakia</option>
+              <option value="Ireland">Ireland</option>
+              <option value="Croatia">Croatia</option>
+              <option value="Lithuania">Lithuania</option>
+              <option value="Slovenia">Slovenia</option>
+              <option value="Latvia">Latvia</option>
+              <option value="Estonia">Estonia</option>
+              <option value="Cyprus">Cyprus</option>
+              <option value="Luxembourg">Luxembourg</option>
+              <option value="Malta">Malta</option>
               <option value="UK">United Kingdom</option>
               <option value="USA">USA</option>
             </select>
+            <small class="text-gray-500">Hold Ctrl (Windows) / Cmd (Mac) to select multiple</small>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -84,55 +110,28 @@
             </div>
           </div>
 
+          <!-- Industries -->
           <div>
             <label class="block text-sm font-medium text-gray-700 mb-1">Industries</label>
             <input type="hidden" id="industriesInput" name="industries">
             <div class="flex flex-wrap gap-2" id="industryChips"></div>
+            
+            <!-- Predefined industry buttons -->
             <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
               <button type="button" onclick="toggleIndustry('SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">SaaS</button>
-              <button type="button" onclick="toggleIndustry('Vertical SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Vertical SaaS</button>
-              <button type="button" onclick="toggleIndustry('API-first')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">API-first</button>
-              <button type="button" onclick="toggleIndustry('No-Code / Low-Code')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">No-Code / Low-Code</button>
-              <button type="button" onclick="toggleIndustry('Developer Tools')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Developer Tools</button>
-              <button type="button" onclick="toggleIndustry('Marketplace Platforms')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Marketplace Platforms</button>
-              <button type="button" onclick="toggleIndustry('Open Source Software')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Open Source Software</button>
-              <button type="button" onclick="toggleIndustry('GovTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">GovTech</button>
-              <button type="button" onclick="toggleIndustry('InsurTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">InsurTech</button>
-              <button type="button" onclick="toggleIndustry('WealthTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">WealthTech</button>
-              <button type="button" onclick="toggleIndustry('Payments & Infrastructure')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Payments & Infrastructure</button>
-              <button type="button" onclick="toggleIndustry('Mobility Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Mobility Tech</button>
-              <button type="button" onclick="toggleIndustry('SpaceTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">SpaceTech</button>
-              <button type="button" onclick="toggleIndustry('Defense & Security Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Defense & Security Tech</button>
-              <button type="button" onclick="toggleIndustry('Quantum Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Quantum Tech</button>
-              <button type="button" onclick="toggleIndustry('BioTech & Life Sciences')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">BioTech & Life Sciences</button>
-              <button type="button" onclick="toggleIndustry('MedTech Devices')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">MedTech Devices</button>
-              <button type="button" onclick="toggleIndustry('Digital Therapeutics')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Digital Therapeutics</button>
-              <button type="button" onclick="toggleIndustry('Gaming & eSports')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Gaming & eSports</button>
-              <button type="button" onclick="toggleIndustry('Creator Economy')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Creator Economy</button>
-              <button type="button" onclick="toggleIndustry('Travel & Hospitality Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Travel & Hospitality Tech</button>
-              <button type="button" onclick="toggleIndustry('Manufacturing SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Manufacturing SaaS</button>
-              <button type="button" onclick="toggleIndustry('Industrial IoT & Automation')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Industrial IoT & Automation</button>
-              <button type="button" onclick="toggleIndustry('PLM / CAD / Digital Twins')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">PLM / CAD / Digital Twins</button>
-              <button type="button" onclick="toggleIndustry('Supply Chain & Procurement SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Supply Chain & Procurement SaaS</button>
-              <button type="button" onclick="toggleIndustry('Enterprise Software')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Enterprise Software</button>
-              <button type="button" onclick="toggleIndustry('AI & Machine Learning')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AI & ML</button>
-              <button type="button" onclick="toggleIndustry('Cybersecurity')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cybersecurity</button>
-              <button type="button" onclick="toggleIndustry('Data Analytics')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Data Analytics</button>
-              <button type="button" onclick="toggleIndustry('Cloud Infrastructure')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cloud Infrastructure</button>
               <button type="button" onclick="toggleIndustry('FinTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">FinTech</button>
               <button type="button" onclick="toggleIndustry('HealthTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HealthTech</button>
-              <button type="button" onclick="toggleIndustry('EdTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">EdTech</button>
-              <button type="button" onclick="toggleIndustry('HRTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HRTech</button>
-              <button type="button" onclick="toggleIndustry('MarTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">MarTech</button>
-              <button type="button" onclick="toggleIndustry('Supply Chain Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Supply Chain Tech</button>
-              <button type="button" onclick="toggleIndustry('E-commerce Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">E-commerce Tech</button>
-              <button type="button" onclick="toggleIndustry('LegalTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">LegalTech</button>
-              <button type="button" onclick="toggleIndustry('PropTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">PropTech</button>
-              <button type="button" onclick="toggleIndustry('AgriTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AgriTech</button>
-              <button type="button" onclick="toggleIndustry('ClimateTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">ClimateTech</button>
-              <button type="button" onclick="toggleIndustry('IndustrialTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IndustrialTech</button>
-              <button type="button" onclick="toggleIndustry('IoT')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IoT</button>
-              <button type="button" onclick="toggleIndustry('Productivity Tools')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Productivity Tools</button>
+              <button type="button" onclick="toggleIndustry('AI & ML')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AI & ML</button>
+              <!-- ... keep your other buttons ... -->
+            </div>
+
+            <!-- Custom industry input -->
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Add custom industries</label>
+              <input type="text" id="customIndustryInput" 
+                     placeholder="e.g. DroneTech, Food Delivery SaaS"
+                     class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     onkeydown="if(event.key==='Enter'){ addCustomIndustry(); event.preventDefault(); }">
             </div>
           </div>
 
@@ -226,8 +225,19 @@
       }
     }
 
+    function addCustomIndustry() {
+      const input = document.getElementById('customIndustryInput');
+      const value = input.value.trim();
+      if (value && !selectedIndustries.includes(value)) {
+        selectedIndustries.push(value);
+        updateIndustryChips();
+        industriesInput.value = selectedIndustries.join(',');
+        input.value = ''; // clear input
+      }
+    }
+
     // Substack Manager → send links to n8n
-const webhookUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/38add8c0-f1e3-4c96-a923-204772eee281"; // replace with your webhook
+    const webhookUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/38add8c0-f1e3-4c96-a923-204772eee281"; 
 
     async function sendLinks() {
       const textarea = document.getElementById("linksTextarea");
