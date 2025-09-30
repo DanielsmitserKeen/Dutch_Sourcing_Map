@@ -4,22 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Startup Watch</title>
-  <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            primary: '#FFFFFF',
-            secondary: '#E76200',
-          }
-        }
-      }
-    }
-  </script>
   <style>
     .industry-button.active {
       background-color: #E76200;
@@ -27,8 +14,8 @@
     }
   </style>
 </head>
-<body class="bg-primary font-sans antialiased">
-  <!-- Hero -->
+<body class="bg-white font-sans antialiased">
+  <!-- Header -->
   <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 text-center">
     <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
       Explore startups by industry
@@ -54,15 +41,20 @@
     let industries = new Set();
     let activeIndustry = "All";
 
-    // Load CSV (replace with your sheet link)
+    // Load CSV
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=753064840&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
         const parsed = Papa.parse(csv, { header: true });
         startups = parsed.data.filter(s => s.company_name && s.industry);
 
-        // Collect unique industries
-        startups.forEach(s => industries.add(s.industry.trim()));
+        // Collect unique industry tags (split by comma)
+        startups.forEach(s => {
+          s.industry.split(",").forEach(tag => {
+            industries.add(tag.trim());
+          });
+        });
+
         renderFilters();
         renderGrid();
       });
@@ -72,33 +64,27 @@
       container.innerHTML = "";
 
       // Add "All" button
-      const allBtn = document.createElement("button");
-      allBtn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 active";
-      allBtn.innerText = "All";
-      allBtn.addEventListener("click", () => {
-        activeIndustry = "All";
-        updateActiveButton(allBtn);
-        renderGrid();
-      });
+      const allBtn = createButton("All");
+      allBtn.classList.add("active");
       container.appendChild(allBtn);
 
-      // Add buttons for each industry
-      industries.forEach(industry => {
-        const btn = document.createElement("button");
-        btn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100";
-        btn.innerText = industry;
-        btn.addEventListener("click", () => {
-          activeIndustry = industry;
-          updateActiveButton(btn);
-          renderGrid();
-        });
-        container.appendChild(btn);
+      // Add unique industry buttons (alphabetical)
+      Array.from(industries).sort().forEach(ind => {
+        container.appendChild(createButton(ind));
       });
     }
 
-    function updateActiveButton(activeBtn) {
-      document.querySelectorAll(".industry-button").forEach(b => b.classList.remove("active"));
-      activeBtn.classList.add("active");
+    function createButton(label) {
+      const btn = document.createElement("button");
+      btn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100";
+      btn.innerText = label;
+      btn.addEventListener("click", () => {
+        activeIndustry = label;
+        document.querySelectorAll(".industry-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        renderGrid();
+      });
+      return btn;
     }
 
     function renderGrid() {
@@ -107,7 +93,9 @@
 
       const filtered = activeIndustry === "All" 
         ? startups 
-        : startups.filter(s => s.industry === activeIndustry);
+        : startups.filter(s => 
+            s.industry.split(",").map(tag => tag.trim()).includes(activeIndustry)
+          );
 
       if (filtered.length === 0) {
         container.innerHTML = `<p class="text-gray-500 col-span-full">No startups found in this industry.</p>`;
