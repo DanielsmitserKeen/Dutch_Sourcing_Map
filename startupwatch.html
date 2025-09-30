@@ -14,9 +14,12 @@
 
     <div class="grid grid-cols-4 gap-6">
       <!-- Sidebar filters -->
-      <aside class="col-span-1 bg-white p-4 rounded-lg shadow">
+      <aside class="col-span-1 bg-white p-4 rounded-lg shadow overflow-y-auto max-h-[85vh]">
         <h2 class="font-semibold mb-4">Filter by Industry</h2>
-        <div id="industry-filters" class="space-y-2 max-h-[70vh] overflow-y-auto"></div>
+        <div id="industry-filters" class="space-y-2"></div>
+
+        <h2 class="font-semibold mt-6 mb-4">Filter by Country</h2>
+        <div id="country-filters" class="space-y-2"></div>
       </aside>
 
       <!-- Main content -->
@@ -57,7 +60,8 @@
 
     let startups = [];
     let industries = new Set();
-    let currentResults = []; // 🔑 global state of current dataset
+    let countries = new Set();
+    let currentResults = []; // 🔑 global state
     const loadingEl = document.getElementById("loading");
 
     // Load CSV data
@@ -70,6 +74,9 @@
           if (s.industry) {
             s.industry.split(",").forEach((i) => industries.add(i.trim()));
           }
+          if (s.country) {
+            countries.add(s.country.trim());
+          }
         });
         renderFilters();
         currentResults = startups; // show all by default
@@ -78,35 +85,51 @@
     });
 
     function renderFilters() {
-      const container = document.getElementById("industry-filters");
-      container.innerHTML = "";
+      const industryContainer = document.getElementById("industry-filters");
+      industryContainer.innerHTML = "";
       [...industries].sort().forEach((ind) => {
         const id = ind.replace(/\s+/g, "-");
-        const div = document.createElement("div");
-        div.innerHTML = `
+        industryContainer.innerHTML += `
           <label class="flex items-center space-x-2">
-            <input type="checkbox" value="${ind}" id="${id}" class="industry-checkbox">
+            <input type="checkbox" value="${ind}" class="industry-checkbox">
             <span>${ind}</span>
           </label>`;
-        container.appendChild(div);
       });
 
-      document.querySelectorAll(".industry-checkbox").forEach((cb) => {
+      const countryContainer = document.getElementById("country-filters");
+      countryContainer.innerHTML = "";
+      [...countries].sort().forEach((c) => {
+        const id = c.replace(/\s+/g, "-");
+        countryContainer.innerHTML += `
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" value="${c}" class="country-checkbox">
+            <span>${c}</span>
+          </label>`;
+      });
+
+      document.querySelectorAll(".industry-checkbox, .country-checkbox").forEach((cb) => {
         cb.addEventListener("change", applyFilters);
       });
     }
 
     function applyFilters() {
-      const selected = [...document.querySelectorAll(".industry-checkbox:checked")].map(
-        (cb) => cb.value
-      );
-      if (selected.length === 0) {
-        renderGrid(currentResults);
-        return;
+      const selectedIndustries = [...document.querySelectorAll(".industry-checkbox:checked")].map(cb => cb.value);
+      const selectedCountries = [...document.querySelectorAll(".country-checkbox:checked")].map(cb => cb.value);
+
+      let filtered = currentResults;
+
+      if (selectedIndustries.length > 0) {
+        filtered = filtered.filter(
+          (s) => s.industry && selectedIndustries.some((ind) => s.industry.includes(ind))
+        );
       }
-      const filtered = currentResults.filter(
-        (s) => s.industry && selected.some((ind) => s.industry.includes(ind))
-      );
+
+      if (selectedCountries.length > 0) {
+        filtered = filtered.filter(
+          (s) => s.country && selectedCountries.includes(s.country.trim())
+        );
+      }
+
       renderGrid(filtered);
     }
 
@@ -127,6 +150,7 @@
         card.innerHTML = `
           <h3 class="font-bold text-lg">${s.company_name}</h3>
           <p class="text-sm text-gray-600">${s.industry || "No industry listed"}</p>
+          <p class="text-sm text-gray-600">${s.country || "No country listed"}</p>
           ${
             s.domain
               ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>`
@@ -167,15 +191,22 @@
 
             currentResults = matched; // 🔑 update dataset for filters
 
-            // Auto-select related industry filters
+            // Auto-select related filters
             const relatedIndustries = new Set();
+            const relatedCountries = new Set();
             matched.forEach((s) => {
               if (s.industry) {
                 s.industry.split(",").forEach((i) => relatedIndustries.add(i.trim()));
               }
+              if (s.country) {
+                relatedCountries.add(s.country.trim());
+              }
             });
             document.querySelectorAll(".industry-checkbox").forEach((cb) => {
               cb.checked = relatedIndustries.has(cb.value);
+            });
+            document.querySelectorAll(".country-checkbox").forEach((cb) => {
+              cb.checked = relatedCountries.has(cb.value);
             });
 
             renderGrid(matched);
