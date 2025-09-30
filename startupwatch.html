@@ -1,166 +1,159 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Startup Watch</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Explore startups by industry</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
 </head>
-<body class="bg-gray-50 font-sans">
-  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
-    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Explore startups by industry</h1>
+<body class="bg-gray-50 text-gray-900">
 
-    <div class="grid grid-cols-12 gap-6">
-      <!-- Sidebar -->
-      <aside class="col-span-3 bg-white p-4 border rounded-lg h-[80vh] overflow-y-auto">
-        <h2 class="text-lg font-semibold mb-4">Filter by Industry</h2>
-        <div id="industryFilters" class="space-y-2">
-          <!-- Checkboxes injected here -->
-        </div>
+  <div class="max-w-7xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-6">Explore startups by industry</h1>
+
+    <div class="grid grid-cols-4 gap-6">
+      <!-- Sidebar filters -->
+      <aside class="col-span-1 bg-white p-4 rounded-lg shadow">
+        <h2 class="font-semibold mb-4">Filter by Industry</h2>
+        <div id="industry-filters" class="space-y-2 max-h-[70vh] overflow-y-auto"></div>
       </aside>
 
-      <!-- Main Area -->
-      <main class="col-span-9">
-        <!-- Chat-style input -->
-        <div class="mb-6">
-          <label for="chatFilter" class="block text-sm font-medium text-gray-700 mb-2">
-            Describe company
-          </label>
-          <input 
-            id="chatFilter"
+      <!-- Main content -->
+      <main class="col-span-3">
+        <!-- Search bar -->
+        <div class="mb-4">
+          <input
+            id="chatSearch"
             type="text"
-            placeholder="I want to find solar panel installation companies..."
-            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 p-3"
+            placeholder="Describe company"
+            class="w-full p-3 border rounded-lg"
           />
         </div>
 
-        <!-- Startup Grid -->
-        <div id="startupGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          <!-- Cards injected here -->
-        </div>
+        <!-- Results -->
+        <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="noResults" class="text-gray-500 hidden">No startups found.</p>
       </main>
     </div>
   </div>
 
   <script>
+    const CSV_URL = "YOUR_GOOGLE_SHEET_CSV_URL_HERE";
+    const WEBHOOK_URL = "YOUR_N8N_WEBHOOK_URL_HERE";
+
     let startups = [];
     let industries = new Set();
-    let selectedIndustries = [];
 
-    // Load CSV (replace with your live Google Sheet CSV link)
-    fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=753064840&single=true&output=csv")
-      .then(res => res.text())
-      .then(csv => {
-        const parsed = Papa.parse(csv, { header: true });
-        startups = parsed.data.filter(s => s.company_name && s.industry);
-
-        // Collect unique industry tags
+    // Load CSV
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      complete: (results) => {
+        startups = results.data.filter(s => s.company_name); // drop empty rows
+        // collect industries
         startups.forEach(s => {
-          s.industry.split(",").forEach(tag => industries.add(tag.trim()));
+          if (s.industry) {
+            s.industry.split(",").forEach(i => industries.add(i.trim()));
+          }
         });
-
         renderFilters();
-        renderGrid();
+        renderGrid(startups);
+      }
+    });
+
+    // Render industry checkboxes
+    function renderFilters() {
+      const container = document.getElementById("industry-filters");
+      container.innerHTML = "";
+      [...industries].sort().forEach(ind => {
+        const id = ind.replace(/\s+/g, "-");
+        const div = document.createElement("div");
+        div.innerHTML = `
+          <label class="flex items-center space-x-2">
+            <input type="checkbox" value="${ind}" id="${id}" class="industry-checkbox">
+            <span>${ind}</span>
+          </label>`;
+        container.appendChild(div);
       });
 
-    function renderFilters() {
-      const container = document.getElementById("industryFilters");
-      container.innerHTML = "";
-
-      Array.from(industries).sort().forEach(ind => {
-        const wrapper = document.createElement("div");
-        wrapper.className = "flex items-center";
-
-        const checkbox = document.createElement("input");
-        checkbox.type = "checkbox";
-        checkbox.value = ind;
-        checkbox.className = "h-4 w-4 text-blue-600 border-gray-300 rounded";
-        checkbox.addEventListener("change", () => {
-          if (checkbox.checked) {
-            selectedIndustries.push(ind);
-          } else {
-            selectedIndustries = selectedIndustries.filter(i => i !== ind);
-          }
-          renderGrid();
-        });
-
-        const label = document.createElement("label");
-        label.innerText = ind;
-        label.className = "ml-2 text-sm text-gray-700";
-
-        wrapper.appendChild(checkbox);
-        wrapper.appendChild(label);
-        container.appendChild(wrapper);
+      // add listeners
+      document.querySelectorAll(".industry-checkbox").forEach(cb => {
+        cb.addEventListener("change", applyFilters);
       });
     }
 
-    function renderGrid(data = null) {
-      const container = document.getElementById("startupGrid");
-      container.innerHTML = "";
-
-      let filtered = data || startups;
-
-      if (!data && selectedIndustries.length > 0) {
-        filtered = startups.filter(s =>
-          selectedIndustries.some(ind =>
-            s.industry.split(",").map(tag => tag.trim()).includes(ind)
-          )
-        );
-      }
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-gray-500 col-span-full">No startups found.</p>`;
+    // Apply sidebar filters
+    function applyFilters() {
+      const selected = [...document.querySelectorAll(".industry-checkbox:checked")]
+        .map(cb => cb.value);
+      if (selected.length === 0) {
+        renderGrid(startups);
         return;
       }
+      const filtered = startups.filter(s =>
+        s.industry && selected.some(ind => s.industry.includes(ind))
+      );
+      renderGrid(filtered);
+    }
 
-      filtered.forEach(s => {
+    // Render company cards
+    function renderGrid(data) {
+      const results = document.getElementById("results");
+      const noResults = document.getElementById("noResults");
+      results.innerHTML = "";
+
+      if (!data || data.length === 0) {
+        noResults.classList.remove("hidden");
+        return;
+      }
+      noResults.classList.add("hidden");
+
+      data.forEach(s => {
         const card = document.createElement("div");
-        card.className = "p-6 bg-white border rounded-lg shadow-sm";
-
+        card.className = "bg-white rounded-lg shadow p-4";
         card.innerHTML = `
-          <h3 class="text-lg font-bold text-gray-900">${s.company_name}</h3>
-          <p class="mt-2 text-sm text-gray-600">${s.industry}</p>
-          <div class="mt-4">
-            ${s.domain 
-              ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>` 
-              : `<span class="text-gray-400 italic">No website</span>`}
-          </div>
+          <h3 class="font-bold text-lg">${s.company_name}</h3>
+          <p class="text-sm text-gray-600">${s.industry || "No industry listed"}</p>
+          ${s.domain
+            ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>`
+            : `<span class="text-gray-400">No domain</span>`}
         `;
-        container.appendChild(card);
+        results.appendChild(card);
       });
     }
 
-    // Chat-style filter
-    document.getElementById("chatFilter").addEventListener("keypress", async (e) => {
+    // Chat search
+    document.getElementById("chatSearch").addEventListener("keydown", (e) => {
       if (e.key === "Enter") {
         const query = e.target.value.trim();
         if (!query) return;
 
-        const container = document.getElementById("startupGrid");
-        container.innerHTML = `<p class="text-gray-500 col-span-full">Searching...</p>`;
+        fetch(WEBHOOK_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ query })
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("✅ Webhook response:", data);
+            const companies =
+              data.companies ||
+              (Array.isArray(data) && data[0].companies) ||
+              [];
 
-        try {
-          const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook/startup-search", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ query })
+            const matched = startups.filter(s =>
+              companies.includes(s.company_name)
+            );
+
+            renderGrid(matched);
+          })
+          .catch(err => {
+            console.error("❌ Error fetching results:", err);
+            document.getElementById("noResults").classList.remove("hidden");
           });
-          const data = await res.json();
-
-          // Expecting { companies: ["Amplio", "Circularise"] }
-          const matched = startups.filter(s =>
-            data.companies && data.companies.includes(s.company_name)
-          );
-
-          renderGrid(matched);
-        } catch (err) {
-          container.innerHTML = `<p class="text-red-500 col-span-full">Error fetching results.</p>`;
-          console.error(err);
-        }
       }
     });
   </script>
 </body>
 </html>
-
