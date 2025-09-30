@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>StartupSphere Navigator</title>
+  <title>Startup Watch</title>
   <link rel="icon" type="image/x-icon" href="/static/favicon.ico">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/feather-icons"></script>
@@ -31,102 +31,105 @@
   <!-- Hero -->
   <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 text-center">
     <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-      Explore your industry
+      Explore startups by industry
     </h1>
   </div>
 
-  <!-- Industry Tabs -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
-    <div class="flex flex-wrap justify-center gap-2">
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="All">All</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Consumer markets">Consumer markets</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Energy, utilities & resources">Energy, utilities & resources</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Financial services">Financial services</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Government & public sector">Government & public sector</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Health industries">Health industries</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Industrials & services">Industrials & services</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Private capital">Private capital</button>
-      <button class="industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100" data-industry="Technology, media & telecom">Technology, media & telecom</button>
+  <!-- Industry Filters -->
+  <div id="filters" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
+    <div class="flex flex-wrap justify-center gap-2" id="industryButtons">
+      <!-- Buttons injected here -->
     </div>
   </div>
 
-  <!-- Industry Sections -->
-  <div id="industrySections" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid gap-10 sm:grid-cols-2 lg:grid-cols-3">
-    <!-- Filled dynamically with JS -->
+  <!-- Startup Grid -->
+  <div id="startupGrid" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+    <!-- Cards injected here -->
   </div>
 
   <script>
     feather.replace();
 
-    const industryDescriptions = {
-      "Consumer markets": "Think big, move fast. Consumer companies must be bold, act swiftly, and adapt to shifting demands.",
-      "Energy, utilities & resources": "Shaping a sustainable energy future with renewables, storage, and smart infrastructure.",
-      "Financial services": "Rewire for a digital-first world with fintech, neobanks, and investment platforms.",
-      "Government & public sector": "Deliver smarter solutions and public innovation for global societies.",
-      "Health industries": "Reinventing healthcare with diagnostics, devices, biotech, and digital therapeutics.",
-      "Industrials & services": "Automation, robotics, and AI powering next-generation industries.",
-      "Private capital": "Driving investment across growth, buyout, and venture strategies.",
-      "Technology, media & telecom": "Accelerating the digital era with AI, software, and connectivity.",
-    };
-
     let startups = [];
+    let industries = new Set();
+    let activeIndustry = "All";
 
-    // Load CSV
+    // Load CSV (replace with your sheet link)
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=753064840&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
         const parsed = Papa.parse(csv, { header: true });
-        startups = parsed.data;
-        renderSections("All");
+        startups = parsed.data.filter(s => s.company_name && s.industry);
+
+        // Collect unique industries
+        startups.forEach(s => industries.add(s.industry.trim()));
+        renderFilters();
+        renderGrid();
       });
 
-    function renderSections(industryFilter) {
-      const container = document.getElementById("industrySections");
+    function renderFilters() {
+      const container = document.getElementById("industryButtons");
       container.innerHTML = "";
 
-      // Group startups by industry
-      const grouped = {};
-      startups.forEach(s => {
-        const name = s["company_name"];
-        const industry = s["industry"];
-        const domain = s["domain"];
-
-        if (!name || !industry) return;
-        if (!grouped[industry]) grouped[industry] = [];
-        grouped[industry].push({ name, domain });
+      // Add "All" button
+      const allBtn = document.createElement("button");
+      allBtn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100 active";
+      allBtn.innerText = "All";
+      allBtn.addEventListener("click", () => {
+        activeIndustry = "All";
+        updateActiveButton(allBtn);
+        renderGrid();
       });
+      container.appendChild(allBtn);
 
-      for (const [industry, list] of Object.entries(grouped)) {
-        if (industryFilter !== "All" && industry !== industryFilter) continue;
-
-        const div = document.createElement("div");
-        div.className = "p-6 bg-white border rounded-lg shadow-sm flex flex-col justify-between";
-
-        div.innerHTML = `
-          <h3 class="text-lg font-bold text-gray-900">${industry}</h3>
-          <p class="mt-2 text-sm text-gray-600">${industryDescriptions[industry] || ""}</p>
-          <ul class="mt-4 space-y-2 text-sm text-gray-700">
-            ${list.map(s => `
-              <li>
-                ${s.domain 
-                  ? `<a href="https://${s.domain}" target="_blank" class="text-secondary hover:underline">${s.name}</a>` 
-                  : s.name}
-              </li>
-            `).join("")}
-          </ul>
-        `;
-        container.appendChild(div);
-      }
+      // Add buttons for each industry
+      industries.forEach(industry => {
+        const btn = document.createElement("button");
+        btn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100";
+        btn.innerText = industry;
+        btn.addEventListener("click", () => {
+          activeIndustry = industry;
+          updateActiveButton(btn);
+          renderGrid();
+        });
+        container.appendChild(btn);
+      });
     }
 
-    // Industry button filter
-    document.querySelectorAll(".industry-button").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll(".industry-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        renderSections(btn.dataset.industry);
+    function updateActiveButton(activeBtn) {
+      document.querySelectorAll(".industry-button").forEach(b => b.classList.remove("active"));
+      activeBtn.classList.add("active");
+    }
+
+    function renderGrid() {
+      const container = document.getElementById("startupGrid");
+      container.innerHTML = "";
+
+      const filtered = activeIndustry === "All" 
+        ? startups 
+        : startups.filter(s => s.industry === activeIndustry);
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<p class="text-gray-500 col-span-full">No startups found in this industry.</p>`;
+        return;
+      }
+
+      filtered.forEach(s => {
+        const card = document.createElement("div");
+        card.className = "p-6 bg-white border rounded-lg shadow-sm flex flex-col justify-between";
+
+        card.innerHTML = `
+          <h3 class="text-lg font-bold text-gray-900">${s.company_name}</h3>
+          <p class="mt-2 text-sm text-gray-600">${s.industry}</p>
+          <div class="mt-4">
+            ${s.domain 
+              ? `<a href="https://${s.domain}" target="_blank" class="text-secondary hover:underline">${s.domain}</a>` 
+              : `<span class="text-gray-400 italic">No website</span>`}
+          </div>
+        `;
+        container.appendChild(card);
       });
-    });
+    }
   </script>
 </body>
 </html>
