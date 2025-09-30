@@ -57,6 +57,7 @@
 
     let startups = [];
     let industries = new Set();
+    let currentResults = []; // 🔑 global state of current dataset
     const loadingEl = document.getElementById("loading");
 
     // Load CSV data
@@ -71,7 +72,8 @@
           }
         });
         renderFilters();
-        renderGrid(startups);
+        currentResults = startups; // show all by default
+        renderGrid(currentResults);
       },
     });
 
@@ -99,10 +101,10 @@
         (cb) => cb.value
       );
       if (selected.length === 0) {
-        renderGrid(startups);
+        renderGrid(currentResults);
         return;
       }
-      const filtered = startups.filter(
+      const filtered = currentResults.filter(
         (s) => s.industry && selected.some((ind) => s.industry.includes(ind))
       );
       renderGrid(filtered);
@@ -162,6 +164,8 @@
             const matched = startups.filter((s) =>
               companies.includes(s.company_name)
             );
+
+            currentResults = matched; // 🔑 update dataset for filters
 
             // Auto-select related industry filters
             const relatedIndustries = new Set();
