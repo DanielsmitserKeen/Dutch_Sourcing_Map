@@ -141,7 +141,7 @@
         container.innerHTML = `<p class="text-gray-500 col-span-full">Searching...</p>`;
 
         try {
-          const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook-test/startup-search", {
+          const res = await fetch("https://danielsmitserkeen.app.n8n.cloud/webhook/startup-search", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ query })
