@@ -5,54 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Startup Watch</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/feather-icons"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    .industry-button.active {
-      background-color: #E76200;
-      color: white;
-    }
-  </style>
 </head>
-<body class="bg-white font-sans antialiased">
-  <!-- Header -->
-  <div class="max-w-7xl mx-auto py-12 px-4 sm:py-16 sm:px-6 lg:px-8 text-center">
-    <h1 class="text-4xl font-extrabold tracking-tight text-gray-900 sm:text-5xl">
-      Explore startups by industry
-    </h1>
-  </div>
+<body class="bg-gray-50 font-sans">
+  <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+    <h1 class="text-3xl font-extrabold text-gray-900 mb-6">Explore startups by industry</h1>
 
-  <!-- Industry Filters -->
-  <div id="filters" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 text-center">
-    <div class="flex flex-wrap justify-center gap-2" id="industryButtons">
-      <!-- Buttons injected here -->
+    <div class="grid grid-cols-12 gap-6">
+      <!-- Sidebar -->
+      <aside class="col-span-3 bg-white p-4 border rounded-lg h-[80vh] overflow-y-auto">
+        <h2 class="text-lg font-semibold mb-4">Filter by Industry</h2>
+        <div id="industryFilters" class="space-y-2">
+          <!-- Checkboxes injected here -->
+        </div>
+      </aside>
+
+      <!-- Startup Grid -->
+      <main class="col-span-9">
+        <div id="startupGrid" class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <!-- Cards injected here -->
+        </div>
+      </main>
     </div>
   </div>
 
-  <!-- Startup Grid -->
-  <div id="startupGrid" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-    <!-- Cards injected here -->
-  </div>
-
   <script>
-    feather.replace();
-
     let startups = [];
     let industries = new Set();
-    let activeIndustry = "All";
+    let selectedIndustries = [];
 
-    // Load CSV
+    // Load CSV (replace with your live Google Sheet CSV link)
     fetch("https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?gid=753064840&single=true&output=csv")
       .then(res => res.text())
       .then(csv => {
         const parsed = Papa.parse(csv, { header: true });
         startups = parsed.data.filter(s => s.company_name && s.industry);
 
-        // Collect unique industry tags (split by comma)
+        // Collect unique industry tags
         startups.forEach(s => {
-          s.industry.split(",").forEach(tag => {
-            industries.add(tag.trim());
-          });
+          s.industry.split(",").forEach(tag => industries.add(tag.trim()));
         });
 
         renderFilters();
@@ -60,58 +51,65 @@
       });
 
     function renderFilters() {
-      const container = document.getElementById("industryButtons");
+      const container = document.getElementById("industryFilters");
       container.innerHTML = "";
 
-      // Add "All" button
-      const allBtn = createButton("All");
-      allBtn.classList.add("active");
-      container.appendChild(allBtn);
-
-      // Add unique industry buttons (alphabetical)
       Array.from(industries).sort().forEach(ind => {
-        container.appendChild(createButton(ind));
-      });
-    }
+        const wrapper = document.createElement("div");
+        wrapper.className = "flex items-center";
 
-    function createButton(label) {
-      const btn = document.createElement("button");
-      btn.className = "industry-button px-4 py-2 rounded-full border border-gray-300 text-sm text-gray-700 hover:bg-gray-100";
-      btn.innerText = label;
-      btn.addEventListener("click", () => {
-        activeIndustry = label;
-        document.querySelectorAll(".industry-button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-        renderGrid();
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.value = ind;
+        checkbox.className = "h-4 w-4 text-blue-600 border-gray-300 rounded";
+        checkbox.addEventListener("change", () => {
+          if (checkbox.checked) {
+            selectedIndustries.push(ind);
+          } else {
+            selectedIndustries = selectedIndustries.filter(i => i !== ind);
+          }
+          renderGrid();
+        });
+
+        const label = document.createElement("label");
+        label.innerText = ind;
+        label.className = "ml-2 text-sm text-gray-700";
+
+        wrapper.appendChild(checkbox);
+        wrapper.appendChild(label);
+        container.appendChild(wrapper);
       });
-      return btn;
     }
 
     function renderGrid() {
       const container = document.getElementById("startupGrid");
       container.innerHTML = "";
 
-      const filtered = activeIndustry === "All" 
-        ? startups 
-        : startups.filter(s => 
-            s.industry.split(",").map(tag => tag.trim()).includes(activeIndustry)
-          );
+      let filtered = startups;
+
+      if (selectedIndustries.length > 0) {
+        filtered = startups.filter(s =>
+          selectedIndustries.some(ind =>
+            s.industry.split(",").map(tag => tag.trim()).includes(ind)
+          )
+        );
+      }
 
       if (filtered.length === 0) {
-        container.innerHTML = `<p class="text-gray-500 col-span-full">No startups found in this industry.</p>`;
+        container.innerHTML = `<p class="text-gray-500 col-span-full">No startups found.</p>`;
         return;
       }
 
       filtered.forEach(s => {
         const card = document.createElement("div");
-        card.className = "p-6 bg-white border rounded-lg shadow-sm flex flex-col justify-between";
+        card.className = "p-6 bg-white border rounded-lg shadow-sm";
 
         card.innerHTML = `
           <h3 class="text-lg font-bold text-gray-900">${s.company_name}</h3>
           <p class="mt-2 text-sm text-gray-600">${s.industry}</p>
           <div class="mt-4">
             ${s.domain 
-              ? `<a href="https://${s.domain}" target="_blank" class="text-secondary hover:underline">${s.domain}</a>` 
+              ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>` 
               : `<span class="text-gray-400 italic">No website</span>`}
           </div>
         `;
