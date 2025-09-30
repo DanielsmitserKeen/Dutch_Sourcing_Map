@@ -59,44 +59,46 @@
         </div>
         
         <form action="https://danielsmitserkeen.app.n8n.cloud/webhook/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST" class="space-y-4">
-          <!-- Country selector -->
+          <!-- Country chips -->
           <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">Country</label>
-            <select name="countries" multiple required 
-                    class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-              <option value="Netherlands">Netherlands</option>
-              <option value="Germany">Germany</option>
-              <option value="France">France</option>
-              <option value="Italy">Italy</option>
-              <option value="Spain">Spain</option>
-              <option value="Poland">Poland</option>
-              <option value="Romania">Romania</option>
-              <option value="Belgium">Belgium</option>
-              <option value="Czech Republic">Czech Republic</option>
-              <option value="Greece">Greece</option>
-              <option value="Portugal">Portugal</option>
-              <option value="Sweden">Sweden</option>
-              <option value="Hungary">Hungary</option>
-              <option value="Austria">Austria</option>
-              <option value="Bulgaria">Bulgaria</option>
-              <option value="Denmark">Denmark</option>
-              <option value="Finland">Finland</option>
-              <option value="Slovakia">Slovakia</option>
-              <option value="Ireland">Ireland</option>
-              <option value="Croatia">Croatia</option>
-              <option value="Lithuania">Lithuania</option>
-              <option value="Slovenia">Slovenia</option>
-              <option value="Latvia">Latvia</option>
-              <option value="Estonia">Estonia</option>
-              <option value="Cyprus">Cyprus</option>
-              <option value="Luxembourg">Luxembourg</option>
-              <option value="Malta">Malta</option>
-              <option value="UK">United Kingdom</option>
-              <option value="USA">USA</option>
-            </select>
-            <small class="text-gray-500">Hold Ctrl (Windows) / Cmd (Mac) to select multiple</small>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Countries</label>
+            <input type="hidden" id="countriesInput" name="countries">
+            <div class="flex flex-wrap gap-2" id="countryChips"></div>
+            <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
+              <!-- EU countries + UK + USA -->
+              <button type="button" onclick="toggleCountry('Netherlands')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Netherlands</button>
+              <button type="button" onclick="toggleCountry('Germany')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Germany</button>
+              <button type="button" onclick="toggleCountry('France')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">France</button>
+              <button type="button" onclick="toggleCountry('Italy')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Italy</button>
+              <button type="button" onclick="toggleCountry('Spain')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Spain</button>
+              <button type="button" onclick="toggleCountry('Poland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Poland</button>
+              <button type="button" onclick="toggleCountry('Romania')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Romania</button>
+              <button type="button" onclick="toggleCountry('Belgium')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Belgium</button>
+              <button type="button" onclick="toggleCountry('Czech Republic')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Czech Republic</button>
+              <button type="button" onclick="toggleCountry('Greece')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Greece</button>
+              <button type="button" onclick="toggleCountry('Portugal')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Portugal</button>
+              <button type="button" onclick="toggleCountry('Sweden')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Sweden</button>
+              <button type="button" onclick="toggleCountry('Hungary')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Hungary</button>
+              <button type="button" onclick="toggleCountry('Austria')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Austria</button>
+              <button type="button" onclick="toggleCountry('Bulgaria')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Bulgaria</button>
+              <button type="button" onclick="toggleCountry('Denmark')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Denmark</button>
+              <button type="button" onclick="toggleCountry('Finland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Finland</button>
+              <button type="button" onclick="toggleCountry('Slovakia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Slovakia</button>
+              <button type="button" onclick="toggleCountry('Ireland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Ireland</button>
+              <button type="button" onclick="toggleCountry('Croatia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Croatia</button>
+              <button type="button" onclick="toggleCountry('Lithuania')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Lithuania</button>
+              <button type="button" onclick="toggleCountry('Slovenia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Slovenia</button>
+              <button type="button" onclick="toggleCountry('Latvia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Latvia</button>
+              <button type="button" onclick="toggleCountry('Estonia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Estonia</button>
+              <button type="button" onclick="toggleCountry('Cyprus')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Cyprus</button>
+              <button type="button" onclick="toggleCountry('Luxembourg')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Luxembourg</button>
+              <button type="button" onclick="toggleCountry('Malta')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Malta</button>
+              <button type="button" onclick="toggleCountry('United Kingdom')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">United Kingdom</button>
+              <button type="button" onclick="toggleCountry('USA')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">USA</button>
+            </div>
           </div>
 
+          <!-- Pages/posts -->
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Pages to Scrape</label>
@@ -116,13 +118,28 @@
             <input type="hidden" id="industriesInput" name="industries">
             <div class="flex flex-wrap gap-2" id="industryChips"></div>
             
-            <!-- Predefined industry buttons -->
+            <!-- Full industry list back -->
             <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
               <button type="button" onclick="toggleIndustry('SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">SaaS</button>
+              <button type="button" onclick="toggleIndustry('Enterprise Software')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Enterprise Software</button>
+              <button type="button" onclick="toggleIndustry('AI & ML')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AI & ML</button>
+              <button type="button" onclick="toggleIndustry('Cybersecurity')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cybersecurity</button>
+              <button type="button" onclick="toggleIndustry('Data Analytics')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Data Analytics</button>
+              <button type="button" onclick="toggleIndustry('Cloud Infrastructure')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cloud Infrastructure</button>
               <button type="button" onclick="toggleIndustry('FinTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">FinTech</button>
               <button type="button" onclick="toggleIndustry('HealthTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HealthTech</button>
-              <button type="button" onclick="toggleIndustry('AI & ML')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AI & ML</button>
-              <!-- ... keep your other buttons ... -->
+              <button type="button" onclick="toggleIndustry('EdTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">EdTech</button>
+              <button type="button" onclick="toggleIndustry('HRTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HRTech</button>
+              <button type="button" onclick="toggleIndustry('MarTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">MarTech</button>
+              <button type="button" onclick="toggleIndustry('Supply Chain Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Supply Chain Tech</button>
+              <button type="button" onclick="toggleIndustry('E-commerce Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">E-commerce Tech</button>
+              <button type="button" onclick="toggleIndustry('LegalTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">LegalTech</button>
+              <button type="button" onclick="toggleIndustry('PropTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">PropTech</button>
+              <button type="button" onclick="toggleIndustry('AgriTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AgriTech</button>
+              <button type="button" onclick="toggleIndustry('ClimateTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">ClimateTech</button>
+              <button type="button" onclick="toggleIndustry('IndustrialTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IndustrialTech</button>
+              <button type="button" onclick="toggleIndustry('IoT')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IoT</button>
+              <button type="button" onclick="toggleIndustry('Productivity Tools')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Productivity Tools</button>
             </div>
 
             <!-- Custom industry input -->
@@ -183,58 +200,48 @@
     // Initialize feather icons
     feather.replace();
 
-    // LinkedIn Industry Selection
-    const selectedIndustries = [];
-    const industriesInput = document.getElementById('industriesInput');
-    const industryChips = document.getElementById('industryChips');
+    // ----- COUNTRY CHIP LOGIC -----
+    const selectedCountries = [];
+    const countriesInput = document.getElementById('countriesInput');
+    const countryChips = document.getElementById('countryChips');
 
-    function toggleIndustry(industry) {
-      const index = selectedIndustries.indexOf(industry);
+    function toggleCountry(country) {
+      const index = selectedCountries.indexOf(country);
       if (index === -1) {
-        selectedIndustries.push(industry);
+        selectedCountries.push(country);
       } else {
-        selectedIndustries.splice(index, 1);
+        selectedCountries.splice(index, 1);
       }
-      updateIndustryChips();
-      industriesInput.value = selectedIndustries.join(',');
+      updateCountryChips();
+      countriesInput.value = selectedCountries.join(',');
     }
 
-    function updateIndustryChips() {
-      industryChips.innerHTML = '';
-      selectedIndustries.forEach(industry => {
+    function updateCountryChips() {
+      countryChips.innerHTML = '';
+      selectedCountries.forEach(country => {
         const chip = document.createElement('div');
-        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm';
-        chip.innerHTML = `${industry} <button onclick="removeIndustry('${industry}')" class="ml-1 text-blue-600 hover:text-blue-800">&times;</button>`;
-        industryChips.appendChild(chip);
+        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm';
+        chip.innerHTML = `${country} <button onclick="removeCountry('${country}')" class="ml-1 text-green-600 hover:text-green-800">&times;</button>`;
+        countryChips.appendChild(chip);
       });
 
-      if (selectedIndustries.length === 0) {
+      if (selectedCountries.length === 0) {
         const placeholder = document.createElement('div');
         placeholder.className = 'text-gray-500 text-sm';
-        placeholder.textContent = 'No industries selected';
-        industryChips.appendChild(placeholder);
+        placeholder.textContent = 'No countries selected';
+        countryChips.appendChild(placeholder);
       }
     }
 
-    function removeIndustry(industry) {
-      const index = selectedIndustries.indexOf(industry);
+    function removeCountry(country) {
+      const index = selectedCountries.indexOf(country);
       if (index !== -1) {
-        selectedIndustries.splice(index, 1);
-        updateIndustryChips();
-        industriesInput.value = selectedIndustries.join(',');
+        selectedCountries.splice(index, 1);
+        updateCountryChips();
+        countriesInput.value = selectedCountries.join(',');
       }
     }
 
-    function addCustomIndustry() {
-      const input = document.getElementById('customIndustryInput');
-      const value = input.value.trim();
-      if (value && !selectedIndustries.includes(value)) {
-        selectedIndustries.push(value);
-        updateIndustryChips();
-        industriesInput.value = selectedIndustries.join(',');
-        input.value = ''; // clear input
-      }
-    }
 
     // Substack Manager → send links to n8n
     const webhookUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/38add8c0-f1e3-4c96-a923-204772eee281"; 
