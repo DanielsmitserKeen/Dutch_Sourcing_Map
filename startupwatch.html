@@ -87,9 +87,13 @@
       // Group startups by industry
       const grouped = {};
       startups.forEach(s => {
-        if (!s.name || !s.industry) return;
-        if (!grouped[s.industry]) grouped[s.industry] = [];
-        grouped[s.industry].push(s);
+        const name = s["company_name"];
+        const industry = s["industry"];
+        const domain = s["domain"];
+
+        if (!name || !industry) return;
+        if (!grouped[industry]) grouped[industry] = [];
+        grouped[industry].push({ name, domain });
       });
 
       for (const [industry, list] of Object.entries(grouped)) {
