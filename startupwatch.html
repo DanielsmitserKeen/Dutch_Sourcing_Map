@@ -39,6 +39,7 @@
   </div>
 
   <script>
+  document.addEventListener("DOMContentLoaded", () => {
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vTEIrT3TH2GL4XngIpNOqqMptIU2N66LwPqXbg86MFOX6mxnr5SWIsGa7lYtrzuP1mex8n4qjU6bS3Z/pub?output=csv";
 
@@ -136,12 +137,17 @@
         const query = e.target.value.trim();
         if (!query) return;
 
+        console.log("🔎 Searching for:", query);
+
         fetch(WEBHOOK_URL, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query }),
         })
-          .then((res) => res.json())
+          .then((res) => {
+            if (!res.ok) throw new Error("Network response was not ok");
+            return res.json();
+          })
           .then((data) => {
             console.log("✅ Webhook response:", data);
             const companies =
@@ -161,6 +167,7 @@
           });
       }
     });
+  });
   </script>
 </body>
 </html>
