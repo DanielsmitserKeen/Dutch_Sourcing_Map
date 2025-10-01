@@ -3,46 +3,93 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Explore startups by industry</title>
+  <title>VC Startup Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body {
+      background: linear-gradient(to bottom right, #f9fafb, #eef2ff);
+    }
+    .startup-card {
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .startup-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+    }
+  </style>
 </head>
-<body class="bg-gray-50 text-gray-900">
+<body class="text-gray-900">
+
+  <!-- Header -->
+  <header class="bg-white shadow sticky top-0 z-10">
+    <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+      <h1 class="text-2xl font-extrabold text-indigo-600">🚀 VC Startup Hub</h1>
+      <p class="text-sm text-gray-500 hidden md:block">Scouting tomorrow’s winners today</p>
+    </div>
+  </header>
 
   <div class="max-w-7xl mx-auto p-6">
-    <h1 class="text-2xl font-bold mb-6">Explore startups by industry</h1>
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+      <div class="bg-white rounded-lg p-4 shadow text-center">
+        <h3 class="text-xl font-bold text-indigo-600" id="stat-startups">0</h3>
+        <p class="text-sm text-gray-500">Startups</p>
+      </div>
+      <div class="bg-white rounded-lg p-4 shadow text-center">
+        <h3 class="text-xl font-bold text-indigo-600" id="stat-industries">0</h3>
+        <p class="text-sm text-gray-500">Industries</p>
+      </div>
+      <div class="bg-white rounded-lg p-4 shadow text-center">
+        <h3 class="text-xl font-bold text-indigo-600">Live</h3>
+        <p class="text-sm text-gray-500">Dealflow Tracker</p>
+      </div>
+      <div class="bg-white rounded-lg p-4 shadow text-center">
+        <h3 class="text-xl font-bold text-indigo-600">Beta</h3>
+        <p class="text-sm text-gray-500">Save Deals</p>
+      </div>
+    </div>
 
     <div class="grid grid-cols-4 gap-6">
       <!-- Sidebar filters -->
       <aside class="col-span-1 bg-white p-4 rounded-lg shadow">
-        <h2 class="font-semibold mb-4">Filter by Industry</h2>
+        <h2 class="font-semibold mb-4 text-gray-800">Filter by Industry</h2>
         <div id="industry-filters" class="space-y-2 max-h-[70vh] overflow-y-auto"></div>
       </aside>
 
       <!-- Main content -->
-      <main class="col-span-3">
+      <main class="col-span-3 space-y-6">
         <!-- Search bar -->
-        <div class="mb-4">
+        <div class="relative">
           <input
             id="chatSearch"
             type="text"
-            placeholder="Describe company"
-            class="w-full p-3 border rounded-lg"
+            placeholder="🔍 Search startups (e.g. AI fintech in Germany)"
+            class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
           />
         </div>
 
         <!-- Loading indicator -->
-        <div id="loading" class="hidden flex items-center space-x-2 text-blue-600 mb-4">
-          <svg class="animate-spin h-5 w-5 text-blue-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+        <div id="loading" class="hidden flex items-center space-x-2 text-indigo-600 mb-4">
+          <svg class="animate-spin h-5 w-5 text-indigo-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
             <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
             <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
           </svg>
           <span>Searching...</span>
         </div>
 
+        <!-- Featured section -->
+        <section>
+          <h2 class="text-lg font-semibold mb-2">🔥 Recently Funded Startups</h2>
+          <div id="featured" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+        </section>
+
         <!-- Results -->
-        <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        <p id="noResults" class="text-gray-500 hidden">No startups found.</p>
+        <section>
+          <h2 class="text-lg font-semibold mb-2">📊 Results</h2>
+          <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+          <p id="noResults" class="text-gray-500 hidden">No startups found.</p>
+        </section>
       </main>
     </div>
   </div>
@@ -57,23 +104,36 @@
 
     let startups = [];
     let industries = new Set();
-    let currentResults = []; // 🔑 global state of current dataset
+    let currentResults = [];
     const loadingEl = document.getElementById("loading");
 
-    // Load CSV data
     Papa.parse(CSV_URL, {
       download: true,
       header: true,
       complete: (results) => {
         startups = results.data.filter((s) => s.company_name);
+
+        // collect industries
         startups.forEach((s) => {
           if (s.industry) {
             s.industry.split(",").forEach((i) => industries.add(i.trim()));
           }
         });
+
         renderFilters();
-        currentResults = startups; // show all by default
+        currentResults = startups;
         renderGrid(currentResults);
+
+        // 🔥 Featured = strictly based on latestFundingDate
+        const funded = startups
+          .filter((s) => s.latestFundingDate) // must have a date
+          .sort((a, b) => new Date(b.latestFundingDate) - new Date(a.latestFundingDate))
+          .slice(0, 4);
+        renderFeatured(funded);
+
+        // update stats
+        document.getElementById("stat-startups").textContent = startups.length;
+        document.getElementById("stat-industries").textContent = industries.size;
       },
     });
 
@@ -90,7 +150,6 @@
           </label>`;
         container.appendChild(div);
       });
-
       document.querySelectorAll(".industry-checkbox").forEach((cb) => {
         cb.addEventListener("change", applyFilters);
       });
@@ -123,17 +182,48 @@
 
       data.forEach((s) => {
         const card = document.createElement("div");
-        card.className = "bg-white rounded-lg shadow p-4";
+        card.className = "startup-card bg-white rounded-lg shadow p-4 flex flex-col justify-between";
+        card.innerHTML = `
+          <div>
+            <h3 class="font-bold text-lg">${s.company_name}</h3>
+            <p class="text-sm text-gray-600 mb-2">${s.industry || "No industry listed"}</p>
+            ${
+              s.domain
+                ? `<a href="https://${s.domain}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`
+                : `<span class="text-gray-400">No domain</span>`
+            }
+          </div>
+          <button class="mt-3 text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">+ Save Deal</button>
+        `;
+        results.appendChild(card);
+      });
+    }
+
+    function renderFeatured(data) {
+      const featured = document.getElementById("featured");
+      featured.innerHTML = "";
+      if (data.length === 0) {
+        featured.innerHTML = `<p class="text-gray-500">No recent funding rounds yet.</p>`;
+        return;
+      }
+      data.forEach((s) => {
+        const card = document.createElement("div");
+        card.className = "startup-card bg-gradient-to-r from-indigo-50 to-white border-l-4 border-indigo-500 rounded-lg p-4 shadow";
         card.innerHTML = `
           <h3 class="font-bold text-lg">${s.company_name}</h3>
           <p class="text-sm text-gray-600">${s.industry || "No industry listed"}</p>
           ${
             s.domain
-              ? `<a href="https://${s.domain}" target="_blank" class="text-blue-600 hover:underline">${s.domain}</a>`
+              ? `<a href="https://${s.domain}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`
               : `<span class="text-gray-400">No domain</span>`
           }
+          <div class="mt-2 text-sm text-gray-800">
+            ${s.fundingStage ? `<span class="font-semibold">${s.fundingStage}</span>` : ""}
+            ${s.fundingAmount ? ` • ${s.fundingAmount}` : ""}
+            ${s.latestFundingDate ? ` <span class="text-gray-500">(${s.latestFundingDate})</span>` : ""}
+          </div>
         `;
-        results.appendChild(card);
+        featured.appendChild(card);
       });
     }
 
@@ -142,7 +232,6 @@
         const query = e.target.value.trim();
         if (!query) return;
 
-        console.log("🔎 Searching for:", query);
         loadingEl.classList.remove("hidden");
 
         fetch(WEBHOOK_URL, {
@@ -155,7 +244,6 @@
             return res.json();
           })
           .then((data) => {
-            console.log("✅ Webhook response:", data);
             const companies =
               data.companies ||
               (Array.isArray(data) && data[0].companies) ||
@@ -165,9 +253,8 @@
               companies.includes(s.company_name)
             );
 
-            currentResults = matched; // 🔑 update dataset for filters
+            currentResults = matched;
 
-            // Auto-select related industry filters
             const relatedIndustries = new Set();
             matched.forEach((s) => {
               if (s.industry) {
@@ -180,8 +267,7 @@
 
             renderGrid(matched);
           })
-          .catch((err) => {
-            console.error("❌ Error fetching results:", err);
+          .catch(() => {
             document.getElementById("noResults").classList.remove("hidden");
           })
           .finally(() => {
