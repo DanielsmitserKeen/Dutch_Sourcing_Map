@@ -3,89 +3,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>VC Startup Hub</title>
+  <title>VC Startup Hub – Intelligence Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
     body {
-      background: linear-gradient(to bottom right, #f9fafb, #eef2ff);
+      background: #f8fafc;
     }
     .startup-card {
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      transition: border-color 0.2s ease, transform 0.15s ease;
+      cursor: pointer;
     }
     .startup-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 25px -5px rgba(0, 0, 0, 0.1);
+      border-color: #475569;
+      transform: translateY(-2px);
+    }
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.7);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 50;
     }
   </style>
 </head>
-<body class="text-gray-900">
+<body class="text-slate-900">
 
   <!-- Header -->
-  <header class="bg-white shadow sticky top-0 z-10">
+  <header class="bg-slate-900 shadow">
     <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
-      <h1 class="text-2xl font-extrabold text-indigo-600">🚀 Keen Startup Spot</h1>
-      <p class="text-sm text-gray-500 hidden md:block">Scouting tomorrow’s winners today</p>
+      <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
+      <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
     </div>
   </header>
 
-  <div class="max-w-7xl mx-auto p-6">
-    <!-- Stats -->
-    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-      <div class="bg-white rounded-lg p-4 shadow text-center">
-        <h3 class="text-xl font-bold text-indigo-600" id="stat-startups">0</h3>
-        <p class="text-sm text-gray-500">Startups</p>
+  <div class="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
+    <!-- Sidebar -->
+    <aside class="col-span-1 bg-white border border-slate-200 rounded-lg p-4 space-y-6">
+      <div>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Score</h2>
+        <div id="thesis-filters" class="space-y-1 text-sm"></div>
       </div>
-      <div class="bg-white rounded-lg p-4 shadow text-center">
-        <h3 class="text-xl font-bold text-indigo-600" id="stat-theses">0</h3>
-        <p class="text-sm text-gray-500">Unique Theses</p>
+      <div>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Founder Score</h2>
+        <div id="founder-filters" class="space-y-1 text-sm"></div>
       </div>
-      <div class="bg-white rounded-lg p-4 shadow text-center">
-        <h3 class="text-xl font-bold text-indigo-600">Live</h3>
-        <p class="text-sm text-gray-500">Dealflow Tracker</p>
-      </div>
-      <div class="bg-white rounded-lg p-4 shadow text-center">
-        <h3 class="text-xl font-bold text-indigo-600">Beta</h3>
-        <p class="text-sm text-gray-500">Save Deals</p>
-      </div>
-    </div>
+    </aside>
 
-    <div class="grid grid-cols-4 gap-6">
-      <!-- Sidebar filters -->
-      <aside class="col-span-1 bg-white p-4 rounded-lg shadow space-y-6">
-        <div>
-          <h2 class="font-semibold mb-3 text-gray-800">Filter by Thesis Score</h2>
-          <div id="thesis-filters" class="space-y-1"></div>
+    <!-- Main content -->
+    <main class="col-span-3 space-y-6">
+      <!-- Stats -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+          <h3 class="text-2xl font-semibold text-slate-900" id="stat-startups">0</h3>
+          <p class="text-xs text-slate-500 uppercase">Startups</p>
         </div>
-        <div>
-          <h2 class="font-semibold mb-3 text-gray-800">Filter by Founder Score</h2>
-          <div id="founder-filters" class="space-y-1"></div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+          <h3 class="text-2xl font-semibold text-slate-900" id="stat-theses">0</h3>
+          <p class="text-xs text-slate-500 uppercase">Unique Theses</p>
         </div>
-        <div>
-          <h2 class="font-semibold mb-3 text-gray-800">Filter by Thesis Hits</h2>
-          <div id="hits-filters" class="space-y-1 max-h-[30vh] overflow-y-auto"></div>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+          <h3 class="text-2xl font-semibold text-emerald-600">Live</h3>
+          <p class="text-xs text-slate-500 uppercase">Tracker</p>
         </div>
-      </aside>
+        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+          <h3 class="text-2xl font-semibold text-amber-600">Beta</h3>
+          <p class="text-xs text-slate-500 uppercase">Save Deals</p>
+        </div>
+      </div>
 
-      <!-- Main content -->
-      <main class="col-span-3 space-y-6">
-        <!-- Search bar -->
-        <div class="relative">
-          <input
-            id="chatSearch"
-            type="text"
-            placeholder="🔍 Search startups by name, domain, or reasoning"
-            class="w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
+      <!-- Search -->
+      <div class="relative">
+        <input
+          id="chatSearch"
+          type="text"
+          placeholder="Search startups by name, domain, or reasoning..."
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700"
+        />
+      </div>
 
-        <!-- Results -->
-        <section>
-          <h2 class="text-lg font-semibold mb-2">📊 Results</h2>
-          <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-          <p id="noResults" class="text-gray-500 hidden">No startups found.</p>
-        </section>
-      </main>
+      <!-- Results -->
+      <section>
+        <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
+        <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        <p id="noResults" class="text-slate-500 hidden">No startups found.</p>
+      </section>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div id="modal" class="modal hidden">
+    <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
+      <button onclick="closeModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+      <div id="modalContent"></div>
     </div>
   </div>
 
@@ -96,7 +108,6 @@
 
     let startups = [];
     let thesisSet = new Set();
-
     const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
     const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
 
@@ -105,24 +116,17 @@
       header: true,
       complete: (results) => {
         startups = results.data.filter((s) => s.company_name);
-
         startups.forEach((s) => {
-          if (s.best_matching_thesis) {
-            thesisSet.add(s.best_matching_thesis.trim());
-          }
+          if (s.best_matching_thesis) thesisSet.add(s.best_matching_thesis.trim());
         });
-
         renderFilters();
         renderGrid(startups);
-
-        // update stats
         document.getElementById("stat-startups").textContent = startups.length;
         document.getElementById("stat-theses").textContent = thesisSet.size;
       },
     });
 
     function renderFilters() {
-      // Thesis Score
       const thesisContainer = document.getElementById("thesis-filters");
       thesisScale.forEach((score) => {
         const id = "thesis-" + score.replace(/\s+/g, "-");
@@ -132,11 +136,8 @@
             <span>${score}</span>
           </label>`;
       });
-      document.querySelectorAll(".thesis-checkbox").forEach((cb) => {
-        cb.addEventListener("change", applyFilters);
-      });
+      document.querySelectorAll(".thesis-checkbox").forEach((cb) => cb.addEventListener("change", applyFilters));
 
-      // Founder Score
       const founderContainer = document.getElementById("founder-filters");
       founderScale.forEach((score) => {
         const id = "founder-" + score.replace(/\s+/g, "-");
@@ -146,38 +147,42 @@
             <span>${score}</span>
           </label>`;
       });
-      document.querySelectorAll(".founder-checkbox").forEach((cb) => {
-        cb.addEventListener("change", applyFilters);
-      });
-
-      // Thesis Hits
-      const hitsContainer = document.getElementById("hits-filters");
-      [...thesisSet].sort().forEach((th) => {
-        const id = "hit-" + th.replace(/\s+/g, "-");
-        hitsContainer.innerHTML += `
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" value="${th}" id="${id}" class="hits-checkbox">
-            <span>${th}</span>
-          </label>`;
-      });
-      document.querySelectorAll(".hits-checkbox").forEach((cb) => {
-        cb.addEventListener("change", applyFilters);
-      });
+      document.querySelectorAll(".founder-checkbox").forEach((cb) => cb.addEventListener("change", applyFilters));
     }
 
     function applyFilters() {
       const thesisSelected = [...document.querySelectorAll(".thesis-checkbox:checked")].map(cb => cb.value);
       const founderSelected = [...document.querySelectorAll(".founder-checkbox:checked")].map(cb => cb.value);
-      const hitsSelected = [...document.querySelectorAll(".hits-checkbox:checked")].map(cb => cb.value);
 
       const filtered = startups.filter((s) => {
         let thesisOK = thesisSelected.length === 0 || thesisSelected.includes(s.thesis_score);
         let founderOK = founderSelected.length === 0 || founderSelected.includes(s.founder_score);
-        let hitsOK = hitsSelected.length === 0 || hitsSelected.includes(s.best_matching_thesis);
-        return thesisOK && founderOK && hitsOK;
+        return thesisOK && founderOK;
       });
 
       renderGrid(filtered);
+    }
+
+    // Unified heatmap style
+    function getHeatmapClass(score) {
+      switch ((score || "").toLowerCase()) {
+        case "stone cold":
+        case "bad":
+          return "border border-red-600 text-red-700 bg-red-50";
+        case "cold":
+        case "medium":
+          return "border border-orange-500 text-orange-700 bg-orange-50";
+        case "warm":
+        case "good":
+          return "border border-yellow-500 text-yellow-700 bg-yellow-50";
+        case "hot":
+          return "border border-lime-600 text-lime-700 bg-lime-50";
+        case "nuclear hot":
+        case "fantastic":
+          return "border border-green-600 text-green-700 bg-green-50";
+        default:
+          return "border border-slate-300 text-slate-600 bg-slate-50";
+      }
     }
 
     function renderGrid(data) {
@@ -192,37 +197,55 @@
       noResults.classList.add("hidden");
 
       data.forEach((s) => {
+        const thesisClass = getHeatmapClass(s.thesis_score);
+        const founderClass = getHeatmapClass(s.founder_score);
+
         const card = document.createElement("div");
-        card.className = "startup-card bg-white rounded-lg shadow p-4 flex flex-col justify-between";
+        card.className = "startup-card bg-white border border-slate-200 rounded-md p-4";
         card.innerHTML = `
-          <div>
-            <h3 class="font-bold text-lg mb-1">${s.company_name}</h3>
-            <p class="text-sm text-gray-600 mb-2">${s.industry || "No industry listed"}</p>
-            ${
-              s.domain
-                ? `<a href="https://${s.domain}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`
-                : `<span class="text-gray-400">No domain</span>`
-            }
-            <div class="mt-3 text-sm">
-              <p><span class="font-semibold">Thesis Score:</span> ${s.thesis_score || "-"}</p>
-              <p><span class="font-semibold">Founder Score:</span> ${s.founder_score || "-"}</p>
-              <p class="mt-1"><span class="font-semibold">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
-              <p class="mt-1 text-gray-700">${s.reasoning || ""}</p>
-              <p class="mt-1 text-gray-700"><span class="font-semibold">Founder Background:</span> ${s.founder_background || ""}</p>
-              <p class="mt-1 text-gray-700">${s.founder_score_reasoning || ""}</p>
-            </div>
+          <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
+          <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
+          <div class="space-y-1 text-sm">
+            <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
+            <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
+            <p><span class="font-medium text-slate-700">Funding:</span> ${s.funding_stage || "-"}</p>
+            <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
           </div>
-          ${
-            s.source
-              ? `<a href="${s.source}" target="_blank" class="mt-3 text-sm text-indigo-600 hover:underline">Source</a>`
-              : ""
-          }
         `;
+        card.addEventListener("click", () => openModal(s));
         results.appendChild(card);
       });
     }
 
-    // simple text search
+    window.openModal = (startup) => {
+      const modal = document.getElementById("modal");
+      const modalContent = document.getElementById("modalContent");
+
+      const thesisClass = getHeatmapClass(startup.thesis_score);
+      const founderClass = getHeatmapClass(startup.founder_score);
+
+      modalContent.innerHTML = `
+        <h2 class="text-xl font-bold text-slate-900 mb-2">${startup.company_name}</h2>
+        <p class="text-sm text-slate-500 mb-2">${startup.industry || "-"}</p>
+        ${startup.domain ? `<a href="https://${startup.domain}" target="_blank" class="text-slate-700 underline">${startup.domain}</a>` : ""}
+        <div class="mt-3 text-sm space-y-1">
+          <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${startup.thesis_score || "-"}</span></p>
+          <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${startup.founder_score || "-"}</span></p>
+          <p><span class="font-medium">Funding:</span> ${startup.funding_stage || "-"}</p>
+          <p><span class="font-medium">Best Thesis:</span> ${startup.best_matching_thesis || "-"}</p>
+          <p><span class="font-medium">Reasoning:</span> ${startup.reasoning || ""}</p>
+          <p><span class="font-medium">Founder Background:</span> ${startup.founder_background || ""}</p>
+          <p><span class="font-medium">Founder Score Reasoning:</span> ${startup.founder_score_reasoning || ""}</p>
+        </div>
+        ${startup.source ? `<a href="${startup.source}" target="_blank" class="mt-3 block text-sm text-slate-700 underline">Source</a>` : ""}
+      `;
+      modal.classList.remove("hidden");
+    };
+
+    window.closeModal = () => {
+      document.getElementById("modal").classList.add("hidden");
+    };
+
     document.getElementById("chatSearch").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase();
       const filtered = startups.filter((s) =>
