@@ -208,7 +208,11 @@
           <div class="space-y-1 text-sm">
             <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
             <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
-            <p><span class="font-medium text-slate-700">Funding:</span> ${s.funding_stage || "-"}</p>
+            <p><span class="font-medium text-slate-700">Funding:</span> 
+              ${s.funding_stage || "-"} 
+              ${s.funding_amount ? " | " + s.funding_amount : ""} 
+              ${s.Latest_Funding_Date ? " (" + s.Latest_Funding_Date + ")" : ""}
+            </p>
             <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
           </div>
         `;
@@ -231,7 +235,11 @@
         <div class="mt-3 text-sm space-y-1">
           <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${startup.thesis_score || "-"}</span></p>
           <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${startup.founder_score || "-"}</span></p>
-          <p><span class="font-medium">Funding:</span> ${startup.funding_stage || "-"}</p>
+          <p><span class="font-medium">Funding:</span> 
+            ${startup.funding_stage || "-"} 
+            ${startup.funding_amount ? " | " + startup.funding_amount : ""} 
+            ${startup.Latest_Funding_Date ? " (" + startup.Latest_Funding_Date + ")" : ""}
+          </p>
           <p><span class="font-medium">Best Thesis:</span> ${startup.best_matching_thesis || "-"}</p>
           <p><span class="font-medium">Reasoning:</span> ${startup.reasoning || ""}</p>
           <p><span class="font-medium">Founder Background:</span> ${startup.founder_background || ""}</p>
