@@ -11,6 +11,7 @@
     .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
     .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; justify-content: center; align-items: center; z-index: 50; }
+    #toast { transition: opacity 0.5s ease; }
   </style>
 </head>
 <body class="text-slate-900">
@@ -107,12 +108,15 @@
     </div>
   </div>
 
+  <!-- Toast notification -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm"></div>
+
   <script>
   document.addEventListener("DOMContentLoaded", () => {
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbytY3FW4pTQdll-WHnICnPZNDqO5i0_VlaFWTfvqmIHoNMnAW1WkH_vLIs8ryCfQ64D/exec";
+    const API_URL = "https://script.google.com/macros/s/AKfycbyjV9uDt8dTGxSReK9ARnjbyXufQR7KyZvoqON_WzNX0-6nZusNV7LFYYrPP_rMI9S1/exec"; // replace with your Apps Script Web App URL
 
     let startups = [];
     const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
@@ -120,6 +124,19 @@
 
     let lists = {};
     let selectedCompany = null;
+
+    // Toast helper
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.remove("hidden");
+      toast.style.opacity = "1";
+
+      setTimeout(() => {
+        toast.style.opacity = "0";
+        setTimeout(() => toast.classList.add("hidden"), 500);
+      }, 2500);
+    }
 
     function updateSidebar() {
       const myLists = document.getElementById("myLists");
@@ -156,11 +173,16 @@
         .then(r => r.json())
         .then(res => {
           if (res.success) {
-            alert(`${selectedCompany} saved to ${listName}`);
+            showToast(`${selectedCompany} saved to ${listName}`);
             loadListsFromAPI();
+          } else {
+            showToast("Error: save failed");
           }
         })
-        .catch(err => console.error("Save failed:", err));
+        .catch(err => {
+          console.error("Save failed:", err);
+          showToast("Error: request failed");
+        });
       }
       window.closeListModal();
     };
