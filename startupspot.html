@@ -23,6 +23,7 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
       <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
       <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
+      <button id="logout" class="ml-4 bg-red-600 text-white px-3 py-1 rounded">Logout</button>
     </div>
   </header>
 
@@ -398,23 +399,25 @@
 
   // Check if user is logged in
   const { data: { session } } = await supabase.auth.getSession();
-
   if (!session) {
-    // If not logged in, redirect to login page
-    window.location.href = "login.html";
+    window.location.href = "login.html"; // redirect if not logged in
   }
 
-  async function testConnection() {
-    // Example: try to read from the "profiles" table
-    let { data, error } = await supabase.from("profiles").select("*");
+  // Logout functionality
+  document.getElementById("logout").addEventListener("click", async () => {
+    await supabase.auth.signOut();
+    window.location.href = "login.html";
+  });
 
+  // Optional: test connection (can be removed if not needed)
+  async function testConnection() {
+    let { data, error } = await supabase.from("profiles").select("*");
     if (error) {
       console.error("❌ Supabase error:", error);
     } else {
       console.log("✅ Supabase connected! Profiles:", data);
     }
   }
-
   testConnection();
 </script>
 </body>
