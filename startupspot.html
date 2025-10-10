@@ -7,26 +7,10 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
   <style>
-    body {
-      background: #f8fafc;
-    }
-    .startup-card {
-      transition: border-color 0.2s ease, transform 0.15s ease;
-      cursor: pointer;
-    }
-    .startup-card:hover {
-      border-color: #475569;
-      transform: translateY(-2px);
-    }
-    .modal {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.7);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      z-index: 50;
-    }
+    body { background: #f8fafc; }
+    .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
+    .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
+    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; justify-content: center; align-items: center; z-index: 50; }
   </style>
 </head>
 <body class="text-slate-900">
@@ -49,6 +33,10 @@
       <div>
         <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Founder Score</h2>
         <div id="founder-filters" class="space-y-1 text-sm"></div>
+      </div>
+      <div>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Lists</h2>
+        <ul id="myLists" class="text-sm space-y-2 text-slate-700"></ul>
       </div>
     </aside>
 
@@ -89,11 +77,33 @@
     </main>
   </div>
 
-  <!-- Modal -->
+  <!-- Startup Modal -->
   <div id="modal" class="modal hidden">
     <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
-      <button onclick="closeModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+      <button onclick="window.closeModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
       <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <!-- Save to List Modal -->
+  <div id="listModal" class="modal hidden" onclick="window.closeListModal(event)">
+    <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-md w-full p-6 relative" onclick="event.stopPropagation()">
+      <button onclick="window.closeListModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+      <h3 class="text-lg font-semibold mb-3">Save to list</h3>
+      <label class="block text-sm font-medium text-slate-700 mb-1">Choose list</label>
+      <select id="listSelect" class="w-full border p-2 rounded-lg mb-4">
+        <option value="Favorites" selected>Favorites</option>
+        <option value="Djoni">Djoni</option>
+        <option value="Stephanie Davis">Stephanie Davis</option>
+        <option value="Job Ruijters">Job Ruijters</option>
+        <option value="Ties Klinkhamer">Ties Klinkhamer</option>
+        <option value="Briehan">Briehan</option>
+        <option value="Arthur Waars">Arthur Waars</option>
+        <option value="Rob">Rob</option>
+        <option value="Barbara">Barbara</option>
+        <option value="Daniel Smits">Daniel Smits</option>
+      </select>
+      <button onclick="window.saveToSelectedList()" class="w-full bg-slate-900 text-white p-2 rounded-lg">Save</button>
     </div>
   </div>
 
@@ -102,19 +112,58 @@
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
+    const API_URL = "https://script.google.com/macros/s/AKfycbytY3FW4pTQdll-WHnICnPZNDqO5i0_VlaFWTfvqmIHoNMnAW1WkH_vLIs8ryCfQ64D/exec";
+
     let startups = [];
     const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
     const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
 
-    // ✅ Helper: normalize domain to valid URL
-    function normalizeUrl(url) {
-      if (!url) return "";
-      let clean = url.trim();
-      if (/^https?:\/\//i.test(clean)) {
-        return clean; // already has http/https
-      }
-      return "https://" + clean;
+    let lists = {};
+    let selectedCompany = null;
+
+    function updateSidebar() {
+      const myLists = document.getElementById("myLists");
+      myLists.innerHTML = "";
+      Object.entries(lists).forEach(([listName, items]) => {
+        const li = document.createElement("li");
+        li.innerHTML = `<strong>${listName}</strong> (${items.length})<br><span class="text-slate-500">${items.join(", ") || "Empty"}</span>`;
+        myLists.appendChild(li);
+      });
     }
+
+    function loadListsFromAPI() {
+      fetch(API_URL)
+        .then(r => r.json())
+        .then(data => {
+          lists = {};
+          data.forEach(entry => {
+            if (!lists[entry.list]) lists[entry.list] = [];
+            lists[entry.list].push(entry.company);
+          });
+          updateSidebar();
+        })
+        .catch(err => console.error("Failed to load lists:", err));
+    }
+
+    window.saveToSelectedList = function() {
+      const listName = document.getElementById("listSelect").value;
+      if (selectedCompany) {
+        fetch(API_URL, {
+          method: "POST",
+          body: JSON.stringify({ company: selectedCompany, list: listName }),
+          headers: { "Content-Type": "application/json" }
+        })
+        .then(r => r.json())
+        .then(res => {
+          if (res.success) {
+            alert(`${selectedCompany} saved to ${listName}`);
+            loadListsFromAPI();
+          }
+        })
+        .catch(err => console.error("Save failed:", err));
+      }
+      window.closeListModal();
+    };
 
     Papa.parse(CSV_URL, {
       download: true,
@@ -124,6 +173,7 @@
         renderFilters();
         renderGrid(startups);
         document.getElementById("stat-startups").textContent = startups.length;
+        loadListsFromAPI();
       },
     });
 
@@ -166,19 +216,15 @@
 
     function getHeatmapClass(score) {
       switch ((score || "").toLowerCase()) {
-        case "stone cold":
-        case "bad":
+        case "stone cold": case "bad":
           return "border border-red-600 text-red-700 bg-red-50";
-        case "cold":
-        case "medium":
+        case "cold": case "medium":
           return "border border-orange-500 text-orange-700 bg-orange-50";
-        case "warm":
-        case "good":
+        case "warm": case "good":
           return "border border-yellow-500 text-yellow-700 bg-yellow-50";
         case "hot":
           return "border border-lime-600 text-lime-700 bg-lime-50";
-        case "nuclear hot":
-        case "fantastic":
+        case "nuclear hot": case "fantastic":
           return "border border-green-600 text-green-700 bg-green-50";
         default:
           return "border border-slate-300 text-slate-600 bg-slate-50";
@@ -203,24 +249,30 @@
         const card = document.createElement("div");
         card.className = "startup-card bg-white border border-slate-200 rounded-md p-4";
         card.innerHTML = `
-          <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
-          <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
+          <div class="flex justify-between items-start">
+            <div>
+              <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
+              <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
+            </div>
+            <button class="heart-btn text-slate-400 hover:text-red-500 text-xl" data-company="${s.company_name}">♥</button>
+          </div>
           <div class="space-y-1 text-sm">
             <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
             <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
-            <p><span class="font-medium text-slate-700">Funding:</span> 
-              ${s.funding_stage || "-"} 
-              ${s.funding_amount ? " | " + s.funding_amount : ""} 
-              ${s.Latest_Funding_Date ? " (" + s.Latest_Funding_Date + ")" : ""}
-            </p>
+            <p><span class="font-medium text-slate-700">Funding:</span> ${s.funding_stage || "-"} ${s.funding_amount ? " | " + s.funding_amount : ""} ${s.Latest_Funding_Date ? " (" + s.Latest_Funding_Date + ")" : ""}</p>
             <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
           </div>
         `;
-        card.addEventListener("click", () => openModal(s));
+        card.addEventListener("click", (e) => {
+          if (!e.target.classList.contains("heart-btn")) {
+            window.openModal(s);
+          }
+        });
         results.appendChild(card);
       });
     }
 
+    // Modal handling
     window.openModal = (startup) => {
       const modal = document.getElementById("modal");
       const modalContent = document.getElementById("modalContent");
@@ -229,17 +281,16 @@
       const founderClass = getHeatmapClass(startup.founder_score);
 
       modalContent.innerHTML = `
-        <h2 class="text-xl font-bold text-slate-900 mb-2">${startup.company_name}</h2>
+        <div class="flex justify-between items-start">
+          <h2 class="text-xl font-bold text-slate-900 mb-2">${startup.company_name}</h2>
+          <button class="heart-btn text-slate-400 hover:text-red-500 text-2xl" data-company="${startup.company_name}">♥</button>
+        </div>
         <p class="text-sm text-slate-500 mb-2">${startup.industry || "-"}</p>
-        ${startup.domain ? `<a href="${normalizeUrl(startup.domain)}" target="_blank" class="text-slate-700 underline">${startup.domain}</a>` : ""}
+        ${startup.domain ? `<a href="${startup.domain}" target="_blank" class="text-slate-700 underline">${startup.domain}</a>` : ""}
         <div class="mt-3 text-sm space-y-1">
           <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${startup.thesis_score || "-"}</span></p>
           <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${startup.founder_score || "-"}</span></p>
-          <p><span class="font-medium">Funding:</span> 
-            ${startup.funding_stage || "-"} 
-            ${startup.funding_amount ? " | " + startup.funding_amount : ""} 
-            ${startup.Latest_Funding_Date ? " (" + startup.Latest_Funding_Date + ")" : ""}
-          </p>
+          <p><span class="font-medium">Funding:</span> ${startup.funding_stage || "-"} ${startup.funding_amount ? " | " + startup.funding_amount : ""} ${startup.Latest_Funding_Date ? " (" + startup.Latest_Funding_Date + ")" : ""}</p>
           <p><span class="font-medium">Best Thesis:</span> ${startup.best_matching_thesis || "-"}</p>
           <p><span class="font-medium">Reasoning:</span> ${startup.reasoning || ""}</p>
           <p><span class="font-medium">Founder Background:</span> ${startup.founder_background || ""}</p>
@@ -250,10 +301,28 @@
       modal.classList.remove("hidden");
     };
 
-    window.closeModal = () => {
-      document.getElementById("modal").classList.add("hidden");
+    window.closeModal = () => { document.getElementById("modal").classList.add("hidden"); };
+
+    // Heart button handler
+    document.addEventListener("click", (e) => {
+      if (e.target.classList.contains("heart-btn")) {
+        selectedCompany = e.target.getAttribute("data-company");
+        window.openListModal();
+      }
+    });
+
+    window.openListModal = function() {
+      document.getElementById("listModal").classList.remove("hidden");
+      document.getElementById("listSelect").value = "Favorites";
     };
 
+    window.closeListModal = function(event) {
+      if (!event || event.target.id === "listModal") {
+        document.getElementById("listModal").classList.add("hidden");
+      }
+    };
+
+    // Search
     document.getElementById("chatSearch").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase();
       const filtered = startups.filter((s) =>
