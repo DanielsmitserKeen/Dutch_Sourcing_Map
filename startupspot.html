@@ -391,6 +391,31 @@
       renderGrid(filtered);
     });
   });
-  </script>
+</script> 
+
+<script type="module">
+  import { supabase } from "./lib/supabaseClient.js";
+
+  // Check if user is logged in
+  const { data: { session } } = await supabase.auth.getSession();
+
+  if (!session) {
+    // If not logged in, redirect to login page
+    window.location.href = "login.html";
+  }
+
+  async function testConnection() {
+    // Example: try to read from the "profiles" table
+    let { data, error } = await supabase.from("profiles").select("*");
+
+    if (error) {
+      console.error("❌ Supabase error:", error);
+    } else {
+      console.log("✅ Supabase connected! Profiles:", data);
+    }
+  }
+
+  testConnection();
+</script>
 </body>
 </html>
