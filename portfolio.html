@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Portfolio Companies News</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <style>
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      color: #fff;
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Moving cloud background */
+    body::before {
+      content: "";
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 300%;
+      height: 100%;
+      background: url("https://images.unsplash.com/photo-1536514498073-50e69d39c6cf?q=80&w=1471&auto=format&fit=crop&ixlib=rb-4.1.0") repeat-x;
+      background-size: cover;
+      z-index: -2;
+      animation: moveClouds 90s linear infinite;
+    }
+
+    @keyframes moveClouds {
+      from { transform: translateX(0); }
+      to { transform: translateX(-50%); }
+    }
+
+    /* Blue overlay instead of dark */
+    body::after {
+      content: "";
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: linear-gradient(to bottom, rgba(135,206,250,0.3), rgba(70,130,180,0.4));
+      z-index: -1;
+    }
+
+    /* Hero-style header */
+    header {
+      text-align: center;
+      padding: 80px 20px 60px;
+    }
+
+    header h1 {
+      font-size: 3em;
+      font-weight: 800;
+      color: #e6f3ff;
+      text-shadow: 0 4px 12px rgba(0,40,80,0.6);
+      margin-bottom: 15px;
+    }
+
+    header p {
+      font-size: 1.3em;
+      font-weight: 300;
+      color: #b3d9ff;
+      text-shadow: 0 2px 6px rgba(0,40,80,0.6);
+      margin: 0;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 25px;
+      padding: 30px;
+    }
+
+    .card {
+      background: rgba(0,30,80,0.6); /* deep blue glass look */
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 6px 15px rgba(0,30,80,0.4);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 25px rgba(0,60,140,0.6);
+    }
+
+    .card h2 {
+      font-size: 1.5em;
+      color: #66ccff;
+      margin-bottom: 12px;
+    }
+
+    .summary {
+      font-size: 1em;
+      line-height: 1.5;
+      color: #e6f3ff;
+      margin-bottom: 12px;
+    }
+
+    .sources {
+      margin-top: 10px;
+    }
+
+    .source-btn {
+      display: inline-block;
+      margin: 3px 5px 0 0;
+      padding: 6px 12px;
+      font-size: 0.85em;
+      color: #fff;
+      background: rgba(102,204,255,0.2);
+      border: 1px solid #66ccff;
+      border-radius: 6px;
+      text-decoration: none;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    .source-btn:hover {
+      background: #66ccff;
+      color: #003366;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🌐 Portfolio Companies Newsroom</h1>
+    <p>Refreshes on mondays and thursdays.</p>
+  </header>
+
+  <div id="news-container" class="grid">Loading...</div>
+
+  <script>
+  async function loadNews() {
+    const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?gid=1831605405&single=true&output=csv";
+
+    const response = await fetch(url);
+    const csv = await response.text();
+
+    const parsed = Papa.parse(csv, { header: true });
+    const rows = parsed.data.filter(r => r.Company && r.Summary);
+
+    const container = document.getElementById("news-container");
+    container.innerHTML = "";
+
+    rows.forEach(row => {
+      const div = document.createElement("div");
+      div.className = "card";
+
+      // split sources into array
+      let sourcesHTML = "";
+      if (row.Sources) {
+        const links = row.Sources.split(",");
+        sourcesHTML = `<div class="sources">` + 
+          links.map((l,i) => `<a href="${l.trim()}" target="_blank" class="source-btn">🔗 Source ${i+1}</a>`).join("") + 
+          `</div>`;
+      }
+
+      div.innerHTML = `
+        <h2>${row.Company}</h2>
+        <p class="summary">${row.Summary}</p>
+        ${sourcesHTML}
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  loadNews();
+  </script>
+</body>
+</html>
