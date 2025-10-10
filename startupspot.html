@@ -12,6 +12,8 @@
     .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; justify-content: center; align-items: center; z-index: 50; }
     #toast { transition: opacity 0.5s ease; }
+    .sidebar-company { display: flex; justify-content: space-between; align-items: center; }
+    .sidebar-company button { color: #dc2626; font-size: 0.8rem; }
   </style>
 </head>
 <body class="text-slate-900">
@@ -38,12 +40,6 @@
       <div>
         <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Lists</h2>
         <ul id="myLists" class="text-sm space-y-2 text-slate-700"></ul>
-      </div>
-      <div>
-        <!-- Test Save Button -->
-        <button onclick="testSave()" class="w-full bg-amber-600 hover:bg-amber-700 text-white p-2 rounded-lg">
-          🔄 Test Save
-        </button>
       </div>
     </aside>
 
@@ -122,11 +118,12 @@
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbxYJNjHSbO1lo9Dsp--kFygxvvkzOE8BfGrd68rS94ZIfQ8qgt5fk3iuiKPCpVnq9s_/exec"; // paste your Apps Script /exec URL
+    const API_URL = "https://script.google.com/macros/s/AKfycbxYJNjHSbO1lo9Dsp--kFygxvvkzOE8BfGrd68rS94ZIfQ8qgt5fk3iuiKPCpVnq9s_/exec"; // replace with your Apps Script /exec URL
 
     let startups = [];
     let lists = {};
     let selectedCompany = null;
+    let activeListFilter = null;
 
     function showToast(message) {
       const toast = document.getElementById("toast");
@@ -139,34 +136,23 @@
       }, 2500);
     }
 
-    // Test Save
-    window.testSave = function() {
-      fetch(API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "company=" + encodeURIComponent("From Frontend Test") + "&list=" + encodeURIComponent("Favorites")
-      })
-      .then(r => r.json())
-      .then(res => {
-        if (res.success) {
-          showToast("Test company saved to Favorites!");
-          loadListsFromAPI();
-        } else {
-          showToast("Error: save failed");
-        }
-      })
-      .catch(err => {
-        console.error("Save failed:", err);
-        showToast("Error: request failed");
-      });
-    };
-
     function updateSidebar() {
       const myLists = document.getElementById("myLists");
       myLists.innerHTML = "";
       Object.entries(lists).forEach(([listName, items]) => {
         const li = document.createElement("li");
-        li.innerHTML = `<strong>${listName}</strong> (${items.length})<br><span class="text-slate-500">${items.join(", ") || "Empty"}</span>`;
+        li.innerHTML = `
+          <div class="font-semibold cursor-pointer text-slate-800 hover:underline" data-list="${listName}">
+            ${listName} (${items.length})
+          </div>
+          <div class="mt-1 space-y-1">
+            ${items.map(c => `
+              <div class="sidebar-company">
+                <span class="text-slate-500">${c}</span>
+                <button data-remove="${listName}|${c}">❌</button>
+              </div>`).join("")}
+          </div>
+        `;
         myLists.appendChild(li);
       });
     }
@@ -253,11 +239,16 @@
       const thesisSelected = [...document.querySelectorAll(".thesis-checkbox:checked")].map(cb => cb.value);
       const founderSelected = [...document.querySelectorAll(".founder-checkbox:checked")].map(cb => cb.value);
 
-      const filtered = startups.filter((s) => {
+      let filtered = startups.filter((s) => {
         let thesisOK = thesisSelected.length === 0 || thesisSelected.includes(s.thesis_score);
         let founderOK = founderSelected.length === 0 || founderSelected.includes(s.founder_score);
         return thesisOK && founderOK;
       });
+
+      // Apply sidebar list filter if active
+      if (activeListFilter && lists[activeListFilter]) {
+        filtered = filtered.filter(s => lists[activeListFilter].includes(s.company_name));
+      }
 
       renderGrid(filtered);
     }
@@ -357,6 +348,21 @@
         selectedCompany = e.target.getAttribute("data-company");
         window.openListModal();
       }
+
+      // Sidebar list click
+      if (e.target.dataset.list) {
+        activeListFilter = e.target.dataset.list;
+        applyFilters();
+      }
+
+      // Remove button click
+      if (e.target.dataset.remove) {
+        const [listName, company] = e.target.dataset.remove.split("|");
+        lists[listName] = lists[listName].filter(c => c !== company);
+        showToast(`${company} removed from ${listName}`);
+        updateSidebar();
+        applyFilters();
+      }
     });
 
     window.openListModal = function() {
@@ -373,11 +379,14 @@
     // Search
     document.getElementById("chatSearch").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase();
-      const filtered = startups.filter((s) =>
+      let filtered = startups.filter((s) =>
         (s.company_name && s.company_name.toLowerCase().includes(q)) ||
         (s.domain && s.domain.toLowerCase().includes(q)) ||
         (s.reasoning && s.reasoning.toLowerCase().includes(q))
       );
+      if (activeListFilter && lists[activeListFilter]) {
+        filtered = filtered.filter(s => lists[activeListFilter].includes(s.company_name));
+      }
       renderGrid(filtered);
     });
   });
