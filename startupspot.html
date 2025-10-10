@@ -122,12 +122,9 @@
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbxMN3o_h0W9krYLMAZTymWROOEp0pP7HbDItSGOJ2MoP_cnxPVvxTgEKiwgMxTiZPq6/exec"; // replace with your Apps Script Web App URL
+    const API_URL = "https://script.google.com/a/macros/keenventurepartners.com/s/AKfycbyPUg3hfT4Jx0KWEKTd-qkqC9ohoBEmPAHAynJBhAxLmhbhSlgC4-d8yrnJLWCbsv6w/exec"; // <-- paste your /exec URL here
 
     let startups = [];
-    const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
-    const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
-
     let lists = {};
     let selectedCompany = null;
 
@@ -137,23 +134,21 @@
       toast.textContent = message;
       toast.classList.remove("hidden");
       toast.style.opacity = "1";
-
       setTimeout(() => {
         toast.style.opacity = "0";
         setTimeout(() => toast.classList.add("hidden"), 500);
       }, 2500);
     }
 
-    // Test Save function
+    // ✅ Test Save (form-encoded)
     window.testSave = function() {
       fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ company: "From Frontend Test", list: "Favorites" })
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "company=" + encodeURIComponent("From Frontend Test") + "&list=" + encodeURIComponent("Favorites")
       })
       .then(r => r.json())
       .then(res => {
-        console.log("Response from API:", res);
         if (res.success) {
           showToast("Test company saved to Favorites!");
           loadListsFromAPI();
@@ -191,13 +186,14 @@
         .catch(err => console.error("Failed to load lists:", err));
     }
 
+    // ✅ Save startup (form-encoded)
     window.saveToSelectedList = function() {
       const listName = document.getElementById("listSelect").value;
       if (selectedCompany) {
         fetch(API_URL, {
           method: "POST",
-          body: JSON.stringify({ company: selectedCompany, list: listName }),
-          headers: { "Content-Type": "application/json" }
+          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          body: "company=" + encodeURIComponent(selectedCompany) + "&list=" + encodeURIComponent(listName)
         })
         .then(r => r.json())
         .then(res => {
@@ -216,6 +212,7 @@
       window.closeListModal();
     };
 
+    // --- Rest of your parsing, filtering, rendering code unchanged ---
     Papa.parse(CSV_URL, {
       download: true,
       header: true,
@@ -229,6 +226,8 @@
     });
 
     function renderFilters() {
+      const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
+      const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
       const thesisContainer = document.getElementById("thesis-filters");
       thesisScale.forEach((score) => {
         const id = "thesis-" + score.replace(/\s+/g, "-");
@@ -387,3 +386,4 @@
   </script>
 </body>
 </html>
+
