@@ -39,6 +39,12 @@
         <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Lists</h2>
         <ul id="myLists" class="text-sm space-y-2 text-slate-700"></ul>
       </div>
+      <div>
+        <!-- Test Save Button -->
+        <button onclick="testSave()" class="w-full bg-amber-600 hover:bg-amber-700 text-white p-2 rounded-lg">
+          🔄 Test Save
+        </button>
+      </div>
     </aside>
 
     <!-- Main content -->
@@ -137,6 +143,29 @@
         setTimeout(() => toast.classList.add("hidden"), 500);
       }, 2500);
     }
+
+    // Test Save function
+    window.testSave = function() {
+      fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ company: "From Frontend Test", list: "Favorites" })
+      })
+      .then(r => r.json())
+      .then(res => {
+        console.log("Response from API:", res);
+        if (res.success) {
+          showToast("Test company saved to Favorites!");
+          loadListsFromAPI();
+        } else {
+          showToast("Error: save failed");
+        }
+      })
+      .catch(err => {
+        console.error("Save failed:", err);
+        showToast("Error: request failed");
+      });
+    };
 
     function updateSidebar() {
       const myLists = document.getElementById("myLists");
