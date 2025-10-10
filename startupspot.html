@@ -171,27 +171,27 @@
         .catch(err => console.error("Failed to load lists:", err));
     }
 
+    // ✅ Optimistic Save
     window.saveToSelectedList = function() {
       const listName = document.getElementById("listSelect").value;
       if (selectedCompany) {
+        // update instantly
+        if (!lists[listName]) lists[listName] = [];
+        if (!lists[listName].includes(selectedCompany)) {
+          lists[listName].push(selectedCompany);
+        }
+        updateSidebar();
+        showToast(`${selectedCompany} saved to ${listName}`);
+
+        // background sync
         fetch(API_URL, {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
           body: "company=" + encodeURIComponent(selectedCompany) + "&list=" + encodeURIComponent(listName)
         })
         .then(r => r.json())
-        .then(res => {
-          if (res.success) {
-            showToast(`${selectedCompany} saved to ${listName}`);
-            loadListsFromAPI();
-          } else {
-            showToast("Error: save failed");
-          }
-        })
-        .catch(err => {
-          console.error("Save failed:", err);
-          showToast("Error: request failed");
-        });
+        .then(res => { if (!res.success) showToast("⚠️ Save failed"); })
+        .catch(() => showToast("⚠️ Network error"));
       }
       window.closeListModal();
     };
@@ -245,7 +245,6 @@
         return thesisOK && founderOK;
       });
 
-      // Apply sidebar list filter if active
       if (activeListFilter && lists[activeListFilter]) {
         filtered = filtered.filter(s => lists[activeListFilter].includes(s.company_name));
       }
@@ -311,7 +310,6 @@
       });
     }
 
-    // Modal handling
     window.openModal = (startup) => {
       const modal = document.getElementById("modal");
       const modalContent = document.getElementById("modalContent");
@@ -342,26 +340,30 @@
 
     window.closeModal = () => { document.getElementById("modal").classList.add("hidden"); };
 
-    // Heart button handler
+    // ✅ Optimistic Remove
     document.addEventListener("click", (e) => {
       if (e.target.classList.contains("heart-btn")) {
         selectedCompany = e.target.getAttribute("data-company");
         window.openListModal();
       }
 
-      // Sidebar list click
       if (e.target.dataset.list) {
         activeListFilter = e.target.dataset.list;
         applyFilters();
       }
 
-      // Remove button click
       if (e.target.dataset.remove) {
         const [listName, company] = e.target.dataset.remove.split("|");
         lists[listName] = lists[listName].filter(c => c !== company);
         showToast(`${company} removed from ${listName}`);
         updateSidebar();
         applyFilters();
+
+        // background sync
+        fetch(API_URL + "?remove=1&company=" + encodeURIComponent(company) + "&list=" + encodeURIComponent(listName))
+          .then(r => r.json())
+          .then(res => { if (!res.success) showToast("⚠️ Remove failed"); })
+          .catch(() => showToast("⚠️ Network error"));
       }
     });
 
@@ -376,7 +378,6 @@
       }
     };
 
-    // Search
     document.getElementById("chatSearch").addEventListener("input", (e) => {
       const q = e.target.value.toLowerCase();
       let filtered = startups.filter((s) =>
