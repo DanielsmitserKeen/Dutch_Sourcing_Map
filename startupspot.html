@@ -122,13 +122,12 @@
     const CSV_URL =
       "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
-    const API_URL = "https://script.google.com/a/macros/keenventurepartners.com/s/AKfycbyPUg3hfT4Jx0KWEKTd-qkqC9ohoBEmPAHAynJBhAxLmhbhSlgC4-d8yrnJLWCbsv6w/exec"; // <-- paste your /exec URL here
+    const API_URL = "https://script.google.com/macros/s/AKfycbxYJNjHSbO1lo9Dsp--kFygxvvkzOE8BfGrd68rS94ZIfQ8qgt5fk3iuiKPCpVnq9s_/exec"; // paste your Apps Script /exec URL
 
     let startups = [];
     let lists = {};
     let selectedCompany = null;
 
-    // Toast helper
     function showToast(message) {
       const toast = document.getElementById("toast");
       toast.textContent = message;
@@ -140,7 +139,7 @@
       }, 2500);
     }
 
-    // ✅ Test Save (form-encoded)
+    // Test Save
     window.testSave = function() {
       fetch(API_URL, {
         method: "POST",
@@ -186,7 +185,6 @@
         .catch(err => console.error("Failed to load lists:", err));
     }
 
-    // ✅ Save startup (form-encoded)
     window.saveToSelectedList = function() {
       const listName = document.getElementById("listSelect").value;
       if (selectedCompany) {
@@ -212,7 +210,7 @@
       window.closeListModal();
     };
 
-    // --- Rest of your parsing, filtering, rendering code unchanged ---
+    // Load startups
     Papa.parse(CSV_URL, {
       download: true,
       header: true,
@@ -386,4 +384,3 @@
   </script>
 </body>
 </html>
-
