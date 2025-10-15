@@ -167,6 +167,71 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  function getCountryFlag(country) {
+    if (!country) return "";
+    // Map common country names to ISO codes
+    const map = {
+      "NETHERLANDS": "NL",
+      "UNITED KINGDOM": "GB",
+      "GERMANY": "DE",
+      "FRANCE": "FR",
+      "BELGIUM": "BE",
+      "SPAIN": "ES",
+      "ITALY": "IT",
+      "SWEDEN": "SE",
+      "DENMARK": "DK",
+      "FINLAND": "FI",
+      "NORWAY": "NO",
+      "SWITZERLAND": "CH",
+      "AUSTRIA": "AT",
+      "IRELAND": "IE",
+      "PORTUGAL": "PT",
+      "POLAND": "PL",
+      "CZECH REPUBLIC": "CZ",
+      "HUNGARY": "HU",
+      "ROMANIA": "RO",
+      "BULGARIA": "BG",
+      "GREECE": "GR",
+      "SLOVAKIA": "SK",
+      "SLOVENIA": "SI",
+      "CROATIA": "HR",
+      "ESTONIA": "EE",
+      "LATVIA": "LV",
+      "LITHUANIA": "LT",
+      "LUXEMBOURG": "LU",
+      "MALTA": "MT",
+      "CYPRUS": "CY",
+      "ICELAND": "IS",
+      "SERBIA": "RS",
+      "UKRAINE": "UA",
+      "BELARUS": "BY",
+      "MOLDOVA": "MD",
+      "BOSNIA AND HERZEGOVINA": "BA",
+      "NORTH MACEDONIA": "MK",
+      "ALBANIA": "AL",
+      "MONACO": "MC",
+      "SAN MARINO": "SM",
+      "VATICAN CITY": "VA",
+      "LIECHTENSTEIN": "LI",
+      "ANDORRA": "AD",
+      // fallback for other countries
+      "UNITED STATES": "US",
+      "CANADA": "CA",
+      "AUSTRALIA": "AU",
+      "INDIA": "IN",
+      "CHINA": "CN",
+      "JAPAN": "JP"
+    };
+    let code = country.trim().toUpperCase();
+    code = map[code] || code;
+    if (code.length === 2) {
+      return String.fromCodePoint(
+        ...code.split("").map(c => 127397 + c.charCodeAt())
+      );
+    }
+    return "";
+  }
+
   function renderGrid(data) {
     const results = document.getElementById("results");
     const noResults = document.getElementById("noResults");
@@ -193,9 +258,19 @@ document.addEventListener("DOMContentLoaded", () => {
         domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
       }
 
+      // Country flag and name (top right)
+      const countryFlag = getCountryFlag(s.country);
+      const countryDisplay = s.country
+        ? `<div class="absolute top-3 right-4 flex items-center space-x-1 text-xs font-medium">
+            <span>${countryFlag}</span>
+            <span class="text-slate-700">${s.country}</span>
+          </div>`
+        : "";
+
       const card = document.createElement("div");
-      card.className = "startup-card bg-white border border-slate-200 rounded-md p-4";
+      card.className = "startup-card bg-white border border-slate-200 rounded-md p-4 relative";
       card.innerHTML = `
+        ${countryDisplay}
         <div class="flex justify-between items-start">
           <div>
             <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
