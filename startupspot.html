@@ -258,13 +258,13 @@ document.addEventListener("DOMContentLoaded", () => {
         domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
       }
 
-      // Country flag and name (top right)
+      // Country flag and name (top right, styled as a flag, with more distance from heart)
       const countryFlag = getCountryFlag(s.country);
       const countryDisplay = s.country
-        ? `<div class="absolute top-3 right-4 flex items-center space-x-1 text-xs font-medium">
-            <span>${countryFlag}</span>
-            <span class="text-slate-700">${s.country}</span>
-          </div>`
+        ? `<div class="absolute top-3 right-4 flex flex-col items-end space-y-1 z-10">
+            <span class="block text-2xl" style="filter: drop-shadow(0 1px 2px #ccc);">${countryFlag}</span>
+            <span class="text-xs text-slate-700 bg-white/80 rounded px-2 py-0.5 shadow">${s.country}</span>
+         </div>`
         : "";
 
       const card = document.createElement("div");
@@ -276,7 +276,9 @@ document.addEventListener("DOMContentLoaded", () => {
             <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
             <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
           </div>
-          <button class="heart-btn ${isFav ? "red" : "gray"}" data-company="${s.company_name}">♥</button>
+          <div class="flex flex-col items-end" style="gap: 1.5rem;">
+            <button class="heart-btn ${isFav ? "red" : "gray"}" data-company="${s.company_name}" style="margin-top: 2.5rem;">♥</button>
+          </div>
         </div>
         <div class="space-y-1 text-sm">
           <p><span class="font-medium text-slate-700">Thesis Score:</span>
