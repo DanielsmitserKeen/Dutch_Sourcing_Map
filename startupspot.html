@@ -11,9 +11,9 @@
     .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
     .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
     .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; justify-content: center; align-items: center; z-index: 50; }
-    #toast { transition: opacity 0.5s ease; }
-    .sidebar-company { display: flex; justify-content: space-between; align-items: center; }
-    .sidebar-company button { color: #dc2626; font-size: 0.8rem; }
+    .heart-btn { font-size: 1.3rem; cursor: pointer; transition: color 0.2s ease; }
+    .heart-btn.red { color: #dc2626; }
+    .heart-btn.gray { color: #94a3b8; }
   </style>
 </head>
 <body class="text-slate-900">
@@ -31,6 +31,11 @@
     <!-- Sidebar -->
     <aside class="col-span-1 bg-white border border-slate-200 rounded-lg p-4 space-y-6">
       <div>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Favorites</h2>
+        <ul id="favoritesList" class="text-sm space-y-2 text-slate-700"></ul>
+      </div>
+      <hr>
+      <div>
         <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Score</h2>
         <div id="thesis-filters" class="space-y-1 text-sm"></div>
       </div>
@@ -39,14 +44,17 @@
         <div id="founder-filters" class="space-y-1 text-sm"></div>
       </div>
       <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Lists</h2>
-        <ul id="myLists" class="text-sm space-y-2 text-slate-700"></ul>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Funding Stage</h2>
+        <div id="funding-filters" class="space-y-1 text-sm"></div>
+      </div>
+      <div>
+        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
+        <div id="thesis-theme-filters" class="overflow-y-auto max-h-40 space-y-1 text-sm border border-slate-100 rounded p-2"></div>
       </div>
     </aside>
 
     <!-- Main content -->
     <main class="col-span-3 space-y-6">
-      <!-- Stats -->
       <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
         <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
           <h3 class="text-2xl font-semibold text-slate-900" id="stat-startups">0</h3>
@@ -56,23 +64,13 @@
           <h3 class="text-2xl font-semibold text-emerald-600">Live</h3>
           <p class="text-xs text-slate-500 uppercase">Tracker</p>
         </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-          <h3 class="text-2xl font-semibold text-amber-600">Beta</h3>
-          <p class="text-xs text-slate-500 uppercase">Save Deals</p>
-        </div>
       </div>
 
-      <!-- Search -->
       <div class="relative">
-        <input
-          id="chatSearch"
-          type="text"
-          placeholder="Search organizations by name, domain, or reasoning..."
-          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700"
-        />
+        <input id="chatSearch" type="text" placeholder="Search organizations..."
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
       </div>
 
-      <!-- Results -->
       <section>
         <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
         <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
@@ -81,344 +79,278 @@
     </main>
   </div>
 
-  <!-- Startup Modal -->
+  <!-- Modal -->
   <div id="modal" class="modal hidden">
     <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
-      <button onclick="window.closeModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+      <button onclick="document.getElementById('modal').classList.add('hidden')" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
       <div id="modalContent"></div>
     </div>
   </div>
 
-  <!-- Save to List Modal -->
-  <div id="listModal" class="modal hidden" onclick="window.closeListModal(event)">
-    <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-md w-full p-6 relative" onclick="event.stopPropagation()">
-      <button onclick="window.closeListModal()" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
-      <h3 class="text-lg font-semibold mb-3">Save to list</h3>
-      <label class="block text-sm font-medium text-slate-700 mb-1">Choose list</label>
-      <select id="listSelect" class="w-full border p-2 rounded-lg mb-4">
-        <option value="Favorites" selected>Favorites</option>
-        <option value="Djoni">Djoni</option>
-        <option value="Stephanie Davis">Stephanie Davis</option>
-        <option value="Job Ruijters">Job Ruijters</option>
-        <option value="Ties Klinkhamer">Ties Klinkhamer</option>
-        <option value="Briehan">Briehan</option>
-        <option value="Arthur Waars">Arthur Waars</option>
-        <option value="Rob">Rob</option>
-        <option value="Barbara">Barbara</option>
-        <option value="Daniel Smits">Daniel Smits</option>
-      </select>
-      <button onclick="window.saveToSelectedList()" class="w-full bg-slate-900 text-white p-2 rounded-lg">Save</button>
-    </div>
-  </div>
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const CSV_URL =
+    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
 
-  <!-- Toast notification -->
-  <div id="toast" class="hidden fixed bottom-6 right-6 bg-slate-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm"></div>
+  let startups = [];
+  let favorites = [];
+  let thesisSelected = [];
+  let founderSelected = [];
+  let fundingSelected = [];
+  let thesisThemes = [];
+  let thesisThemeSelected = [];
 
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const CSV_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
+  function renderFilters() {
+    const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
+    const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
+    const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C", "Series D"];
+    const thesisContainer = document.getElementById("thesis-filters");
+    const founderContainer = document.getElementById("founder-filters");
+    const fundingContainer = document.getElementById("funding-filters");
+    const thesisThemeContainer = document.getElementById("thesis-theme-filters");
 
-    const API_URL = "https://script.google.com/macros/s/AKfycbxYJNjHSbO1lo9Dsp--kFygxvvkzOE8BfGrd68rS94ZIfQ8qgt5fk3iuiKPCpVnq9s_/exec"; // replace with your Apps Script /exec URL
-
-    let startups = [];
-    let lists = {};
-    let selectedCompany = null;
-    let activeListFilter = null;
-
-    function showToast(message) {
-      const toast = document.getElementById("toast");
-      toast.textContent = message;
-      toast.classList.remove("hidden");
-      toast.style.opacity = "1";
-      setTimeout(() => {
-        toast.style.opacity = "0";
-        setTimeout(() => toast.classList.add("hidden"), 500);
-      }, 2500);
-    }
-
-    function updateSidebar() {
-      const myLists = document.getElementById("myLists");
-      myLists.innerHTML = "";
-      Object.entries(lists).forEach(([listName, items]) => {
-        const li = document.createElement("li");
-        li.innerHTML = `
-          <div class="font-semibold cursor-pointer text-slate-800 hover:underline" data-list="${listName}">
-            ${listName} (${items.length})
-          </div>
-          <div class="mt-1 space-y-1">
-            ${items.map(c => `
-              <div class="sidebar-company">
-                <span class="text-slate-500">${c}</span>
-                <button data-remove="${listName}|${c}">❌</button>
-              </div>`).join("")}
-          </div>
-        `;
-        myLists.appendChild(li);
-      });
-    }
-
-    function loadListsFromAPI() {
-      fetch(API_URL)
-        .then(r => r.json())
-        .then(data => {
-          lists = {};
-          data.forEach(entry => {
-            if (!lists[entry.list]) lists[entry.list] = [];
-            lists[entry.list].push(entry.company);
-          });
-          updateSidebar();
-        })
-        .catch(err => console.error("Failed to load lists:", err));
-    }
-
-    // ✅ Optimistic Save
-    window.saveToSelectedList = function() {
-      const listName = document.getElementById("listSelect").value;
-      if (selectedCompany) {
-        // update instantly
-        if (!lists[listName]) lists[listName] = [];
-        if (!lists[listName].includes(selectedCompany)) {
-          lists[listName].push(selectedCompany);
-        }
-        updateSidebar();
-        showToast(`${selectedCompany} saved to ${listName}`);
-
-        // background sync
-        fetch(API_URL, {
-          method: "POST",
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: "company=" + encodeURIComponent(selectedCompany) + "&list=" + encodeURIComponent(listName)
-        })
-        .then(r => r.json())
-        .then(res => { if (!res.success) showToast("⚠️ Save failed"); })
-        .catch(() => showToast("⚠️ Network error"));
-      }
-      window.closeListModal();
-    };
-
-    // Load startups
-    Papa.parse(CSV_URL, {
-      download: true,
-      header: true,
-      complete: (results) => {
-        startups = results.data.filter((s) => s.company_name);
-        renderFilters();
-        renderGrid(startups);
-        document.getElementById("stat-startups").textContent = startups.length;
-        loadListsFromAPI();
-      },
+    thesisScale.forEach(score => {
+      thesisContainer.innerHTML += `<label class="flex items-center space-x-2">
+        <input type="checkbox" value="${score}" class="thesis-checkbox"><span>${score}</span>
+      </label>`;
+    });
+    founderScale.forEach(score => {
+      founderContainer.innerHTML += `<label class="flex items-center space-x-2">
+        <input type="checkbox" value="${score}" class="founder-checkbox"><span>${score}</span>
+      </label>`;
+    });
+    fundingStages.forEach(stage => {
+      fundingContainer.innerHTML += `<label class="flex items-center space-x-2">
+        <input type="checkbox" value="${stage}" class="funding-checkbox"><span>${stage}</span>
+      </label>`;
     });
 
-    function renderFilters() {
-      const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
-      const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
-      const thesisContainer = document.getElementById("thesis-filters");
-      thesisScale.forEach((score) => {
-        const id = "thesis-" + score.replace(/\s+/g, "-");
-        thesisContainer.innerHTML += `
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" value="${score}" id="${id}" class="thesis-checkbox">
-            <span>${score}</span>
-          </label>`;
-      });
-      document.querySelectorAll(".thesis-checkbox").forEach((cb) => cb.addEventListener("change", applyFilters));
-
-      const founderContainer = document.getElementById("founder-filters");
-      founderScale.forEach((score) => {
-        const id = "founder-" + score.replace(/\s+/g, "-");
-        founderContainer.innerHTML += `
-          <label class="flex items-center space-x-2">
-            <input type="checkbox" value="${score}" id="${id}" class="founder-checkbox">
-            <span>${score}</span>
-          </label>`;
-      });
-      document.querySelectorAll(".founder-checkbox").forEach((cb) => cb.addEventListener("change", applyFilters));
-    }
-
-    function applyFilters() {
-      const thesisSelected = [...document.querySelectorAll(".thesis-checkbox:checked")].map(cb => cb.value);
-      const founderSelected = [...document.querySelectorAll(".founder-checkbox:checked")].map(cb => cb.value);
-
-      let filtered = startups.filter((s) => {
-        let thesisOK = thesisSelected.length === 0 || thesisSelected.includes(s.thesis_score);
-        let founderOK = founderSelected.length === 0 || founderSelected.includes(s.founder_score);
-        return thesisOK && founderOK;
-      });
-
-      if (activeListFilter && lists[activeListFilter]) {
-        filtered = filtered.filter(s => lists[activeListFilter].includes(s.company_name));
-      }
-
-      renderGrid(filtered);
-    }
-
-    function getHeatmapClass(score) {
-      switch ((score || "").toLowerCase()) {
-        case "stone cold": case "bad":
-          return "border border-red-600 text-red-700 bg-red-50";
-        case "cold": case "medium":
-          return "border border-orange-500 text-orange-700 bg-orange-50";
-        case "warm": case "good":
-          return "border border-yellow-500 text-yellow-700 bg-yellow-50";
-        case "hot":
-          return "border border-lime-600 text-lime-700 bg-lime-50";
-        case "nuclear hot": case "fantastic":
-          return "border border-green-600 text-green-700 bg-green-50";
-        default:
-          return "border border-slate-300 text-slate-600 bg-slate-50";
-      }
-    }
-
-    function renderGrid(data) {
-      const results = document.getElementById("results");
-      const noResults = document.getElementById("noResults");
-      results.innerHTML = "";
-
-      if (!data || data.length === 0) {
-        noResults.classList.remove("hidden");
-        return;
-      }
-      noResults.classList.add("hidden");
-
-      data.forEach((s) => {
-        const thesisClass = getHeatmapClass(s.thesis_score);
-        const founderClass = getHeatmapClass(s.founder_score);
-
-        const card = document.createElement("div");
-        card.className = "startup-card bg-white border border-slate-200 rounded-md p-4";
-        card.innerHTML = `
-          <div class="flex justify-between items-start">
-            <div>
-              <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
-              <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
-            </div>
-            <button class="heart-btn text-slate-400 hover:text-red-500 text-xl" data-company="${s.company_name}">♥</button>
-          </div>
-          <div class="space-y-1 text-sm">
-            <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
-            <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
-            <p><span class="font-medium text-slate-700">Funding:</span> ${s.funding_stage || "-"} ${s.funding_amount ? " | " + s.funding_amount : ""} ${s.Latest_Funding_Date ? " (" + s.Latest_Funding_Date + ")" : ""}</p>
-            <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
-          </div>
-        `;
-        card.addEventListener("click", (e) => {
-          if (!e.target.classList.contains("heart-btn")) {
-            window.openModal(s);
-          }
-        });
-        results.appendChild(card);
-      });
-    }
-
-    window.openModal = (startup) => {
-      const modal = document.getElementById("modal");
-      const modalContent = document.getElementById("modalContent");
-
-      const thesisClass = getHeatmapClass(startup.thesis_score);
-      const founderClass = getHeatmapClass(startup.founder_score);
-
-      modalContent.innerHTML = `
-        <div class="flex justify-between items-start">
-          <h2 class="text-xl font-bold text-slate-900 mb-2">${startup.company_name}</h2>
-          <button class="heart-btn text-slate-400 hover:text-red-500 text-2xl" data-company="${startup.company_name}">♥</button>
-        </div>
-        <p class="text-sm text-slate-500 mb-2">${startup.industry || "-"}</p>
-        ${startup.domain ? `<a href="${startup.domain}" target="_blank" class="text-slate-700 underline">${startup.domain}</a>` : ""}
-        <div class="mt-3 text-sm space-y-1">
-          <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${startup.thesis_score || "-"}</span></p>
-          <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${startup.founder_score || "-"}</span></p>
-          <p><span class="font-medium">Funding:</span> ${startup.funding_stage || "-"} ${startup.funding_amount ? " | " + startup.funding_amount : ""} ${startup.Latest_Funding_Date ? " (" + startup.Latest_Funding_Date + ")" : ""}</p>
-          <p><span class="font-medium">Best Thesis:</span> ${startup.best_matching_thesis || "-"}</p>
-          <p><span class="font-medium">Reasoning:</span> ${startup.reasoning || ""}</p>
-          <p><span class="font-medium">Founder Background:</span> ${startup.founder_background || ""}</p>
-          <p><span class="font-medium">Founder Score Reasoning:</span> ${startup.founder_score_reasoning || ""}</p>
-        </div>
-        ${startup.source ? `<a href="${startup.source}" target="_blank" class="mt-3 block text-sm text-slate-700 underline">Source</a>` : ""}
-      `;
-      modal.classList.remove("hidden");
-    };
-
-    window.closeModal = () => { document.getElementById("modal").classList.add("hidden"); };
-
-    // ✅ Optimistic Remove
-    document.addEventListener("click", (e) => {
-      if (e.target.classList.contains("heart-btn")) {
-        selectedCompany = e.target.getAttribute("data-company");
-        window.openListModal();
-      }
-
-      if (e.target.dataset.list) {
-        activeListFilter = e.target.dataset.list;
-        applyFilters();
-      }
-
-      if (e.target.dataset.remove) {
-        const [listName, company] = e.target.dataset.remove.split("|");
-        lists[listName] = lists[listName].filter(c => c !== company);
-        showToast(`${company} removed from ${listName}`);
-        updateSidebar();
-        applyFilters();
-
-        // background sync
-        fetch(API_URL + "?remove=1&company=" + encodeURIComponent(company) + "&list=" + encodeURIComponent(listName))
-          .then(r => r.json())
-          .then(res => { if (!res.success) showToast("⚠️ Remove failed"); })
-          .catch(() => showToast("⚠️ Network error"));
-      }
+    // Thesis Theme Filter
+    thesisThemeContainer.innerHTML = "";
+    thesisThemes.forEach(theme => {
+      thesisThemeContainer.innerHTML += `<label class="flex items-center space-x-2">
+        <input type="checkbox" value="${theme}" class="thesis-theme-checkbox"><span>${theme}</span>
+      </label>`;
     });
 
-    window.openListModal = function() {
-      document.getElementById("listModal").classList.remove("hidden");
-      document.getElementById("listSelect").value = "Favorites";
-    };
+    document.querySelectorAll(".thesis-checkbox, .founder-checkbox, .funding-checkbox, .thesis-theme-checkbox")
+      .forEach(cb => cb.addEventListener("change", applyFilters));
+  }
 
-    window.closeListModal = function(event) {
-      if (!event || event.target.id === "listModal") {
-        document.getElementById("listModal").classList.add("hidden");
-      }
-    };
+  function applyFilters() {
+    thesisSelected = [...document.querySelectorAll(".thesis-checkbox:checked")].map(cb => cb.value);
+    founderSelected = [...document.querySelectorAll(".founder-checkbox:checked")].map(cb => cb.value);
+    fundingSelected = [...document.querySelectorAll(".funding-checkbox:checked")].map(cb => cb.value);
+    thesisThemeSelected = [...document.querySelectorAll(".thesis-theme-checkbox:checked")].map(cb => cb.value);
 
-    document.getElementById("chatSearch").addEventListener("input", (e) => {
-      const q = e.target.value.toLowerCase();
-      let filtered = startups.filter((s) =>
-        (s.company_name && s.company_name.toLowerCase().includes(q)) ||
-        (s.domain && s.domain.toLowerCase().includes(q)) ||
-        (s.reasoning && s.reasoning.toLowerCase().includes(q))
+    let filtered = startups.filter(s => {
+      const thesisOK = thesisSelected.length === 0 || thesisSelected.includes(s.thesis_score);
+      const founderOK = founderSelected.length === 0 || founderSelected.includes(s.founder_score);
+      const fundingOK = fundingSelected.length === 0 || fundingSelected.some(stage =>
+        (s.funding_stage || "").toLowerCase().includes(stage.toLowerCase())
       );
-      if (activeListFilter && lists[activeListFilter]) {
-        filtered = filtered.filter(s => lists[activeListFilter].includes(s.company_name));
-      }
-      renderGrid(filtered);
+      const themeOK = thesisThemeSelected.length === 0 || thesisThemeSelected.includes(s.best_matching_thesis);
+      return thesisOK && founderOK && fundingOK && themeOK;
     });
-  });
-</script> 
 
+    renderGrid(filtered);
+  }
+
+  function getHeatmapClass(score) {
+    switch ((score || "").toLowerCase()) {
+      case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
+      case "cold": case "medium": return "border border-orange-500 text-orange-700 bg-orange-50";
+      case "warm": case "good": return "border border-yellow-500 text-yellow-700 bg-yellow-50";
+      case "hot": return "border border-lime-600 text-lime-700 bg-lime-50";
+      case "nuclear hot": case "fantastic": return "border border-green-600 text-green-700 bg-green-50";
+      default: return "border border-slate-300 text-slate-600 bg-slate-50";
+    }
+  }
+
+  function renderGrid(data) {
+    const results = document.getElementById("results");
+    const noResults = document.getElementById("noResults");
+    results.innerHTML = "";
+    if (!data || data.length === 0) {
+      noResults.classList.remove("hidden");
+      return;
+    }
+    noResults.classList.add("hidden");
+
+    data.forEach(s => {
+      const thesisClass = getHeatmapClass(s.thesis_score);
+      const founderClass = getHeatmapClass(s.founder_score);
+      const normalizedName = (s.company_name || "").trim().toLowerCase();
+      const isFav = favorites.includes(normalizedName);
+
+      // 👇 Add funding_amount next to funding_stage
+      const fundingInfo = [s.funding_stage, s.funding_amount].filter(Boolean).join(" | ");
+
+      // Ensure https:// is present for domain
+      let domainLink = "";
+      if (s.domain) {
+        const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
+        domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
+      }
+
+      const card = document.createElement("div");
+      card.className = "startup-card bg-white border border-slate-200 rounded-md p-4";
+      card.innerHTML = `
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
+            <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
+          </div>
+          <button class="heart-btn ${isFav ? "red" : "gray"}" data-company="${s.company_name}">♥</button>
+        </div>
+        <div class="space-y-1 text-sm">
+          <p><span class="font-medium text-slate-700">Thesis Score:</span>
+             <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
+          <p><span class="font-medium text-slate-700">Founder Score:</span>
+             <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
+          <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo || "-"}</p>
+          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
+          ${domainLink ? `<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>` : ""}
+        </div>
+      `;
+
+      card.addEventListener("click", e => {
+        if (!e.target.classList.contains("heart-btn")) openModal(s);
+      });
+
+      results.appendChild(card);
+    });
+
+    document.querySelectorAll(".heart-btn").forEach(btn => {
+      btn.addEventListener("click", e => {
+        e.stopPropagation();
+        const company = btn.dataset.company;
+        const normalized = company.trim().toLowerCase();
+        const isFav = favorites.includes(normalized);
+
+        if (isFav) {
+          favorites = favorites.filter(f => f !== normalized);
+          btn.classList.replace("red", "gray");
+        } else {
+          favorites.push(normalized);
+          btn.classList.replace("gray", "red");
+        }
+        renderFavoritesSidebar();
+      });
+    });
+  }
+
+  function openModal(s) {
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+    const thesisClass = getHeatmapClass(s.thesis_score);
+    const founderClass = getHeatmapClass(s.founder_score);
+    // 👇 Add funding_amount next to funding_stage
+    const fundingInfo = [s.funding_stage, s.funding_amount].filter(Boolean).join(" | ");
+    // Ensure https:// is present for domain
+    let domainLink = "";
+    if (s.domain) {
+      const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
+      domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
+    }
+    content.innerHTML = `
+      <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
+      <p class="text-sm text-slate-500 mb-2">${s.industry || "-"}</p>
+      ${domainLink}
+      <div class="mt-3 text-sm space-y-1">
+        <p><span class="font-medium">Thesis Score:</span>
+           <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
+        <p><span class="font-medium">Founder Score:</span>
+           <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
+        <p><span class="font-medium">Funding:</span> ${fundingInfo || "-"}</p>
+        <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
+        <p><span class="font-medium">Reasoning:</span> ${s.reasoning || ""}</p>
+        <p><span class="font-medium">Founder Background:</span> ${s.founder_background || ""}</p>
+      </div>`;
+    modal.classList.remove("hidden");
+  }
+
+  Papa.parse(CSV_URL, {
+    download: true,
+    header: true,
+    complete: results => {
+      startups = results.data.filter(s => s.company_name);
+
+      // Extract unique thesis themes
+      thesisThemes = Array.from(
+        new Set(startups.map(s => s.best_matching_thesis).filter(Boolean))
+      ).sort();
+
+      document.getElementById("stat-startups").textContent = startups.length;
+      renderFilters();
+      window.startups = startups;
+
+      setTimeout(() => {
+        renderGrid(startups);
+        if (window.renderFavoritesSidebar) window.renderFavoritesSidebar();
+      }, 300);
+    },
+  });
+
+  document.getElementById("chatSearch").addEventListener("input", e => {
+    const q = e.target.value.toLowerCase();
+    const filtered = startups.filter(s =>
+      (s.company_name && s.company_name.toLowerCase().includes(q)) ||
+      (s.industry && s.industry.toLowerCase().includes(q)) ||
+      (s.reasoning && s.reasoning.toLowerCase().includes(q))
+    );
+    renderGrid(filtered);
+  });
+
+  window.renderFavoritesSidebar = function() {
+    const list = document.getElementById("favoritesList");
+    list.innerHTML = favorites.length
+      ? favorites.map(name => {
+          const favStartup = startups.find(s => (s.company_name || "").trim().toLowerCase() === name);
+          return `<li class="flex justify-between items-center">
+            <span>${favStartup?.company_name || name}</span>
+            <button data-remove-id="${favStartup?.id}" class="text-red-500 text-xs">❌</button></li>`;
+        }).join("")
+      : `<li class="text-slate-400">No favorites yet</li>`;
+  };
+
+  document.addEventListener("click", e => {
+    if (e.target.dataset.removeId) {
+      const id = parseInt(e.target.dataset.removeId, 10);
+      favorites = favorites.filter(f => startups.find(s => s.id === id)?.company_name.trim().toLowerCase() !== f);
+      renderFavoritesSidebar();
+      renderGrid(startups);
+    }
+  });
+});
+</script>
+
+<!-- ✅ Google Sign-in Integration (keep this, remove Supabase favorites logic) -->
 <script type="module">
   import { supabase } from "./lib/supabaseClient.js";
+  window.supabase = supabase;
 
-  // Check if user is logged in
-  const { data: { session } } = await supabase.auth.getSession();
-  if (!session) {
-    window.location.href = "login.html"; // redirect if not logged in
-  }
+  async function initSupabase() {
+    const { data: { session } } = await supabase.auth.getSession();
 
-  // Logout functionality
-  document.getElementById("logout").addEventListener("click", async () => {
-    await supabase.auth.signOut();
-    window.location.href = "login.html";
-  });
-
-  // Optional: test connection (can be removed if not needed)
-  async function testConnection() {
-    let { data, error } = await supabase.from("profiles").select("*");
-    if (error) {
-      console.error("❌ Supabase error:", error);
-    } else {
-      console.log("✅ Supabase connected! Profiles:", data);
+    if (!session) {
+      window.location.href = "login.html";
+      return;
     }
+
+    const user = session.user;
+    const userEmail = user.email;
+    console.log("✅ Logged in:", user.email);
+
+    document.getElementById("logout").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    // No favorites logic here
   }
-  testConnection();
+
+  document.addEventListener("DOMContentLoaded", initSupabase);
 </script>
 </body>
 </html>

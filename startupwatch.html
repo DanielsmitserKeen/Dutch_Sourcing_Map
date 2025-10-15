@@ -181,17 +181,22 @@
       noResults.classList.add("hidden");
 
       data.forEach((s) => {
+        let domainLink = "";
+        if (s.domain) {
+          // Ensure https:// is present
+          const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
+          domainLink = `<a href="${url}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`;
+        } else {
+          domainLink = `<span class="text-gray-400">No domain</span>`;
+        }
+
         const card = document.createElement("div");
         card.className = "startup-card bg-white rounded-lg shadow p-4 flex flex-col justify-between";
         card.innerHTML = `
           <div>
             <h3 class="font-bold text-lg">${s.company_name}</h3>
             <p class="text-sm text-gray-600 mb-2">${s.industry || "No industry listed"}</p>
-            ${
-              s.domain
-                ? `<a href="https://${s.domain}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`
-                : `<span class="text-gray-400">No domain</span>`
-            }
+            ${domainLink}
           </div>
           <button class="mt-3 text-sm bg-indigo-600 text-white px-3 py-1 rounded hover:bg-indigo-700">+ Save Deal</button>
         `;
@@ -207,16 +212,21 @@
         return;
       }
       data.forEach((s) => {
+        let domainLink = "";
+        if (s.domain) {
+          // Ensure https:// is present
+          const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
+          domainLink = `<a href="${url}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`;
+        } else {
+          domainLink = `<span class="text-gray-400">No domain</span>`;
+        }
+
         const card = document.createElement("div");
         card.className = "startup-card bg-gradient-to-r from-indigo-50 to-white border-l-4 border-indigo-500 rounded-lg p-4 shadow";
         card.innerHTML = `
           <h3 class="font-bold text-lg">${s.company_name}</h3>
           <p class="text-sm text-gray-600">${s.industry || "No industry listed"}</p>
-          ${
-            s.domain
-              ? `<a href="https://${s.domain}" target="_blank" class="text-indigo-600 hover:underline">${s.domain}</a>`
-              : `<span class="text-gray-400">No domain</span>`
-          }
+          ${domainLink}
           <div class="mt-2 text-sm text-gray-800">
             ${s.fundingStage ? `<span class="font-semibold">${s.fundingStage}</span>` : ""}
             ${s.fundingAmount ? ` • ${s.fundingAmount}` : ""}
