@@ -107,6 +107,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let fundingSelected = [];
   let thesisThemes = [];
   let thesisThemeSelected = [];
+  window.savedThesisSubscriptions = []; // <-- Use window-scoped variable
 
   function renderFilters() {
     const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
@@ -433,8 +434,18 @@ document.addEventListener("DOMContentLoaded", () => {
     Auto Slack Me
   </button>
 </div>
-
       `;
+
+      // ✅ Pre-check saved theses for logged-in user
+      setTimeout(() => {
+        if (window.savedThesisSubscriptions && window.savedThesisSubscriptions.length > 0) {
+          window.savedThesisSubscriptions.forEach(theme => {
+            const checkbox = [...document.querySelectorAll("#modalContent input[type='checkbox']")]
+              .find(cb => cb.value === theme);
+            if (checkbox) checkbox.checked = true;
+          });
+        }
+      }, 200);
 
       modal.classList.remove("hidden");
 
@@ -445,32 +456,93 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(`Subscribed to ${selected.length} thesis topics!`);
         modal.classList.add("hidden");
       });
-
       // 🧠 Handle Auto Slack Me (save selected theses to Supabase)
-      document.getElementById("autoSlackBtn").addEventListener("click", async () => {
-        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
-        if (selected.length === 0) {
-          alert("Please select at least one thesis topic before saving.");
-          return;
-        }
+document.getElementById("autoSlackBtn").addEventListener("click", async () => {
+  const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
+  if (selected.length === 0) {
+    alert("Please select at least one thesis topic before saving.");
+    return;
+  }
 
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            alert("Please log in first.");
-            return;
-          }
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) {
+      alert("Please log in first.");
+      return;
+    }
 
-          const user = session.user;
-          const userEmail = user.email;
+    const user = session.user;
+    const userEmail = user.email;
 
-          const { error } = await supabase.from("thesis_subscriptions").upsert(
-            {
-              email: userEmail,
-              selected_theses: selected,
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: "email" }
-          );
+    const { error } = await supabase.from("thesis_subscriptions").upsert(
+      {
+        email: userEmail,
+        selected_theses: selected,
+        created_at: new Date().toISOString(),
+      },
+      { onConflict: "email" }
+    );
 
-          if
+    if (error) throw error;
+
+    alert(`✅ Auto Slack setup saved! You’ll get Slack updates for ${selected.length} theses.`);
+    modal.classList.add("hidden");
+  } catch (err) {
+    console.error("❌ Error saving to Supabase:", err);
+    alert("Failed to save to Supabase. Check console for details.");
+  }
+});
+
+    }
+  });
+});
+</script>
+
+<!-- ✅ Google Sign-in Integration (keep this, remove Supabase favorites logic) -->
+<script type="module">
+  import { supabase } from "./lib/supabaseClient.js";
+  window.supabase = supabase;
+
+  async function initSupabase() {
+    const { data: { session } } = await supabase.auth.getSession();
+
+    if (!session) {
+      window.location.href = "login.html";
+      return;
+    }
+
+    const user = session.user;
+    const userEmail = user.email;
+    console.log("✅ Logged in:", user.email);
+
+    // 🧠 Fetch user's saved thesis subscriptions
+    try {
+      const { data, error } = await supabase
+        .from("thesis_subscriptions")
+        .select("selected_theses")
+        .eq("email", userEmail)
+        .single();
+
+      if (!error && data && data.selected_theses) {
+        window.savedThesisSubscriptions = data.selected_theses;
+        console.log("✅ Loaded saved thesis selections:", data.selected_theses);
+      } else {
+        window.savedThesisSubscriptions = [];
+      }
+    } catch (err) {
+      console.error("❌ Error loading saved theses:", err);
+      window.savedThesisSubscriptions = [];
+    }
+
+    document.getElementById("logout").addEventListener("click", async () => {
+      await supabase.auth.signOut();
+      window.location.href = "login.html";
+    });
+
+    // No favorites logic here
+  }
+
+  document.addEventListener("DOMContentLoaded", initSupabase);
+</script>
+</body>
+</html>
