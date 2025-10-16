@@ -476,7 +476,7 @@ document.getElementById("autoSlackBtn").addEventListener("click", async () => {
 
     const { error } = await supabase.from("thesis_subscriptions").upsert(
       {
-        email: userEmail,
+        user_email: userEmail,
         selected_theses: selected,
         created_at: new Date().toISOString(),
       },
