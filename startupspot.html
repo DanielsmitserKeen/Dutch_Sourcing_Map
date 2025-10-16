@@ -326,7 +326,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function openModal(s) {
+  async function openModal(s) {
     const modal = document.getElementById("modal");
     const content = document.getElementById("modalContent");
     const thesisClass = getHeatmapClass(s.thesis_score);
@@ -339,6 +339,27 @@ document.addEventListener("DOMContentLoaded", () => {
       const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
       domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
     }
+
+    // Load existing feedback comment
+    let existingComment = "";
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const { data, error } = await supabase
+          .from("company_feedback")
+          .select("feedback_comment")
+          .eq("user_email", session.user.email)
+          .eq("company_name", s.company_name)
+          .single();
+        
+        if (!error && data) {
+          existingComment = data.feedback_comment || "";
+        }
+      }
+    } catch (err) {
+      console.warn("Could not load existing comment:", err);
+    }
+
     content.innerHTML = `
       <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
       <p class="text-sm text-slate-500 mb-2">${s.industry || "-"}</p>
@@ -352,8 +373,78 @@ document.addEventListener("DOMContentLoaded", () => {
         <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
         <p><span class="font-medium">Reasoning:</span> ${s.reasoning || ""}</p>
         <p><span class="font-medium">Founder Background:</span> ${s.founder_background || ""}</p>
+      </div>
+      
+      <!-- Comment Box Section -->
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-2">Feedback Comment</h3>
+        <textarea 
+          id="feedbackComment" 
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 resize-none" 
+          rows="4" 
+          placeholder="Write your feedback about this company...">${existingComment}</textarea>
+        <div class="flex justify-between items-center mt-2">
+          <span class="text-xs text-slate-500">Your comment will be saved automatically</span>
+          <button 
+            id="saveCommentBtn" 
+            class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">
+            Save Comment
+          </button>
+        </div>
       </div>`;
+    
+    // Add event listener for saving comment
+    const saveBtn = document.getElementById("saveCommentBtn");
+    const textarea = document.getElementById("feedbackComment");
+    
+    saveBtn.addEventListener("click", () => saveComment(s.company_name, textarea.value));
+    
+    // Auto-save on textarea blur
+    textarea.addEventListener("blur", () => saveComment(s.company_name, textarea.value));
+    
     modal.classList.remove("hidden");
+  }
+
+  async function saveComment(companyName, comment) {
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        alert("Please log in to save comments.");
+        return;
+      }
+
+      const userEmail = session.user.email;
+      
+      const { error } = await supabase
+        .from("company_feedback")
+        .upsert({
+          user_email: userEmail,
+          company_name: companyName,
+          feedback_comment: comment,
+          updated_at: new Date().toISOString()
+        }, { 
+          onConflict: "user_email,company_name" 
+        });
+
+      if (error) throw error;
+
+      // Show success feedback
+      const saveBtn = document.getElementById("saveCommentBtn");
+      if (saveBtn) {
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = "Saved ✓";
+        saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
+        
+        setTimeout(() => {
+          saveBtn.textContent = originalText;
+          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+        }, 2000);
+      }
+
+    } catch (err) {
+      console.error("Error saving comment:", err);
+      alert("Failed to save comment. Please try again.");
+    }
   }
 
   Papa.parse(CSV_URL, {
