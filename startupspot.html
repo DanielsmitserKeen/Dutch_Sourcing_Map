@@ -425,11 +425,15 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
           ${filtersHTML}
         </div>
-        <div class="mt-4 flex justify-end">
-          <button id="saveSubscription" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-            Save Selection
-          </button>
-        </div>
+<div class="mt-4 flex justify-end gap-2">
+  <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">
+    Save Selection
+  </button>
+  <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+    Auto Slack Me
+  </button>
+</div>
+
       `;
 
       modal.classList.remove("hidden");
@@ -441,37 +445,32 @@ document.addEventListener("DOMContentLoaded", () => {
         alert(`Subscribed to ${selected.length} thesis topics!`);
         modal.classList.add("hidden");
       });
-    }
-  });
-});
-</script>
 
-<!-- ✅ Google Sign-in Integration (keep this, remove Supabase favorites logic) -->
-<script type="module">
-  import { supabase } from "./lib/supabaseClient.js";
-  window.supabase = supabase;
+      // 🧠 Handle Auto Slack Me (save selected theses to Supabase)
+      document.getElementById("autoSlackBtn").addEventListener("click", async () => {
+        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
+        if (selected.length === 0) {
+          alert("Please select at least one thesis topic before saving.");
+          return;
+        }
 
-  async function initSupabase() {
-    const { data: { session } } = await supabase.auth.getSession();
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            alert("Please log in first.");
+            return;
+          }
 
-    if (!session) {
-      window.location.href = "login.html";
-      return;
-    }
+          const user = session.user;
+          const userEmail = user.email;
 
-    const user = session.user;
-    const userEmail = user.email;
-    console.log("✅ Logged in:", user.email);
+          const { error } = await supabase.from("thesis_subscriptions").upsert(
+            {
+              email: userEmail,
+              selected_theses: selected,
+              created_at: new Date().toISOString(),
+            },
+            { onConflict: "email" }
+          );
 
-    document.getElementById("logout").addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    });
-
-    // No favorites logic here
-  }
-
-  document.addEventListener("DOMContentLoaded", initSupabase);
-</script>
-</body>
-</html>
+          if
