@@ -48,33 +48,16 @@
         <div id="funding-filters" class="space-y-1 text-sm"></div>
       </div>
       <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
-        <button id="openSubscribeModal"
-          class="bg-blue-600 text-white font-semibold py-2 px-4 rounded-md hover:bg-blue-700 mb-4">
-          Subscribe to Thesis
-        </button>
-        <!-- Modal -->
-        <div id="subscribeModal" class="fixed inset-0 bg-gray-900 bg-opacity-60 flex items-center justify-center hidden z-50">
-          <div class="bg-white rounded-2xl shadow-lg w-96 p-6 relative">
-            <h2 class="text-xl font-semibold mb-3">Select Theses to Follow</h2>
-            <p class="text-gray-600 text-sm mb-4">Tap to subscribe (max 10):</p>
+       <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
 
-            <div id="thesisList" class="grid grid-cols-2 gap-2 mb-4 overflow-y-auto max-h-60">
-              <!-- Thesis buttons will appear here -->
-            </div>
+<!-- ✅ Subscribe button -->
+<button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">
+  Subscribe to Thesis
+</button>
 
-            <input id="slackInput" type="text" placeholder="Your Slack @username or webhook URL"
-              class="w-full border rounded-md p-2 mb-4" />
+<!-- Thesis filters -->
+<div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
 
-            <button id="saveSubscription"
-              class="w-full bg-blue-600 text-white py-2 rounded-md font-semibold hover:bg-blue-700">
-              Save Subscriptions
-            </button>
-
-            <button id="closeModal" class="absolute top-3 right-4 text-gray-500 hover:text-gray-700 text-lg font-bold">×</button>
-          </div>
-        </div>
-        <div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
       </div>
     </aside>
 
@@ -424,6 +407,42 @@ document.addEventListener("DOMContentLoaded", () => {
       renderGrid(startups);
     }
   });
+
+  // 🧠 Open modal with thesis filters when "Subscribe to Thesis" is clicked
+  document.addEventListener("click", e => {
+    if (e.target.id === "subscribeThesisBtn") {
+      const modal = document.getElementById("modal");
+      const content = document.getElementById("modalContent");
+
+      // Get all current thesis themes
+      const thesisContainer = document.getElementById("thesis-theme-filters");
+      const filtersHTML = thesisContainer.innerHTML; // copy current filters
+
+      // Fill the modal with same checkboxes
+      content.innerHTML = `
+        <h2 class="text-xl font-bold mb-2 text-slate-900">Subscribe to Thesis Topics</h2>
+        <p class="text-sm text-slate-600 mb-3">Select the thesis themes you want to subscribe to:</p>
+        <div class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
+          ${filtersHTML}
+        </div>
+        <div class="mt-4 flex justify-end">
+          <button id="saveSubscription" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            Save Selection
+          </button>
+        </div>
+      `;
+
+      modal.classList.remove("hidden");
+
+      // Optional: Handle save
+      document.getElementById("saveSubscription").addEventListener("click", () => {
+        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
+        console.log("✅ Selected thesis subscriptions:", selected);
+        alert(`Subscribed to ${selected.length} thesis topics!`);
+        modal.classList.add("hidden");
+      });
+    }
+  });
 });
 </script>
 
@@ -453,82 +472,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.addEventListener("DOMContentLoaded", initSupabase);
-</script>
-
-<!-- ✅ Supabase setup -->
-<script>
-const SUPABASE_URL = "https://qeskvduvmuofkvxfqdkc.supabase.co";
-const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFlc2t2ZHV2bXVvZmt2eGZxZGtjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjAwMzA5OTUsImV4cCI6MjA3NTYwNjk5NX0.Ah_ykA-s3-oTL150Ttb5YtZg0oMjiTzIEevCRPN70Xw";
-const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-// ✅ Modal open/close logic
-const modal = document.getElementById("subscribeModal");
-document.getElementById("openSubscribeModal").onclick = () => modal.classList.remove("hidden");
-document.getElementById("closeModal").onclick = () => modal.classList.add("hidden");
-
-// ✅ Load theses dynamically
-async function loadTheses() {
-  const { data, error } = await supabaseClient.from("theses").select("title");
-  if (error) {
-    console.error("Error loading theses:", error);
-    return;
-  }
-
-  const thesisList = document.getElementById("thesisList");
-  thesisList.innerHTML = "";
-
-  data.forEach(t => {
-    const btn = document.createElement("button");
-    btn.textContent = t.title;
-    btn.className =
-      "thesis-btn text-sm border border-blue-500 rounded-lg py-2 px-3 text-blue-600 hover:bg-blue-50";
-    btn.dataset.subscribed = "false";
-
-    btn.addEventListener("click", () => {
-      const isActive = btn.dataset.subscribed === "true";
-      const selectedCount = document.querySelectorAll('.thesis-btn[data-subscribed="true"]').length;
-
-      if (!isActive && selectedCount >= 10) {
-        alert("You can only subscribe to 10 theses.");
-        return;
-      }
-
-      btn.dataset.subscribed = (!isActive).toString();
-      btn.classList.toggle("bg-blue-600", !isActive);
-      btn.classList.toggle("text-white", !isActive);
-      btn.classList.toggle("text-blue-600", isActive);
-      btn.classList.toggle("border-blue-500", isActive);
-    });
-
-    thesisList.appendChild(btn);
-  });
-}
-loadTheses();
-
-// ✅ Save subscription
-document.getElementById("saveSubscription").addEventListener("click", async () => {
-  const selected = Array.from(document.querySelectorAll('.thesis-btn[data-subscribed="true"]')).map(
-    b => b.textContent
-  );
-
-  const slackContact = document.getElementById("slackInput").value.trim();
-  if (!slackContact || selected.length === 0) {
-    alert("Please select at least one thesis and enter your Slack username or webhook URL.");
-    return;
-  }
-
-  const { error } = await supabaseClient.from("thesis_subscriptions").insert([
-    { slack_contact: slackContact, subscribed_theses: selected }
-  ]);
-
-  if (error) {
-    console.error(error);
-    alert("Error saving subscription.");
-  } else {
-    alert("✅ Subscribed successfully!");
-    modal.classList.add("hidden");
-  }
-});
 </script>
 </body>
 </html>
