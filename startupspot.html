@@ -538,13 +538,6 @@ Amazing! Now will get the best weekly Monday results in your Slack linked to the
       });
     }
   });
-
-  document.getElementById("logout").addEventListener("click", async () => {
-    if (window.supabase) {
-      await window.supabase.auth.signOut();
-    }
-    window.location.href = "login.html";
-  });
 });
 </script>
 
@@ -575,4 +568,14 @@ Amazing! Now will get the best weekly Monday results in your Slack linked to the
 
       if (!error && data && data.selected_theses) {
         window.savedThesisSubscriptions = data.selected_theses;
-        console.log("✅ Loaded saved thesis selections:", data.selected_thesis
+        console.log("✅ Loaded saved thesis selections:", data.selected_theses);
+      }
+    } catch (err) {
+      console.error("❌ Error loading thesis subscriptions:", err);
+    }
+  }
+
+  initSupabase();
+</script>
+</body>
+</html>
