@@ -24,7 +24,10 @@
     <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
       <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
       <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
-      <button id="logout" class="ml-4 bg-red-600 text-white px-3 py-1 rounded">Logout</button>
+      <div class="flex items-center gap-2">
+        <span id="authStatus" class="text-sm text-slate-300">✓ Signed in - Comments save to Sheets</span>
+        <button id="logout" class="bg-red-600 text-white px-3 py-1 rounded">Logout</button>
+      </div>
     </div>
   </header>
 
@@ -101,16 +104,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const CSV_URL =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
   
-  // Google Sheets API configuration
-  const API_KEY = 'AIzaSyCNgd8yYb_Han3YhVVyHxVhD7ilrIOsAGk'; // Your Google API key
+  // Google Apps Script web app URL - replace with your deployed web app URL
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_oA8tvaXFlhCx58QyB0gHiynJNSpU0Ywau2QkUql-fBidWtsM1l6gKfmepHaFGbw/exec';
   
-  // Extract the correct Sheet ID from your CSV URL
-  // Your CSV URL: https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub
-  // But for API calls, you need the actual spreadsheet ID, not the published URL ID
-  // You need to get this from your Google Sheets URL when editing (not the published CSV)
-  const SHEET_ID = '1TBN6tn4XWJBzeBoSr3lBsuPogQRpzFGo6NEO0r_WrQw'; // ⚠️ REPLACE THIS WITH YOUR REAL SHEET ID
-  
-  const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
+  // We'll use a Google Apps Script web app to write to sheets
+  // This uses your existing Supabase Google authentication
+  let isLoggedIn = false;
 
   let startups = [];
   let favorites = [];
@@ -380,7 +379,7 @@ document.addEventListener("DOMContentLoaded", () => {
           rows="4" 
           placeholder="Write your feedback about this company...">${existingComment}</textarea>
         <div class="flex justify-between items-center mt-2">
-          <span class="text-xs text-slate-500">Your comment will be saved locally</span>
+          <span class="text-xs text-slate-500">Comments save to Google Sheets automatically</span>
           <button 
             id="saveCommentBtn" 
             class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">
@@ -407,39 +406,36 @@ document.addEventListener("DOMContentLoaded", () => {
       companyComments[companyName] = comment;
       localStorage.setItem('companyComments', JSON.stringify(companyComments));
       
-      // Find the company in the startups data to get the row number
-      const companyIndex = startups.findIndex(s => s.company_name === companyName);
-      if (companyIndex === -1) {
-        throw new Error('Company not found in data');
+      // Get Supabase session token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        throw new Error('Not authenticated');
       }
       
-      // Initialize Google Sheets API if not already done
-      if (!window.gapi || !window.gapi.client || !window.gapi.client.sheets) {
-        await new Promise((resolve) => {
-          gapi.load('client', resolve);
-        });
-        
-        await gapi.client.init({
-          apiKey: API_KEY,
-          discoveryDocs: [DISCOVERY_DOC],
-        });
-      }
+      const sessionToken = session.access_token;
+      const userEmail = session.user.email;
       
-      // Determine the column for feedback_comment (you may need to adjust this)
-      // First, let's assume it's the last column after all existing data
-      const range = `Sheet1!AA${companyIndex + 2}`; // Using column AA for feedback_comment
-      
-      // Update the cell with the comment
-      const response = await gapi.client.sheets.spreadsheets.values.update({
-        spreadsheetId: SHEET_ID,
-        range: range,
-        valueInputOption: 'RAW',
-        resource: {
-          values: [[comment]]
-        }
+      // Send to Google Apps Script web app
+      const response = await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          sessionToken: sessionToken,
+          companyName: companyName,
+          comment: comment,
+          userEmail: userEmail
+        })
       });
       
-      console.log('Comment saved to Google Sheets:', response);
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.error || 'Failed to save to Google Sheets');
+      }
+      
+      console.log('Comment saved to Google Sheets for:', companyName, '=', comment);
       
       // Show success feedback
       const saveBtn = document.getElementById("saveCommentBtn");
@@ -472,71 +468,10 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Initialize Google Sheets API and load comments
-  async function initGoogleSheets() {
-    try {
-      await new Promise((resolve) => {
-        gapi.load('client', resolve);
-      });
-      
-      await gapi.client.init({
-        apiKey: API_KEY,
-        discoveryDocs: [DISCOVERY_DOC],
-      });
-      
-      console.log('Google Sheets API initialized');
-      
-      // Test the connection by trying to read sheet info
-      await testSheetConnection();
-      await loadCommentsFromSheets();
-    } catch (error) {
-      console.warn('Could not initialize Google Sheets API, falling back to localStorage:', error);
-      loadCommentsFromLocalStorage();
-    }
-  }
-  
-  async function testSheetConnection() {
-    try {
-      console.log('Testing connection to Sheet ID:', SHEET_ID);
-      
-      // Try to get basic sheet info to verify connection
-      const response = await gapi.client.sheets.spreadsheets.get({
-        spreadsheetId: SHEET_ID
-      });
-      
-      console.log('✅ Successfully connected to sheet:', response.result.properties.title);
-      console.log('📊 Available sheets:', response.result.sheets.map(s => s.properties.title));
-      
-    } catch (error) {
-      console.error('❌ Failed to connect to Google Sheet:', error);
-      console.log('💡 Make sure:');
-      console.log('  1. Sheet ID is correct');
-      console.log('  2. Sheet is set to "Anyone with link can edit"');
-      console.log('  3. Google Sheets API is enabled in your project');
-    }
-  }
-  
-  async function loadCommentsFromSheets() {
-    try {
-      // Try to load comments from Google Sheets column AA (or wherever you put feedback_comment)
-      const response = await gapi.client.sheets.spreadsheets.values.get({
-        spreadsheetId: SHEET_ID,
-        range: 'Sheet1!AA:AA', // Adjust this to match your feedback_comment column
-      });
-      
-      const values = response.result.values || [];
-      // Skip header row and map comments to company names
-      values.slice(1).forEach((row, index) => {
-        if (row[0] && startups[index]) {
-          companyComments[startups[index].company_name] = row[0];
-        }
-      });
-      
-      console.log('Loaded comments from Google Sheets:', companyComments);
-    } catch (error) {
-      console.warn('Could not load comments from Google Sheets, using localStorage:', error);
-      loadCommentsFromLocalStorage();
-    }
+  // Simplified initialization - just load local comments
+  function initComments() {
+    console.log('Loading comments from localStorage (user already authenticated via Supabase)');
+    loadCommentsFromLocalStorage();
   }
   
   function loadCommentsFromLocalStorage() {
@@ -561,8 +496,8 @@ document.addEventListener("DOMContentLoaded", () => {
       renderFilters();
       window.startups = startups;
 
-      // Initialize Google Sheets API and load existing comments
-      await initGoogleSheets();
+      // Initialize comments (user already authenticated via Supabase)
+      initComments();
 
       setTimeout(() => {
         renderGrid(startups);
