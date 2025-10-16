@@ -480,7 +480,8 @@ document.getElementById("autoSlackBtn").addEventListener("click", async () => {
         selected_theses: selected,
         created_at: new Date().toISOString(),
       },
-      { onConflict: "email" }
+      { onConflict: "user_email" }
+
     );
 
     if (error) throw error;
