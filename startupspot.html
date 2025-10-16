@@ -102,8 +102,14 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
   
   // Google Sheets API configuration
-  const API_KEY = 'AIzaSyCNgd8yYb_Han3YhVVyHxVhD7ilrIOsAGk'; // Replace with your Google API key
-  const SHEET_ID = '1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx'; // Your sheet ID
+  const API_KEY = 'AIzaSyCNgd8yYb_Han3YhVVyHxVhD7ilrIOsAGk'; // Your Google API key
+  
+  // Extract the correct Sheet ID from your CSV URL
+  // Your CSV URL: https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub
+  // But for API calls, you need the actual spreadsheet ID, not the published URL ID
+  // You need to get this from your Google Sheets URL when editing (not the published CSV)
+  const SHEET_ID = '1TBN6tn4XWJBzeBoSr3lBsuPogQRpzFGo6NEO0r_WrQw'; // ⚠️ REPLACE THIS WITH YOUR REAL SHEET ID
+  
   const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
 
   let startups = [];
@@ -479,10 +485,34 @@ document.addEventListener("DOMContentLoaded", () => {
       });
       
       console.log('Google Sheets API initialized');
+      
+      // Test the connection by trying to read sheet info
+      await testSheetConnection();
       await loadCommentsFromSheets();
     } catch (error) {
       console.warn('Could not initialize Google Sheets API, falling back to localStorage:', error);
       loadCommentsFromLocalStorage();
+    }
+  }
+  
+  async function testSheetConnection() {
+    try {
+      console.log('Testing connection to Sheet ID:', SHEET_ID);
+      
+      // Try to get basic sheet info to verify connection
+      const response = await gapi.client.sheets.spreadsheets.get({
+        spreadsheetId: SHEET_ID
+      });
+      
+      console.log('✅ Successfully connected to sheet:', response.result.properties.title);
+      console.log('📊 Available sheets:', response.result.sheets.map(s => s.properties.title));
+      
+    } catch (error) {
+      console.error('❌ Failed to connect to Google Sheet:', error);
+      console.log('💡 Make sure:');
+      console.log('  1. Sheet ID is correct');
+      console.log('  2. Sheet is set to "Anyone with link can edit"');
+      console.log('  3. Google Sheets API is enabled in your project');
     }
   }
   
