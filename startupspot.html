@@ -426,74 +426,98 @@ document.addEventListener("DOMContentLoaded", () => {
         <div class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
           ${filtersHTML}
         </div>
-<div class="mt-4 flex justify-end gap-2">
-  <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">
-    Save Selection
-  </button>
-  <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-    Auto Slack Me
-  </button>
-</div>
+        <div class="mt-4 flex justify-end gap-2">
+          <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">
+            Save Selection
+          </button>
+          <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
+            Auto Slack Me
+          </button>
+        </div>
       `;
 
-      // ✅ Pre-check saved theses for logged-in user
-      setTimeout(() => {
-        if (window.savedThesisSubscriptions && window.savedThesisSubscriptions.length > 0) {
-          window.savedThesisSubscriptions.forEach(theme => {
+      // ✅ Pre-check saved theses for logged-in user (reliable)
+      async function preCheckSavedTheses() {
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) return;
+
+          const userEmail = session.user.email;
+          const { data, error } = await supabase
+            .from("thesis_subscriptions")
+            .select("selected_theses")
+            .eq("user_email", userEmail)
+            .single();
+
+          if (error) {
+            console.warn("⚠️ No previous theses found:", error.message);
+            return;
+          }
+
+          const savedTheses = data?.selected_theses || [];
+          window.savedThesisSubscriptions = savedTheses;
+
+          savedTheses.forEach(theme => {
             const checkbox = [...document.querySelectorAll("#modalContent input[type='checkbox']")]
               .find(cb => cb.value === theme);
             if (checkbox) checkbox.checked = true;
           });
+
+          console.log("✅ Pre-checked saved theses:", savedTheses);
+        } catch (err) {
+          console.error("❌ Error pre-checking theses:", err);
         }
-      }, 200);
+      }
+      preCheckSavedTheses();
 
       modal.classList.remove("hidden");
 
-      // Optional: Handle save
+      // Optional: Handle save (no Supabase)
       document.getElementById("saveSubscription").addEventListener("click", () => {
         const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
         console.log("✅ Selected thesis subscriptions:", selected);
         alert(`Subscribed to ${selected.length} thesis topics!`);
         modal.classList.add("hidden");
       });
+
       // 🧠 Handle Auto Slack Me (save selected theses to Supabase)
-document.getElementById("autoSlackBtn").addEventListener("click", async () => {
-  const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
-  if (selected.length === 0) {
-    alert("Please select at least one thesis topic before saving.");
-    return;
-  }
+      document.getElementById("autoSlackBtn").addEventListener("click", async () => {
+        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
+        if (selected.length === 0) {
+          alert("Please select at least one thesis topic before saving.");
+          return;
+        }
 
-  try {
-    const { data: { session } } = await supabase.auth.getSession();
-    if (!session) {
-      alert("Please log in first.");
-      return;
-    }
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (!session) {
+            alert("Please log in first.");
+            return;
+          }
 
-    const user = session.user;
-    const userEmail = user.email;
+          const user = session.user;
+          const userEmail = user.email;
 
-    const { error } = await supabase.from("thesis_subscriptions").upsert(
-      {
-        user_email: userEmail,
-        selected_theses: selected,
-        created_at: new Date().toISOString(),
-      },
-      { onConflict: "user_email" }
+          const { error } = await supabase.from("thesis_subscriptions").upsert(
+            {
+              user_email: userEmail,
+              selected_theses: selected,
+              created_at: new Date().toISOString(),
+            },
+            { onConflict: "user_email" }
+          );
 
-    );
+          if (error) throw error;
 
-    if (error) throw error;
+          alert(`✅ Auto Slack setup saved!
+You will get weekly Monday results in your Slack linked to these theses.`);
 
-    alert(`✅ Auto Slack setup saved! You’ll get Slack updates for ${selected.length} theses.`);
-    modal.classList.add("hidden");
-  } catch (err) {
-    console.error("❌ Error saving to Supabase:", err);
-    alert("Failed to save to Supabase. Check console for details.");
-  }
-});
-
+          modal.classList.add("hidden");
+        } catch (err) {
+          console.error("❌ Error saving to Supabase:", err);
+          alert("Failed to save to Supabase. Check console for details.");
+        }
+      });
     }
   });
 });
@@ -527,21 +551,13 @@ document.getElementById("autoSlackBtn").addEventListener("click", async () => {
       if (!error && data && data.selected_theses) {
         window.savedThesisSubscriptions = data.selected_theses;
         console.log("✅ Loaded saved thesis selections:", data.selected_theses);
-      } else {
-        window.savedThesisSubscriptions = [];
       }
     } catch (err) {
-      console.error("❌ Error loading saved theses:", err);
-      window.savedThesisSubscriptions = [];
+      console.error("❌ Error loading thesis subscriptions:", err);
     }
-
-    document.getElementById("logout").addEventListener("click", async () => {
-      await supabase.auth.signOut();
-      window.location.href = "login.html";
-    });
   }
 
-  document.addEventListener("DOMContentLoaded", initSupabase);
+  initSupabase();
 </script>
 </body>
 </html>
