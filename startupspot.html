@@ -105,7 +105,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
   
   // Google Apps Script web app URL - replace with your deployed web app URL
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_oA8tvaXFlhCx58QyB0gHiynJNSpU0Ywau2QkUql-fBidWtsM1l6gKfmepHaFGbw/exec';
+  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxreERN0RLYq1BtvydzF7eP3vFFQFusHzVUuMQOKnqfpzbizpWyx1UZ1x4UlCrXP6VE6w/exec';
   
   // We'll use a Google Apps Script web app to write to sheets
   // This uses your existing Supabase Google authentication
@@ -415,18 +415,17 @@ document.addEventListener("DOMContentLoaded", () => {
       const sessionToken = session.access_token;
       const userEmail = session.user.email;
       
-      // Send to Google Apps Script web app
-      const response = await fetch(APPS_SCRIPT_URL, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          sessionToken: sessionToken,
-          companyName: companyName,
-          comment: comment,
-          userEmail: userEmail
-        })
+      // Use GET method with URL parameters to avoid CORS preflight
+      const params = new URLSearchParams({
+        action: 'saveComment',
+        sessionToken: sessionToken,
+        companyName: companyName,
+        comment: comment,
+        userEmail: userEmail
+      });
+      
+      const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
+        method: 'GET'
       });
       
       const result = await response.json();
