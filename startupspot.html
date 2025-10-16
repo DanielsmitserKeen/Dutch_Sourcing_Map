@@ -423,9 +423,18 @@ document.addEventListener("DOMContentLoaded", () => {
       content.innerHTML = `
         <h2 class="text-xl font-bold mb-2 text-slate-900">Subscribe to Thesis Topics</h2>
         <p class="text-sm text-slate-600 mb-3">Select the thesis themes you want to subscribe to:</p>
-        <div class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
+
+        <!-- ✅ Add Select All / Deselect All -->
+        <div class="flex justify-end mb-2">
+          <button id="toggleAllBtn" class="text-xs text-blue-600 hover:text-blue-800 underline">
+            Select All
+          </button>
+        </div>
+
+        <div id="modalThesisList" class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
           ${filtersHTML}
         </div>
+
         <div class="mt-4 flex justify-end gap-2">
           <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">
             Save Selection
@@ -435,6 +444,15 @@ document.addEventListener("DOMContentLoaded", () => {
           </button>
         </div>
       `;
+
+      // ✅ Handle Select All / Deselect All toggle
+      let allSelected = false;
+      document.getElementById("toggleAllBtn").addEventListener("click", () => {
+        const checkboxes = document.querySelectorAll("#modalThesisList input[type='checkbox']");
+        allSelected = !allSelected;
+        checkboxes.forEach(cb => cb.checked = allSelected);
+        document.getElementById("toggleAllBtn").textContent = allSelected ? "Deselect All" : "Select All";
+      });
 
       // ✅ Pre-check saved theses for logged-in user (reliable)
       async function preCheckSavedTheses() {
