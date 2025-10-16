@@ -6,6 +6,7 @@
   <title>VC Startup Hub – Intelligence Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
   <style>
     body { background: #f8fafc; }
     .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
@@ -99,6 +100,11 @@
 document.addEventListener("DOMContentLoaded", () => {
   const CSV_URL =
     "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
+  
+  // Google Sheets API configuration
+  const API_KEY = 'AIzaSyCNgd8yYb_Han3YhVVyHxVhD7ilrIOsAGk'; // Replace with your Google API key
+  const SHEET_ID = '1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx'; // Your sheet ID
+  const DISCOVERY_DOC = 'https://sheets.googleapis.com/$discovery/rest?version=v4';
 
   let startups = [];
   let favorites = [];
@@ -107,6 +113,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let fundingSelected = [];
   let thesisThemes = [];
   let thesisThemeSelected = [];
+  let companyComments = {}; // Store comments locally
   window.savedThesisSubscriptions = []; // <-- Use window-scoped variable
 
   function renderFilters() {
@@ -326,7 +333,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  async function openModal(s) {
+  function openModal(s) {
     const modal = document.getElementById("modal");
     const content = document.getElementById("modalContent");
     const thesisClass = getHeatmapClass(s.thesis_score);
@@ -340,25 +347,8 @@ document.addEventListener("DOMContentLoaded", () => {
       domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
     }
 
-    // Load existing feedback comment
-    let existingComment = "";
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session) {
-        const { data, error } = await supabase
-          .from("company_feedback")
-          .select("feedback_comment")
-          .eq("user_email", session.user.email)
-          .eq("company_name", s.company_name)
-          .single();
-        
-        if (!error && data) {
-          existingComment = data.feedback_comment || "";
-        }
-      }
-    } catch (err) {
-      console.warn("Could not load existing comment:", err);
-    }
+    // Load existing feedback comment from local storage
+    const existingComment = companyComments[s.company_name] || "";
 
     content.innerHTML = `
       <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
@@ -384,7 +374,7 @@ document.addEventListener("DOMContentLoaded", () => {
           rows="4" 
           placeholder="Write your feedback about this company...">${existingComment}</textarea>
         <div class="flex justify-between items-center mt-2">
-          <span class="text-xs text-slate-500">Your comment will be saved automatically</span>
+          <span class="text-xs text-slate-500">Your comment will be saved locally</span>
           <button 
             id="saveCommentBtn" 
             class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">
@@ -407,32 +397,49 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function saveComment(companyName, comment) {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        alert("Please log in to save comments.");
-        return;
-      }
-
-      const userEmail = session.user.email;
+      // Save comment locally first as backup
+      companyComments[companyName] = comment;
+      localStorage.setItem('companyComments', JSON.stringify(companyComments));
       
-      const { error } = await supabase
-        .from("company_feedback")
-        .upsert({
-          user_email: userEmail,
-          company_name: companyName,
-          feedback_comment: comment,
-          updated_at: new Date().toISOString()
-        }, { 
-          onConflict: "user_email,company_name" 
+      // Find the company in the startups data to get the row number
+      const companyIndex = startups.findIndex(s => s.company_name === companyName);
+      if (companyIndex === -1) {
+        throw new Error('Company not found in data');
+      }
+      
+      // Initialize Google Sheets API if not already done
+      if (!window.gapi || !window.gapi.client || !window.gapi.client.sheets) {
+        await new Promise((resolve) => {
+          gapi.load('client', resolve);
         });
-
-      if (error) throw error;
-
+        
+        await gapi.client.init({
+          apiKey: API_KEY,
+          discoveryDocs: [DISCOVERY_DOC],
+        });
+      }
+      
+      // Determine the column for feedback_comment (you may need to adjust this)
+      // First, let's assume it's the last column after all existing data
+      const range = `Sheet1!AA${companyIndex + 2}`; // Using column AA for feedback_comment
+      
+      // Update the cell with the comment
+      const response = await gapi.client.sheets.spreadsheets.values.update({
+        spreadsheetId: SHEET_ID,
+        range: range,
+        valueInputOption: 'RAW',
+        resource: {
+          values: [[comment]]
+        }
+      });
+      
+      console.log('Comment saved to Google Sheets:', response);
+      
       // Show success feedback
       const saveBtn = document.getElementById("saveCommentBtn");
       if (saveBtn) {
         const originalText = saveBtn.textContent;
-        saveBtn.textContent = "Saved ✓";
+        saveBtn.textContent = "Saved to Sheets ✓";
         saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
         
         setTimeout(() => {
@@ -440,17 +447,79 @@ document.addEventListener("DOMContentLoaded", () => {
           saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
         }, 2000);
       }
+      
+    } catch (error) {
+      console.error('Error saving comment to Google Sheets:', error);
+      
+      // Show error feedback but keep local save
+      const saveBtn = document.getElementById("saveCommentBtn");
+      if (saveBtn) {
+        const originalText = saveBtn.textContent;
+        saveBtn.textContent = "Saved Locally (Sheets Error)";
+        saveBtn.className = "bg-yellow-600 text-white px-4 py-2 rounded text-sm";
+        
+        setTimeout(() => {
+          saveBtn.textContent = originalText;
+          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+        }, 3000);
+      }
+    }
+  }
 
-    } catch (err) {
-      console.error("Error saving comment:", err);
-      alert("Failed to save comment. Please try again.");
+  // Initialize Google Sheets API and load comments
+  async function initGoogleSheets() {
+    try {
+      await new Promise((resolve) => {
+        gapi.load('client', resolve);
+      });
+      
+      await gapi.client.init({
+        apiKey: API_KEY,
+        discoveryDocs: [DISCOVERY_DOC],
+      });
+      
+      console.log('Google Sheets API initialized');
+      await loadCommentsFromSheets();
+    } catch (error) {
+      console.warn('Could not initialize Google Sheets API, falling back to localStorage:', error);
+      loadCommentsFromLocalStorage();
+    }
+  }
+  
+  async function loadCommentsFromSheets() {
+    try {
+      // Try to load comments from Google Sheets column AA (or wherever you put feedback_comment)
+      const response = await gapi.client.sheets.spreadsheets.values.get({
+        spreadsheetId: SHEET_ID,
+        range: 'Sheet1!AA:AA', // Adjust this to match your feedback_comment column
+      });
+      
+      const values = response.result.values || [];
+      // Skip header row and map comments to company names
+      values.slice(1).forEach((row, index) => {
+        if (row[0] && startups[index]) {
+          companyComments[startups[index].company_name] = row[0];
+        }
+      });
+      
+      console.log('Loaded comments from Google Sheets:', companyComments);
+    } catch (error) {
+      console.warn('Could not load comments from Google Sheets, using localStorage:', error);
+      loadCommentsFromLocalStorage();
+    }
+  }
+  
+  function loadCommentsFromLocalStorage() {
+    const savedComments = localStorage.getItem('companyComments');
+    if (savedComments) {
+      companyComments = JSON.parse(savedComments);
     }
   }
 
   Papa.parse(CSV_URL, {
     download: true,
     header: true,
-    complete: results => {
+    complete: async results => {
       startups = results.data.filter(s => s.company_name);
 
       // Extract unique thesis themes
@@ -461,6 +530,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.getElementById("stat-startups").textContent = startups.length;
       renderFilters();
       window.startups = startups;
+
+      // Initialize Google Sheets API and load existing comments
+      await initGoogleSheets();
 
       setTimeout(() => {
         renderGrid(startups);
