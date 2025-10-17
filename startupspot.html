@@ -353,7 +353,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // Load existing feedback comment from local storage
-    const existingComment = companyComments[s.company_name] || "";
+    let existingComment = "";
+
+try {
+  const response = await fetch(`${APPS_SCRIPT_URL}?action=getComment&companyName=${encodeURIComponent(s.company_name)}`);
+  const result = await response.json();
+  if (result && result.comment) {
+    existingComment = result.comment;
+  }
+} catch (err) {
+  console.warn("Could not fetch comment from sheet:", err);
+}
+
 
     content.innerHTML = `
       <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
@@ -400,72 +411,47 @@ document.addEventListener("DOMContentLoaded", () => {
     modal.classList.remove("hidden");
   }
 
-  async function saveComment(companyName, comment) {
-    try {
-      // Save comment locally first as backup
-      companyComments[companyName] = comment;
-      localStorage.setItem('companyComments', JSON.stringify(companyComments));
-      
-      // Get Supabase session token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('Not authenticated');
-      }
-      
-      const sessionToken = session.access_token;
-      const userEmail = session.user.email;
-      
-      // Use GET method with URL parameters to avoid CORS preflight
-      const params = new URLSearchParams({
-        action: 'saveComment',
-        sessionToken: sessionToken,
-        companyName: companyName,
-        comment: comment,
-        userEmail: userEmail
-      });
-      
-      const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, {
-        method: 'GET'
-      });
-      
-      const result = await response.json();
-      
-      if (!result.success) {
-        throw new Error(result.error || 'Failed to save to Google Sheets');
-      }
-      
-      console.log('Comment saved to Google Sheets for:', companyName, '=', comment);
-      
-      // Show success feedback
-      const saveBtn = document.getElementById("saveCommentBtn");
-      if (saveBtn) {
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = "Saved to Sheets ✓";
-        saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
-        
-        setTimeout(() => {
-          saveBtn.textContent = originalText;
-          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
-        }, 2000);
-      }
-      
-    } catch (error) {
-      console.error('Error saving comment to Google Sheets:', error);
-      
-      // Show error feedback but keep local save
-      const saveBtn = document.getElementById("saveCommentBtn");
-      if (saveBtn) {
-        const originalText = saveBtn.textContent;
-        saveBtn.textContent = "Saved Locally (Sheets Error)";
-        saveBtn.className = "bg-yellow-600 text-white px-4 py-2 rounded text-sm";
-        
-        setTimeout(() => {
-          saveBtn.textContent = originalText;
-          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
-        }, 3000);
-      }
+async function saveComment(companyName, comment) {
+  try {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) throw new Error('Not authenticated');
+
+    const sessionToken = session.access_token;
+    const userEmail = session.user.email;
+
+    const params = new URLSearchParams({
+      action: 'saveComment',
+      sessionToken: sessionToken,
+      companyName: companyName,
+      comment: comment,
+      userEmail: userEmail
+    });
+
+    const response = await fetch(`${APPS_SCRIPT_URL}?${params.toString()}`, { method: 'GET' });
+    const result = await response.json();
+
+    if (!result.success) throw new Error(result.error || 'Failed to save to Google Sheets');
+
+    console.log(`✅ Comment saved for ${companyName}:`, comment);
+    companyComments[companyName] = comment; // keep local copy
+    localStorage.setItem('companyComments', JSON.stringify(companyComments));
+
+    const saveBtn = document.getElementById("saveCommentBtn");
+    if (saveBtn) {
+      const originalText = saveBtn.textContent;
+      saveBtn.textContent = "Saved ✓";
+      saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
+      setTimeout(() => {
+        saveBtn.textContent = originalText;
+        saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+      }, 2000);
     }
+
+  } catch (error) {
+    console.error('Error saving comment to Google Sheets:', error);
   }
+}
+
 
   // Simplified initialization - just load local comments
   function initComments() {
