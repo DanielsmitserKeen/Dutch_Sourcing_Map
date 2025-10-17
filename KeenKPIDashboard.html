@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SaaS KPI Benchmarks – Live Google Sheet (Auto)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    body { background: #f8fafc; }
+    .tab-active { background: #0f172a; color: #fff; }
+    .tab-inactive { background: #e2e8f0; color: #0f172a; }
+    table th { background: #f1f5f9; position: sticky; top: 0; }
+  </style>
+</head>
+<body class="text-slate-800">
+  <div class="max-w-6xl mx-auto p-6">
+    <h1 class="text-2xl font-bold mb-4">SaaS KPI Benchmarks per ARR-niveau (Live)</h1>
+    <div id="tab-buttons" class="flex flex-wrap gap-2 mb-4"></div>
+    <div id="tables" class="space-y-10 text-sm"></div>
+  </div>
+
+  <script>
+    const CSV_URL =
+      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pub?output=csv";
+
+    function normalize(t) {
+      return (t || "").replace(/[–—−]/g, "-").trim();
+    }
+
+    // Clean up blank and repeated rows
+    function cleanRows(rows) {
+      return rows.filter(r => {
+        const first = r["KPI / Metric"]?.trim() || "";
+        const bench = r["Benchmark (Range)"]?.trim() || "";
+        // skip empty rows and header repeats
+        if (!first && !bench) return false;
+        if (first === "KPI / Metric" || first === "YoY Growth Rate") return false;
+        return true;
+      });
+    }
+
+    // Auto-detect groups based on ARR row markers
+    function groupByARR(rows) {
+      const groups = {};
+      let current = "Unknown";
+      rows.forEach(r => {
+        const kpi = normalize(r["KPI / Metric"]);
+        const bench = normalize(r["Benchmark (Range)"]);
+
+        // Detect a header row that sets ARR range
+        if (kpi === "ARR" && bench) current = bench;
+
+        if (!groups[current]) groups[current] = [];
+        groups[current].push(r);
+      });
+      return groups;
+    }
+
+    function renderTable(rangeName, data, active = false) {
+      return `
+        <section data-block="${rangeName}" class="${active ? "" : "hidden"}">
+          <h2 class="text-xl font-semibold mb-3">ARR ${rangeName}</h2>
+          <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
+            <table class="min-w-full">
+              <thead>
+                <tr class="border-b border-slate-200 text-left text-slate-600">
+                  <th class="px-4 py-3 w-40">KPI / Metric</th>
+                  <th class="px-4 py-3">Omschrijving</th>
+                  <th class="px-4 py-3 w-40">Benchmark (Range)</th>
+                  <th class="px-4 py-3 w-40">Bron</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${data.map(r => `
+                  <tr class="border-b border-slate-100 hover:bg-slate-50">
+                    <td class="px-4 py-2 font-medium">${r["KPI / Metric"] || ""}</td>
+                    <td class="px-4 py-2">${r["Omschrijving"] || ""}</td>
+                    <td class="px-4 py-2">${r["Benchmark (Range)"] || ""}</td>
+                    <td class="px-4 py-2">${r["Bron"] || ""}</td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </section>
+      `;
+    }
+
+    function renderTabs(groupKeys) {
+      const tabs = groupKeys
+        .map((k, i) =>
+          `<button data-tab="${k}" class="tab-btn ${i === 0 ? "tab-active" : "tab-inactive"} rounded-full px-3 py-1 text-sm font-medium">ARR ${k}</button>`
+        )
+        .join("");
+      document.getElementById("tab-buttons").innerHTML = tabs;
+
+      document.querySelectorAll(".tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+          const key = btn.dataset.tab;
+          document.querySelectorAll("[data-block]").forEach(block =>
+            block.classList.toggle("hidden", block.dataset.block !== key)
+          );
+          document.querySelectorAll(".tab-btn").forEach(t => {
+            t.classList.toggle("tab-active", t === btn);
+            t.classList.toggle("tab-inactive", t !== btn);
+          });
+        });
+      });
+    }
+
+    Papa.parse(CSV_URL, {
+      download: true,
+      header: true,
+      complete: res => {
+        const cleaned = cleanRows(res.data);
+        const groups = groupByARR(cleaned);
+        const keys = Object.keys(groups);
+        console.log("✅ Found ARR groups:", keys);
+        renderTabs(keys);
+        document.getElementById("tables").innerHTML = keys
+          .map((k, i) => renderTable(k, groups[k], i === 0))
+          .join("");
+      },
+      error: err => {
+        console.error("❌ CSV load failed:", err);
+        document.getElementById("tables").innerHTML =
+          "<p class='text-red-600'>Kon de CSV niet laden. Controleer of de Sheet openbaar is.</p>";
+      }
+    });
+  </script>
+</body>
+</html>
