@@ -338,7 +338,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  function openModal(s) {
+ async function openModal(s) {
     const modal = document.getElementById("modal");
     const content = document.getElementById("modalContent");
     const thesisClass = getHeatmapClass(s.thesis_score);
