@@ -2,249 +2,129 @@
 <html lang="nl">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Keen VC Insights – SaaS & Defense Benchmarks 2025</title>
-
-  <!-- ✅ Tailwind for layout -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SaaS KPI Benchmarks – ARR • Churn • Growth</title>
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- ✅ PapaParse + Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
   <style>
-    body { background: #f8fafc; font-family: Inter, sans-serif; }
-    .tab-active { background: #0f172a; color: #fff; }
-    .tab-inactive { background: #e2e8f0; color: #0f172a; }
-    table th { background: #f1f5f9; position: sticky; top: 0; }
+    body { background:#f8fafc; }
+    h2 { scroll-margin-top: 90px; }
+    table th { background:#f1f5f9; position: sticky; top: 0; }
+    .card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow: 0 2px 10px rgba(2,6,23,.04); }
+    .section-title { color:#0f172a }
+    .chip { background:#e2e8f0; color:#0f172a; border-radius:9999px; font-size:.75rem; padding:.15rem .5rem; }
+    .muted { color:#64748b }
+    .loader { animation: pulse 1.2s ease-in-out infinite; }
+    @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
   </style>
 </head>
-
 <body class="text-slate-800">
+  <div class="max-w-6xl mx-auto p-6 space-y-10">
 
-  <!-- 🧭 HERO SECTION -->
-  <section class="bg-slate-900 text-white py-16 mb-10">
-    <div class="max-w-6xl mx-auto px-6 text-center">
-      <h1 class="text-4xl font-bold mb-4">The State of B2B SaaS & DefenseTech — 2025 Benchmarks</h1>
-      <p class="text-lg text-slate-300 max-w-3xl mx-auto">
-        Benchmark your startup against 1,200 European tech companies. Explore performance norms across ARR stages, burn multiples, CAC payback, and capital efficiency.
-      </p>
-    </div>
-  </section>
+    <!-- ===== Header ===== -->
+    <header class="flex items-center justify-between">
+      <div>
+        <h1 class="text-2xl font-bold">SaaS KPI Benchmarks (Live uit Google Sheets)</h1>
+        <p class="muted mt-1">ARR-ranges, Churn en Growth – automatisch geladen uit je Sheet tabs.</p>
+      </div>
+      <nav class="hidden md:flex gap-2">
+        <a href="#arr" class="chip">ARR Benchmarks</a>
+        <a href="#churn" class="chip">Churn</a>
+        <a href="#growth" class="chip">Growth</a>
+      </nav>
+    </header>
 
-  <div class="max-w-6xl mx-auto p-6 space-y-14">
-
-    <!-- 📊 MARKET OVERVIEW CARDS -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Market Overview (2025)</h2>
-      <div id="summary-cards" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+    <!-- ===== ARR Section placeholder ===== -->
+    <section id="arr" class="space-y-3">
+      <h2 class="text-xl font-semibold section-title">ARR Benchmarks per ARR-segment</h2>
+      <p class="muted text-sm">Bron: tab <em>Standard KPI</em> uit je sheet.</p>
+      <div id="arr-tabs" class="flex flex-wrap gap-2"></div>
+      <div id="arr-blocks" class="space-y-8">
+        <div class="loader text-sm">ARR data laden…</div>
+      </div>
     </section>
 
-    <!-- 💸 ARR BENCHMARK TABLES -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">ARR Benchmarks per Niveau</h2>
-      <div id="tab-buttons" class="flex flex-wrap gap-2 mb-4"></div>
-      <div id="tables" class="space-y-10 text-sm"></div>
+    <!-- ===== CHURN Section ===== -->
+    <section id="churn" class="space-y-3">
+      <h2 class="text-xl font-semibold section-title">Churn Benchmarks (SMB/SME SaaS)</h2>
+      <p class="muted text-sm">Bron: tab <em>Churn</em> uit je sheet.</p>
+      <div id="churn-table" class="card overflow-x-auto">
+        <div class="p-4 loader text-sm">Churn data laden…</div>
+      </div>
     </section>
 
-    <!-- 💡 INSIGHT HIGHLIGHTS -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Key Insights</h2>
-      <div id="insights" class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-    </section>
-
-    <!-- 📈 CHART SECTION -->
-    <section>
-      <h2 class="text-2xl font-semibold mb-4">Visual Benchmarks</h2>
-      <canvas id="arrChart" class="w-full h-80 bg-white border rounded-lg shadow-sm"></canvas>
-    </section>
-
-    <!-- 🧭 CTA -->
-    <section class="text-center bg-slate-50 p-10 rounded-xl shadow-inner">
-      <h3 class="text-xl font-semibold mb-2">Benchmark Your Own Startup</h3>
-      <p class="text-slate-600 mb-4">Enter your ARR, team size, and burn to see how you compare to the market.</p>
-      <button class="bg-slate-900 text-white px-6 py-3 rounded-full hover:bg-slate-700 transition">Coming Soon</button>
+    <!-- ===== GROWTH Section ===== -->
+    <section id="growth" class="space-y-3">
+      <h2 class="text-xl font-semibold section-title">Growth Benchmarks</h2>
+      <p class="muted text-sm">Bron: tab <em>Growth</em>.</p>
+      <div id="growth-sections" class="space-y-8">
+        <div class="p-4 loader text-sm">Growth data laden…</div>
+      </div>
     </section>
 
   </div>
 
-  <script>
-    // ✅ Your live published Google Sheet
-    const KPI_SHEET_URL =
-      "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pub?output=csv";
+<script>
+/* ===== URLs ===== */
+const CHURN_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=121452829";
 
-    // 🧹 Clean blank and header rows
-    function cleanRows(rows) {
-      return rows.filter(r => {
-        const first = r["KPI / Metric"]?.trim() || "";
-        const bench = r["Benchmark (Range)"]?.trim() || "";
-        if (!first && !bench) return false;
-        if (first === "KPI / Metric") return false;
-        return true;
-      });
+function pubhtmlToCsv(url) {
+  const base = url.split("/pubhtml")[0];
+  const gid = url.split("#gid=")[1];
+  return `${base}/pub?gid=${gid}&single=true&output=csv`;
+}
+
+function toLinks(text) {
+  if (!text) return "";
+  const urls = text.match(/https?:\/\/\S+/g) || [];
+  return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
+}
+
+/* ===== CHURN MODULE ===== */
+(function ChurnModule(){
+  const churnCsv = pubhtmlToCsv(CHURN_PUBHTML);
+  const target = document.getElementById("churn-table");
+
+  Papa.parse(churnCsv, {
+    download: true,
+    complete: res => {
+      const rows = res.data.filter(r => r.some(cell => cell && String(cell).trim() !== ""));
+      const headerRow = rows[0].map(h => h.trim().toLowerCase());
+      const dataRows = rows.slice(1);
+
+      const colIndex = {
+        arr: headerRow.indexOf("arr segment"),
+        monthly: headerRow.indexOf("monthly churn"),
+        annual: headerRow.indexOf("annual churn"),
+        src: headerRow.indexOf("bronnen")
+      };
+
+      const html = `
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-left text-slate-600">
+              <th class="px-4 py-3">ARR Segment</th>
+              <th class="px-4 py-3">Monthly Churn</th>
+              <th class="px-4 py-3">Annual Churn</th>
+              <th class="px-4 py-3">Bronnen</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dataRows.map(r => `
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="px-4 py-2">${r[colIndex.arr] || ""}</td>
+                <td class="px-4 py-2">${r[colIndex.monthly] || ""}</td>
+                <td class="px-4 py-2">${r[colIndex.annual] || ""}</td>
+                <td class="px-4 py-2">${toLinks(r[colIndex.src])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      target.innerHTML = html;
     }
-
-    // 🧠 Group by ARR stage like "$0–1M", "$1–3M", etc.
-    function groupByARR(rows) {
-      const groups = {};
-      let current = "Unknown";
-
-      rows.forEach(r => {
-        const kpi = (r["KPI / Metric"] || "").trim().toUpperCase();
-        const bench = (r["Benchmark (Range)"] || "").trim();
-
-        if (kpi === "ARR" && bench.startsWith("$")) {
-          current = bench;
-          if (!groups[current]) groups[current] = [];
-          return;
-        }
-        if (!groups[current]) groups[current] = [];
-        groups[current].push(r);
-      });
-
-      return groups;
-    }
-
-    // 📊 Market overview summary cards
-    function renderSummaryCards() {
-      const metrics = [
-        { title: "Median Growth (YoY)", value: "42%", change: "+5% YoY" },
-        { title: "Median Burn Multiple", value: "1.4×", change: "-12% vs 2024" },
-        { title: "Median CAC Payback", value: "15 mo", change: "Stable" },
-      ];
-      document.getElementById("summary-cards").innerHTML = metrics
-        .map(
-          m => `
-        <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
-          <h3 class="text-sm text-slate-500">${m.title}</h3>
-          <p class="text-2xl font-semibold mt-1">${m.value}</p>
-          <p class="text-xs text-emerald-600 mt-1">${m.change}</p>
-        </div>`
-        )
-        .join("");
-    }
-
-    // 📈 Tables per ARR stage
-    function renderTable(rangeName, data, active = false) {
-      return `
-        <section data-block="${rangeName}" class="${active ? "" : "hidden"}">
-          <h3 class="text-lg font-semibold mb-3 text-slate-700">ARR ${rangeName}</h3>
-          <div class="overflow-x-auto border border-slate-200 rounded-xl bg-white shadow-sm">
-            <table class="min-w-full">
-              <thead>
-                <tr class="border-b border-slate-200 text-left text-slate-600">
-                  <th class="px-4 py-3 w-40">KPI / Metric</th>
-                  <th class="px-4 py-3">Omschrijving</th>
-                  <th class="px-4 py-3 w-40">Benchmark</th>
-                  <th class="px-4 py-3 w-40">Bron</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${data
-                  .map(
-                    r => `
-                  <tr class="border-b border-slate-100 hover:bg-slate-50">
-                    <td class="px-4 py-2 font-medium">${r["KPI / Metric"] || ""}</td>
-                    <td class="px-4 py-2">${r["Omschrijving"] || ""}</td>
-                    <td class="px-4 py-2">${r["Benchmark (Range)"] || ""}</td>
-                    <td class="px-4 py-2">${r["Bron"] || ""}</td>
-                  </tr>`
-                  )
-                  .join("")}
-              </tbody>
-            </table>
-          </div>
-        </section>`;
-    }
-
-    // 🏷️ ARR Tabs
-    function renderTabs(groupKeys) {
-      const tabs = groupKeys
-        .map(
-          (k, i) =>
-            `<button data-tab="${k}" class="tab-btn ${
-              i === 0 ? "tab-active" : "tab-inactive"
-            } rounded-full px-4 py-1 text-sm font-medium">${k}</button>`
-        )
-        .join("");
-      document.getElementById("tab-buttons").innerHTML = tabs;
-
-      document.querySelectorAll(".tab-btn").forEach(btn => {
-        btn.addEventListener("click", () => {
-          const key = btn.dataset.tab;
-          document.querySelectorAll("[data-block]").forEach(block =>
-            block.classList.toggle("hidden", block.dataset.block !== key)
-          );
-          document.querySelectorAll(".tab-btn").forEach(t => {
-            t.classList.toggle("tab-active", t === btn);
-            t.classList.toggle("tab-inactive", t !== btn);
-          });
-        });
-      });
-    }
-
-    // 💡 Insights
-    function renderInsights() {
-      const insights = [
-        "Top-quartile SaaS startups reach €1M ARR in 20 months.",
-        "DefenseTech companies average 55% gross margins vs SaaS 78%.",
-        "Startups with technical founders raise 2.3× faster post-seed."
-      ];
-      document.getElementById("insights").innerHTML = insights
-        .map(
-          i =>
-            `<div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm italic text-slate-700">“${i}”</div>`
-        )
-        .join("");
-    }
-
-    // 📊 Chart
-    function renderChart(labels) {
-      const ctx = document.getElementById("arrChart");
-      new Chart(ctx, {
-        type: "line",
-        data: {
-          labels,
-          datasets: [
-            {
-              label: "Median ARR (€M)",
-              data: [0.5, 2, 6, 12],
-              borderColor: "#0f172a",
-              tension: 0.3
-            }
-          ]
-        },
-        options: {
-          scales: { y: { beginAtZero: true } },
-          plugins: { legend: { display: false } }
-        }
-      });
-    }
-
-    // 🚀 Load data
-    Papa.parse(KPI_SHEET_URL, {
-      download: true,
-      header: true,
-      complete: res => {
-        console.log("✅ Raw CSV sample:", res.data.slice(0, 10));
-        const cleaned = cleanRows(res.data);
-        const groups = groupByARR(cleaned);
-        const keys = Object.keys(groups);
-        console.log("✅ Detected ARR groups:", keys);
-
-        renderSummaryCards();
-        renderTabs(keys);
-        document.getElementById("tables").innerHTML = keys
-          .map((k, i) => renderTable(k, groups[k], i === 0))
-          .join("");
-        renderInsights();
-        renderChart(keys);
-      },
-      error: err => {
-        document.getElementById("tables").innerHTML =
-          `<p class='text-red-600'>Kon de CSV niet laden: ${err}</p>`;
-      }
-    });
-  </script>
+  })
+})();
+</script>
 </body>
 </html>
