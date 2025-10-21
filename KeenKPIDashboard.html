@@ -78,22 +78,23 @@ function pubhtmlToCsv(url) {
   const gid = url.split("#gid=")[1];
   return `${base}/pub?gid=${gid}&single=true&output=csv`;
 }
-function toLinks(text) {
-  if (!text) return "";
-  const urls = String(text).match(/https?:\/\/\S+/g) || [];
-  return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
-}
 function trimRow(row) {
   let last = -1;
   for (let i = 0; i < row.length; i++) if (String(row[i]).trim() !== "") last = i;
   return last >= 0 ? row.slice(0, last + 1) : [];
 }
 function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
+function toLinks(text) {
+  if (!text) return "";
+  const urls = String(text).match(/https?:\/\/\S+/g) || [];
+  return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
+}
+/* tolerant matching for ARR segments */
 function normalizeDash(s) { return String(s || "").replace(/-/g, "–"); }
 function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toLowerCase(); }
 
 /* =====================================
-   ARR MODULE
+   ARR MODULE START
    ===================================== */
 (function ARRModule(){
   const target = document.getElementById("arr-blocks");
@@ -129,6 +130,7 @@ function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toL
 
       for (const r of rows) {
         if (isHeaderRow(r)) { collecting = false; currentSegment = null; continue; }
+
         const kpi = (r[headerIdx.kpi] || "").trim();
         const desc = (r[headerIdx.desc] || "").trim();
         const bench = (r[headerIdx.bench] || "").trim();
@@ -142,7 +144,6 @@ function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toL
           collecting = true;
           continue;
         }
-
         const isBlank = [kpi, desc, bench, source].every(x => !x);
         if (isBlank) { collecting = false; currentSegment = null; continue; }
 
@@ -150,11 +151,161 @@ function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toL
           segments[currentSegment].push({ kpi, desc, bench, source });
         }
       }
-
+      /* RENDER ARR */
       target.innerHTML = SEGMENTS_ORDER
-        .filter(seg => segments[sesg]) /* continues, but I'll fix this in next message if needed */
+        .filter(seg => segments[seg] && segments[seg].length)
+        .map(seg => {
+          const rowsHTML = segments[seg].map(item => `
+            <tr class="border-b border-slate-100 hover:bg-slate-50">
+              <td class="px-4 py-2 font-medium">${item.kpi}</td>
+              <td class="px-4 py-2">${item.desc}</td>
+              <td class="px-4 py-2 whitespace-nowrap">${item.bench}</td>
+              <td class="px-4 py-2">${toLinks(item.source) || item.source}</td>
+            </tr>
+          `).join("");
+
+          return `
+            <div class="card overflow-x-auto">
+              <div class="px-4 pt-4">
+                <h3 class="text-lg font-semibold">${seg}</h3>
+                <p class="muted text-xs">KPI’s voor dit ARR-segment.</p>
+              </div>
+              <table class="min-w-full text-sm mt-2">
+                <thead>
+                  <tr class="border-b border-slate-200 text-left text-slate-600">
+                    <th class="px-4 py-3">KPI / Metric</th>
+                    <th class="px-4 py-3">Omschrijving</th>
+                    <th class="px-4 py-3">Benchmark (Range)</th>
+                    <th class="px-4 py-3">Bron</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHTML}</tbody>
+              </table>
+            </div>
+          `;
+        }).join("") || `<div class="p-4 text-sm">Geen ARR-gegevens gevonden.</div>`;
+    }
+  });
+})();
+/* =====================================
+   CHURN MODULE
+   ===================================== */
+(function ChurnModule(){
+  const churnCsv = pubhtmlToCsv(CHURN_PUBHTML);
+  const target = document.getElementById("churn-table");
+
+  Papa.parse(churnCsv, {
+    download: true,
+    complete: res => {
+      const rows = res.data.filter(r => r.some(cell => cell && String(cell).trim() !== ""));
+      const headerRow = rows[0].map(h => h.trim().toLowerCase());
+      const dataRows = rows.slice(1);
+
+      const colIndex = {
+        arr: headerRow.indexOf("arr segment"),
+        monthly: headerRow.indexOf("monthly churn"),
+        annual: headerRow.indexOf("annual churn"),
+        src: headerRow.indexOf("bronnen")
+      };
+
+      const html = `
+        <table class="min-w-full text-sm">
+          <thead>
+            <tr class="border-b border-slate-200 text-left text-slate-600">
+              <th class="px-4 py-3">ARR Segment</th>
+              <th class="px-4 py-3">Monthly Churn</th>
+              <th class="px-4 py-3">Annual Churn</th>
+              <th class="px-4 py-3">Bronnen</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${dataRows.map(r => `
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="px-4 py-2">${r[colIndex.arr] || ""}</td>
+                <td class="px-4 py-2">${r[colIndex.monthly] || ""}</td>
+                <td class="px-4 py-2">${r[colIndex.annual] || ""}</td>
+                <td class="px-4 py-2">${toLinks(r[colIndex.src])}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      target.innerHTML = html;
     }
   })
+})();
+/* =====================================
+   GROWTH MODULE — Tabellen
+   ===================================== */
+(function GrowthModule(){
+  const target = document.getElementById("growth-sections");
+  const growthCsv = pubhtmlToCsv(GROWTH_PUBHTML);
+
+  const TITLES = [
+    "median growth by arr",
+    "growth by arr for remaining percentiles",
+    "growth by arr and funding",
+    "growth rate by median net revenue retention",
+    "growth and arr by company age",
+  ];
+
+  Papa.parse(growthCsv, {
+    download: true,
+    complete: res => {
+      const rows = res.data.map(trimRow);
+      const blocks = [];
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (!r.length) continue;
+        const cellA = String(r[0]||"").trim().toLowerCase();
+
+        if (TITLES.includes(cellA)) {
+          const title = rows[i][0].trim();
+          let h = [], j = i + 1;
+          while (j < rows.length && (!rows[j].length || isEmptyRow(rows[j]))) j++;
+          if (j < rows.length) h = rows[j].map(v => String(v||"").trim());
+          const data = [];
+          j = j + 1;
+          while (j < rows.length && rows[j].length && !isEmptyRow(rows[j])) {
+            data.push(rows[j].map(v => String(v||"").trim()));
+            j++;
+          }
+          blocks.push({ title, header: h, rows: data });
+          i = j;
+        }
+      }
+
+      const htmlTables = blocks.map(b => {
+        if (!b.header.length || !b.rows.length) return "";
+        const headerHTML = b.header.map(h => `<th class="px-4 py-3">${h}</th>`).join("");
+        const rowsHTML = b.rows.map(row => `
+          <tr class="border-b border-slate-100 hover:bg-slate-50">
+            ${row.slice(0, b.header.length).map(c => `<td class="px-4 py-2">${c}</td>`).join("")}
+          </tr>
+        `).join("");
+
+        return `
+        <div class="card overflow-x-auto">
+          <div class="px-4 pt-4">
+            <h3 class="text-lg font-semibold">${b.title}</h3>
+          </div>
+          <table class="min-w-full text-sm mt-2">
+            <thead>
+              <tr class="border-b border-slate-200 text-left text-slate-600">
+                ${headerHTML}
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHTML}
+            </tbody>
+          </table>
+        </div>`;
+      }).join("");
+
+      target.innerHTML = htmlTables || `<div class="p-4 text-sm">Geen Growth-gegevens gevonden.</div>`;
+    }
+  });
 })();
 </script>
 </body>
