@@ -4,8 +4,12 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>SaaS KPI Benchmarks – ARR • Churn • Growth</title>
+
+  <!-- Tailwind + PapaParse + Plotly -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.26.0.min.js"></script>
+
   <style>
     body { background:#f8fafc; }
     h2 { scroll-margin-top: 90px; }
@@ -16,6 +20,19 @@
     .muted { color:#64748b }
     .loader { animation: pulse 1.2s ease-in-out infinite; }
     @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
+
+    /* Small-multiples layout (2 kolommen × 3 rijen) */
+    .growth-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      padding: 10px 20px 16px 20px;
+    }
+    .growth-chart { width: 100%; height: 230px; }
+    @media (max-width: 768px) {
+      .growth-grid { grid-template-columns: 1fr; }
+      .growth-chart { height: 220px; }
+    }
   </style>
 </head>
 <body class="text-slate-800">
@@ -56,6 +73,17 @@
     <section id="growth" class="space-y-3">
       <h2 class="text-xl font-semibold section-title">Growth Benchmarks</h2>
       <p class="muted text-sm">Bron: tab <em>Growth</em>.</p>
+
+      <!-- Small-multiples charts (blok 1) -->
+      <div id="growth-charts-block" class="card">
+        <div class="px-4 pt-4">
+          <h3 class="text-lg font-semibold">Median Growth by ARR (2020–2024)</h3>
+          <p class="muted text-xs">Per ARR-band (small multiples)</p>
+        </div>
+        <div class="growth-grid" id="growth-multiples"></div>
+      </div>
+
+      <!-- Growth tabellen (alle 5 blokken) -->
       <div id="growth-sections" class="space-y-8">
         <div class="p-4 loader text-sm">Growth data laden…</div>
       </div>
@@ -69,6 +97,7 @@ const ARR_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxI
 const CHURN_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=121452829";
 const GROWTH_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=1857898706";
 
+/* ===== Helpers ===== */
 function pubhtmlToCsv(url) {
   const base = url.split("/pubhtml")[0];
   const gid = url.split("#gid=")[1];
@@ -79,16 +108,18 @@ function toLinks(text) {
   const urls = String(text).match(/https?:\/\/\S+/g) || [];
   return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
 }
-function normalizeDash(s) { return String(s || "").replace(/-/g, "–").trim(); }
 function trimRow(row) {
   let last = -1;
   for (let i = 0; i < row.length; i++) if (String(row[i]).trim() !== "") last = i;
   return last >= 0 ? row.slice(0, last + 1) : [];
 }
 function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
+function normalizeDash(s) { return String(s || "").replace(/-/g, "–"); }
+function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toLowerCase(); } // spaties weg → robuust
 
 /* =====================================
    ARR MODULE — 4 tabellen uit "Standard KPI"
+   (robuust voor $0–1M vs $0 – 1M)
    ===================================== */
 (function ARRModule(){
   const target = document.getElementById("arr-blocks");
@@ -99,6 +130,7 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
     "$3M – $10M": "$3M – $10M ARR",
     "> $10M": "> $10M ARR",
   };
+  const ORDER_KEYS = SEGMENTS_ORDER.map(cmpKey);
 
   Papa.parse(ARR_CSV, {
     download: true,
@@ -108,10 +140,11 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
         .filter(r => r.length && !isEmptyRow(r))
         .map(r => r.map(c => (c || "").toString()));
 
-      const isHeaderRow = (r) => r[0]?.toLowerCase().includes("kpi") && r[2]?.toLowerCase().includes("benchmark");
+      // Header indices
+      const isHeaderRow = (r) => (r[0]||"").toLowerCase().includes("kpi") && (r[2]||"").toLowerCase().includes("benchmark");
+      const headerRow = rows.find(isHeaderRow) || [];
       const headerIdx = (() => {
-        const hdr = rows.find(isHeaderRow) || [];
-        const base = hdr.map(h => h.trim().toLowerCase());
+        const base = headerRow.map(h => h.trim().toLowerCase());
         return {
           kpi: base.indexOf("kpi / metric"),
           desc: base.indexOf("omschrijving"),
@@ -122,21 +155,26 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
 
       const segments = {};
       let currentSegment = null, collecting = false;
+
       for (const r of rows) {
         if (isHeaderRow(r)) { collecting = false; currentSegment = null; continue; }
+
         const kpi = (r[headerIdx.kpi] || "").trim();
         const desc = (r[headerIdx.desc] || "").trim();
         const bench = (r[headerIdx.bench] || "").trim();
         const source = (r[headerIdx.source] || "").trim();
 
+        // start van segmentblok: KPI="ARR", bench = segment label (kan "$0 – 1M", "$1M – $3M", etc.)
         if (kpi.toLowerCase() === "arr" && bench) {
-          const segRaw = normalizeDash(bench);
-          const seg = SEGMENTS_ORDER.find(s => normalizeDash(s) === segRaw) || segRaw;
-          currentSegment = seg;
+          const key = cmpKey(bench); // tolerant voor spaties/hyphen/– verschillen
+          // map naar onze canonical if possible
+          const idx = ORDER_KEYS.indexOf(key);
+          currentSegment = idx >= 0 ? SEGMENTS_ORDER[idx] : bench;
           if (!segments[currentSegment]) segments[currentSegment] = [];
           collecting = true;
           continue;
         }
+
         const isBlank = [kpi, desc, bench, source].every(x => !x);
         if (isBlank) { collecting = false; currentSegment = null; continue; }
 
@@ -145,6 +183,7 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
         }
       }
 
+      // Render tables in canonical order
       const sectionHTML = SEGMENTS_ORDER
         .filter(seg => segments[seg] && segments[seg].length)
         .map(seg => {
@@ -233,13 +272,15 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
 })();
 
 /* =====================================
-   GROWTH MODULE — 5 blokken als cards
+   GROWTH MODULE — 5 blokken
+   + Small-multiples Plotly charts (blok 1)
    ===================================== */
 (function GrowthModule(){
-  const target = document.getElementById("growth-sections");
+  const targetTables = document.getElementById("growth-sections");
+  const multiplesContainer = document.getElementById("growth-multiples");
   const growthCsv = pubhtmlToCsv(GROWTH_PUBHTML);
 
-  // Titels exact zoals in je sheet (case-insensitive match)
+  // Titels zoals in sheet (case-insensitive)
   const TITLES = [
     "median growth by arr",
     "growth by arr for remaining percentiles",
@@ -253,11 +294,10 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
     complete: res => {
       const rows = res.data.map(trimRow);
 
-      const blocks = []; // [{title, header:[], rows:[[]]}]
+      const blocks = []; // [{title, header:[], rows:[[]], startIndex}]
       for (let i = 0; i < rows.length; i++) {
         const r = rows[i];
         if (!r.length) continue;
-
         const cellA = String(r[0] || "").trim().toLowerCase();
         if (TITLES.includes(cellA)) {
           const title = rows[i][0].trim();
@@ -273,19 +313,89 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
             j++;
           }
           blocks.push({ title, header: h, rows: data });
-          i = j; // spring door
+          i = j;
         }
       }
 
-      // Render
-      const html = blocks.map(b => {
+      /* ---------- SMALL MULTIPLES (blok 1) ---------- */
+      const block1 = blocks.find(b => b.title.toLowerCase() === "median growth by arr");
+      if (block1 && block1.header.length && block1.rows.length) {
+        // Verwachte headers: ARR | 90th percentile 2020 | ... | 90th percentile 2024 | ...
+        const h = block1.header;
+        const arrIdx = h.findIndex(col => col.toLowerCase().startsWith("arr"));
+        // pak exact deze jaar-kolommen (met spatie, zoals user bevestigde)
+        const yearCols = ["90th percentile 2020","90th percentile 2021","90th percentile 2022","90th percentile 2023","90th percentile 2024"];
+        const yIdx = yearCols.map(c => h.findIndex(col => col.toLowerCase() === c.toLowerCase()));
+
+        // Data per segment
+        const segments = block1.rows.map(r => r[arrIdx]).filter(Boolean);
+        const years = [2020, 2021, 2022, 2023, 2024];
+
+        // Container leegmaken + grafieken injecteren
+        multiplesContainer.innerHTML = "";
+        segments.forEach((seg, k) => {
+          const id = "chart_" + seg.replace(/[^\w]+/g, "_").toLowerCase() + "_" + k;
+          const div = document.createElement("div");
+          div.className = "growth-chart";
+          div.id = id;
+          multiplesContainer.appendChild(div);
+
+          // Y-waarden parse: percentages naar getal
+          const row = block1.rows[k];
+          const values = yIdx.map(idx => {
+            const raw = String(row[idx] || "").replace(/[%\s]/g, "");
+            const num = parseFloat(raw);
+            return isNaN(num) ? null : num;
+          });
+
+          const trace = {
+            x: years,
+            y: values,
+            mode: "lines+markers",
+            line: { width: 2 },
+            marker: { size: 6 },
+            hovertemplate: `<b>${seg}</b><br>Jaar %{x}<br>Growth %{y}%<extra></extra>`
+          };
+
+          const layout = {
+            margin: { l: 40, r: 10, t: 10, b: 30 },
+            paper_bgcolor: "white",
+            plot_bgcolor: "white",
+            xaxis: {
+              tickmode: "array",
+              tickvals: years,
+              showgrid: true,
+              gridcolor: "rgba(0,0,0,0.08)",
+              zeroline: false
+            },
+            yaxis: {
+              title: "",
+              ticksuffix: "%",
+              showgrid: true,
+              gridcolor: "rgba(0,0,0,0.08)",
+              zeroline: false
+            },
+            showlegend: false
+          };
+
+          Plotly.newPlot(id, [trace], layout, {displayModeBar:false, responsive:true});
+        });
+      } else {
+        // Als blok 1 niet gevonden → verberg charts card
+        const card = document.getElementById("growth-charts-block");
+        if (card) card.style.display = "none";
+      }
+
+      /* ---------- TABEL-WEERGAVE VOOR ALLE BLOKKEN ---------- */
+      const htmlTables = blocks.map(b => {
         const header = b.header.filter(h => h !== "");
+        if (!header.length || !b.rows.length) return "";
+
         const headerHTML = header.map(h => `<th class="px-4 py-3">${h}</th>`).join("");
         const rowsHTML = b.rows.map(row => {
           const cells = row.slice(0, header.length).map((c, idx) => {
-            // maak links klikbaar in bronkolommen
-            const isSourceCol = header[idx].toLowerCase().includes("saas") || header[idx].toLowerCase().includes("source") || header[idx].toLowerCase().includes("bron");
-            return `<td class="px-4 py-2">${isSourceCol ? toLinks(c) || c : c}</td>`;
+            const isSourceCol = /saas|source|bron/i.test(header[idx]);
+            return `<td class="px-4 py-2">${isSourceCol ? (toLinks(c) || c) : c}</td>`;
           }).join("");
           return `<tr class="border-b border-slate-100 hover:bg-slate-50">${cells}</tr>`;
         }).join("");
@@ -309,7 +419,7 @@ function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
         `;
       }).join("");
 
-      target.innerHTML = html || `<div class="p-4 text-sm">Geen Growth-gegevens gevonden.</div>`;
+      targetTables.innerHTML = htmlTables || `<div class="p-4 text-sm">Geen Growth-gegevens gevonden.</div>`;
     }
   });
 })();
