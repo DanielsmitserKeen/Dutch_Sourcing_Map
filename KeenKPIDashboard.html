@@ -34,13 +34,12 @@
       </nav>
     </header>
 
-    <!-- ===== ARR Section placeholder ===== -->
+    <!-- ===== ARR Section ===== -->
     <section id="arr" class="space-y-3">
       <h2 class="text-xl font-semibold section-title">ARR Benchmarks per ARR-segment</h2>
       <p class="muted text-sm">Bron: tab <em>Standard KPI</em> uit je sheet.</p>
-      <div id="arr-tabs" class="flex flex-wrap gap-2"></div>
       <div id="arr-blocks" class="space-y-8">
-        <div class="loader text-sm">ARR data laden…</div>
+        <div class="loader text-sm px-4">ARR data laden…</div>
       </div>
     </section>
 
@@ -53,7 +52,7 @@
       </div>
     </section>
 
-    <!-- ===== GROWTH Section ===== -->
+    <!-- ===== GROWTH Section (placeholder) ===== -->
     <section id="growth" class="space-y-3">
       <h2 class="text-xl font-semibold section-title">Growth Benchmarks</h2>
       <p class="muted text-sm">Bron: tab <em>Growth</em>.</p>
@@ -65,7 +64,11 @@
   </div>
 
 <script>
-/* ===== URLs ===== */
+/* ===== Sheet URLs =====
+   - Standard KPI is de eerste tab → CSV export werkt met ?output=csv
+   - Churn/Growth gebruiken pubhtml met GID (converteren we naar CSV)
+*/
+const ARR_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pub?output=csv";
 const CHURN_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=121452829";
 
 function pubhtmlToCsv(url) {
@@ -76,11 +79,130 @@ function pubhtmlToCsv(url) {
 
 function toLinks(text) {
   if (!text) return "";
-  const urls = text.match(/https?:\/\/\S+/g) || [];
+  const urls = String(text).match(/https?:\/\/\S+/g) || [];
   return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
 }
 
-/* ===== CHURN MODULE ===== */
+function normalizeDash(s) {
+  return String(s || "").replace(/-/g, "–").trim(); // vervang hyphen door en-dash
+}
+
+/* =====================================
+   ARR MODULE — 4 tabellen uit "Standard KPI"
+   ===================================== */
+(function ARRModule(){
+  const target = document.getElementById("arr-blocks");
+
+  // te verwachten segmentwaarden in kolom "Benchmark (Range)" van de rij waar KPI="ARR"
+  const SEGMENTS_ORDER = ["$0–1M", "$1M – $3M", "$3M – $10M", "> $10M"];
+  const SEGMENT_TITLES = {
+    "$0–1M": "< $1M ARR",
+    "$1M – $3M": "$1M – $3M ARR",
+    "$3M – $10M": "$3M – $10M ARR",
+    "> $10M": "> $10M ARR",
+  };
+
+  Papa.parse(ARR_CSV, {
+    download: true,
+    complete: res => {
+      const rows = res.data
+        .map(r => r.map(c => (c || "").toString()))
+        .filter(r => r.some(cell => cell.trim() !== ""));
+
+      // we zien dat elke ‘blok’ opnieuw de header "KPI / Metric, Omschrijving, Benchmark (Range), Bron" heeft.
+      const isHeaderRow = (r) => r[0].toLowerCase().includes("kpi") && r[2].toLowerCase().includes("benchmark");
+      // Vind indexen op basis van eerste header die we tegenkomen
+      const headerIdx = (() => {
+        const hdr = rows.find(isHeaderRow);
+        const base = hdr ? hdr.map(h => h.trim().toLowerCase()) : ["kpi / metric","omschrijving","benchmark (range)","bron"];
+        return {
+          kpi: base.indexOf("kpi / metric"),
+          desc: base.indexOf("omschrijving"),
+          bench: base.indexOf("benchmark (range)"),
+          source: base.indexOf("bron"),
+        };
+      })();
+
+      // Segmenten bouwen: we zoeken rijen waar KPI == "ARR"; daar staat in 'bench' het segment ($0–1M, ...).
+      const segments = {}; // {segmentLabel: [{kpi, desc, bench, source}, ...]}
+      let currentSegment = null;
+      let collecting = false;
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i];
+        if (isHeaderRow(r)) { collecting = false; continue; }
+
+        const kpi = (r[headerIdx.kpi] || "").trim();
+        const desc = (r[headerIdx.desc] || "").trim();
+        const bench = (r[headerIdx.bench] || "").trim();
+        const source = (r[headerIdx.source] || "").trim();
+
+        // nieuwe blok start wanneer KPI="ARR" en bench bevat een segment
+        if (kpi.toLowerCase() === "arr" && bench) {
+          const segRaw = normalizeDash(bench);
+          const seg = SEGMENTS_ORDER.find(s => normalizeDash(s) === segRaw);
+          currentSegment = seg || segRaw; // fallback: toon zoals het is
+          if (!segments[currentSegment]) segments[currentSegment] = [];
+          collecting = true;
+          continue; // sla de ARR-rij zelf over; volgende rijen zijn de KPI's
+        }
+
+        // leegte beëindigt blok
+        const isBlank = [kpi, desc, bench, source].every(x => !x);
+        if (isBlank) { collecting = false; currentSegment = null; continue; }
+
+        if (collecting && currentSegment) {
+          // sla alleen echte KPI-rijen op (geen subheaders)
+          if (kpi && kpi.toLowerCase() !== "arr") {
+            segments[currentSegment].push({ kpi, desc, bench, source });
+          }
+        }
+      }
+
+      // Bouw HTML
+      const sectionHTML = SEGMENTS_ORDER
+        .filter(seg => segments[seg] && segments[seg].length)
+        .map(seg => {
+          const title = SEGMENT_TITLES[seg] || seg;
+          const rowsHTML = segments[seg].map(item => `
+              <tr class="border-b border-slate-100 hover:bg-slate-50">
+                <td class="px-4 py-2 font-medium">${item.kpi}</td>
+                <td class="px-4 py-2">${item.desc}</td>
+                <td class="px-4 py-2 whitespace-nowrap">${item.bench}</td>
+                <td class="px-4 py-2">${toLinks(item.source) || item.source}</td>
+              </tr>
+          `).join("");
+
+          return `
+            <div class="card overflow-x-auto">
+              <div class="px-4 pt-4">
+                <h3 class="text-lg font-semibold">${title}</h3>
+                <p class="muted text-xs">KPI’s voor dit ARR-segment.</p>
+              </div>
+              <table class="min-w-full text-sm mt-2">
+                <thead>
+                  <tr class="border-b border-slate-200 text-left text-slate-600">
+                    <th class="px-4 py-3">KPI / Metric</th>
+                    <th class="px-4 py-3">Omschrijving</th>
+                    <th class="px-4 py-3">Benchmark (Range)</th>
+                    <th class="px-4 py-3">Bron</th>
+                  </tr>
+                </thead>
+                <tbody>${rowsHTML}</tbody>
+              </table>
+            </div>
+          `;
+        })
+        .join("");
+
+      target.innerHTML = sectionHTML || `<div class="p-4 text-sm">Geen ARR-gegevens gevonden.</div>`;
+    }
+  });
+})();
+
+/* =====================================
+   CHURN MODULE (zoals eerder)
+   ===================================== */
 (function ChurnModule(){
   const churnCsv = pubhtmlToCsv(CHURN_PUBHTML);
   const target = document.getElementById("churn-table");
