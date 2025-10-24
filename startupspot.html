@@ -11,174 +11,152 @@
     body { background: #f8fafc; }
     .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
     .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
-    .modal { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.7); display: flex; justify-content: center; align-items: center; z-index: 50; }
-    .heart-btn { font-size: 1.3rem; cursor: pointer; transition: color 0.2s ease; }
-    .heart-btn.red { color: #dc2626; }
-    .heart-btn.gray { color: #94a3b8; }
+    .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.7); display:flex; justify-content:center; align-items:center; z-index:50; }
+    .heart-btn { font-size:1.3rem; cursor:pointer; transition:color .2s ease; }
+    .heart-btn.red { color:#dc2626; }
+    .heart-btn.gray { color:#94a3b8; }
   </style>
 </head>
 <body class="text-slate-900">
-
-  <!-- Header -->
-  <header class="bg-slate-900 shadow">
-    <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
-      <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
-      <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
-      <div class="flex items-center gap-2">
-        <span id="authStatus" class="text-sm text-slate-300">✓ Signed in - Comments save to Sheets</span>
-        <button id="logout" class="bg-red-600 text-white px-3 py-1 rounded">Logout</button>
-      </div>
-    </div>
-  </header>
-
-  <div class="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
-    <!-- Sidebar -->
-    <aside class="col-span-1 bg-white border border-slate-200 rounded-lg p-4 space-y-6">
-      <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Favorites</h2>
-        <ul id="favoritesList" class="text-sm space-y-2 text-slate-700"></ul>
-      </div>
-      <hr>
-      <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Score</h2>
-        <div id="thesis-filters" class="space-y-1 text-sm"></div>
-      </div>
-      <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Founder Score</h2>
-        <div id="founder-filters" class="space-y-1 text-sm"></div>
-      </div>
-      <div>
-        <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Funding Stage</h2>
-        <div id="funding-filters" class="space-y-1 text-sm"></div>
-      </div>
-      <div>
-       <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
-
-<!-- ✅ Subscribe button -->
-<button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">
-  Subscribe to Thesis
-</button>
-
-<!-- Thesis filters -->
-<div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
-
-      </div>
-    </aside>
-
-    <!-- Main content -->
-    <main class="col-span-3 space-y-6">
-      <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
-        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-          <h3 class="text-2xl font-semibold text-slate-900" id="stat-startups">0</h3>
-          <p class="text-xs text-slate-500 uppercase">Organizations</p>
-        </div>
-        <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
-          <h3 class="text-2xl font-semibold text-emerald-600">Live</h3>
-          <p class="text-xs text-slate-500 uppercase">Tracker</p>
-        </div>
-      </div>
-
-      <div class="relative">
-        <input id="chatSearch" type="text" placeholder="Search organizations..."
-          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
-      </div>
-
-      <section>
-        <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
-        <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
-        <p id="noResults" class="text-slate-500 hidden">No organizations found.</p>
-      </section>
-    </main>
-  </div>
-
-  <!-- Modal -->
-  <div id="modal" class="modal hidden">
-    <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
-      <button onclick="document.getElementById('modal').classList.add('hidden')" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
-      <div id="modalContent"></div>
+<header class="bg-slate-900 shadow">
+  <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+    <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
+    <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
+    <div class="flex items-center gap-2">
+      <span id="authStatus" class="text-sm text-slate-300">✓ Signed in - Comments save to Sheets</span>
+      <button id="logout" class="bg-red-600 text-white px-3 py-1 rounded">Logout</button>
     </div>
   </div>
+</header>
+
+<div class="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
+  <!-- Sidebar -->
+  <aside class="col-span-1 bg-white border border-slate-200 rounded-lg p-4 space-y-6">
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Favorites</h2>
+      <ul id="favoritesList" class="text-sm space-y-2 text-slate-700"></ul>
+    </div>
+    <hr>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Score</h2>
+      <div id="thesis-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Founder Score</h2>
+      <div id="founder-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Funding Stage</h2>
+      <div id="funding-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
+      <button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">Subscribe to Thesis</button>
+      <div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="col-span-3 space-y-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+        <h3 class="text-2xl font-semibold text-slate-900" id="stat-startups">0</h3>
+        <p class="text-xs text-slate-500 uppercase">Organizations</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+        <h3 class="text-2xl font-semibold text-emerald-600">Live</h3>
+        <p class="text-xs text-slate-500 uppercase">Tracker</p>
+      </div>
+    </div>
+
+    <div class="relative">
+      <input id="chatSearch" type="text" placeholder="Search organizations..."
+        class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
+    </div>
+
+    <section>
+      <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
+      <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <p id="noResults" class="text-slate-500 hidden">No organizations found.</p>
+    </section>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal hidden">
+  <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
+    <button onclick="document.getElementById('modal').classList.add('hidden')" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
 
 <script>
 document.addEventListener("DOMContentLoaded", () => {
-  const CSV_URL =
-    "https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
-  
-  // Google Apps Script web app URL - replace with your deployed web app URL
-  const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyxqIiYNF6ig2ytHi7sq8p8zzdQjjJRdw7gOC7h1l44t_io_V2AEKt6TCYKwYeWf-xb/exec';
-  
-  // We'll use a Google Apps Script web app to write to sheets
-  // This uses your existing Supabase Google authentication
-  let isLoggedIn = false;
+  const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
+  const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyxqIiYNF6ig2ytHi7sq8p8zzdQjjJRdw7gOC7h1l44t_io_V2AEKt6TCYKwYeWf-xb/exec';
 
-  let startups = [];
-  let favorites = [];
-  let thesisSelected = [];
-  let founderSelected = [];
-  let fundingSelected = [];
-  let thesisThemes = [];
-  let thesisThemeSelected = [];
-  let companyComments = {}; // Store comments locally
-  window.savedThesisSubscriptions = []; // <-- Use window-scoped variable
+  let startups=[],favorites=[],thesisSelected=[],founderSelected=[],fundingSelected=[],thesisThemes=[],thesisThemeSelected=[],companyComments={};
+  window.savedThesisSubscriptions=[];
 
-  function renderFilters() {
-    const thesisScale = ["Stone Cold", "Cold", "Warm", "Hot", "Nuclear Hot"];
-    const founderScale = ["Bad", "Medium", "Good", "Fantastic"];
-    const fundingStages = ["Pre-Seed", "Seed", "Series A", "Series B", "Series C", "Series D"];
-    const thesisContainer = document.getElementById("thesis-filters");
-    const founderContainer = document.getElementById("founder-filters");
-    const fundingContainer = document.getElementById("funding-filters");
-    const thesisThemeContainer = document.getElementById("thesis-theme-filters");
-
-    thesisScale.forEach(score => {
-      thesisContainer.innerHTML += `<label class="flex items-center space-x-2">
-        <input type="checkbox" value="${score}" class="thesis-checkbox"><span>${score}</span>
-      </label>`;
-    });
-    founderScale.forEach(score => {
-      founderContainer.innerHTML += `<label class="flex items-center space-x-2">
-        <input type="checkbox" value="${score}" class="founder-checkbox"><span>${score}</span>
-      </label>`;
-    });
-    fundingStages.forEach(stage => {
-      fundingContainer.innerHTML += `<label class="flex items-center space-x-2">
-        <input type="checkbox" value="${stage}" class="funding-checkbox"><span>${stage}</span>
-      </label>`;
-    });
-
-    // Thesis Theme Filter
-    thesisThemeContainer.innerHTML = "";
-    thesisThemes.forEach(theme => {
-      thesisThemeContainer.innerHTML += `<label class="flex items-center space-x-2">
-        <input type="checkbox" value="${theme}" class="thesis-theme-checkbox"><span>${theme}</span>
-      </label>`;
-    });
-
-    document.querySelectorAll(".thesis-checkbox, .founder-checkbox, .funding-checkbox, .thesis-theme-checkbox")
-      .forEach(cb => cb.addEventListener("change", applyFilters));
+  /* --- Affinity Helpers --- */
+  function parseAffinityNotes(raw){
+    if(!raw) return [];
+    try{
+      const arr=JSON.parse(raw);
+      if(!Array.isArray(arr)) return [];
+      return arr.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    }catch{return []}
+  }
+  function formatMonthYear(iso){
+    if(!iso) return "";
+    const d=new Date(iso);
+    return d.toLocaleString("en-US",{month:"short",year:"numeric"});
   }
 
-  function applyFilters() {
-    thesisSelected = [...document.querySelectorAll(".thesis-checkbox:checked")].map(cb => cb.value);
-    founderSelected = [...document.querySelectorAll(".founder-checkbox:checked")].map(cb => cb.value);
-    fundingSelected = [...document.querySelectorAll(".funding-checkbox:checked")].map(cb => cb.value);
-    thesisThemeSelected = [...document.querySelectorAll(".thesis-theme-checkbox:checked")].map(cb => cb.value);
+  /* --- Filters --- */
+  function renderFilters(){
+    const thesisScale=["Stone Cold","Cold","Warm","Hot","Nuclear Hot"];
+    const founderScale=["Bad","Medium","Good","Fantastic"];
+    const fundingStages=["Pre-Seed","Seed","Series A","Series B","Series C","Series D"];
+    const thesisContainer=document.getElementById("thesis-filters");
+    const founderContainer=document.getElementById("founder-filters");
+    const fundingContainer=document.getElementById("funding-filters");
+    const thesisThemeContainer=document.getElementById("thesis-theme-filters");
 
-    let filtered = startups.filter(s => {
-      const thesisOK = thesisSelected.length === 0 || thesisSelected.includes(s.thesis_score);
-      const founderOK = founderSelected.length === 0 || founderSelected.includes(s.founder_score);
-      const fundingOK = fundingSelected.length === 0 || fundingSelected.some(stage =>
-        (s.funding_stage || "").toLowerCase().includes(stage.toLowerCase())
-      );
-      const themeOK = thesisThemeSelected.length === 0 || thesisThemeSelected.includes(s.best_matching_thesis);
+    thesisScale.forEach(s=>thesisContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="thesis-checkbox"><span>${s}</span></label>`);
+    founderScale.forEach(s=>founderContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="founder-checkbox"><span>${s}</span></label>`);
+    fundingStages.forEach(s=>fundingContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="funding-checkbox"><span>${s}</span></label>`);
+
+    thesisThemeContainer.innerHTML="";
+    thesisThemes.forEach(t=>thesisThemeContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${t}" class="thesis-theme-checkbox"><span>${t}</span></label>`);
+
+    document.querySelectorAll(".thesis-checkbox,.founder-checkbox,.funding-checkbox,.thesis-theme-checkbox")
+      .forEach(cb=>cb.addEventListener("change",applyFilters));
+  }
+
+  function applyFilters(){
+    thesisSelected=[...document.querySelectorAll(".thesis-checkbox:checked")].map(cb=>cb.value);
+    founderSelected=[...document.querySelectorAll(".founder-checkbox:checked")].map(cb=>cb.value);
+    fundingSelected=[...document.querySelectorAll(".funding-checkbox:checked")].map(cb=>cb.value);
+    thesisThemeSelected=[...document.querySelectorAll(".thesis-theme-checkbox:checked")].map(cb=>cb.value);
+
+    let filtered=startups.filter(s=>{
+      const thesisOK=!thesisSelected.length||thesisSelected.includes(s.thesis_score);
+      const founderOK=!founderSelected.length||founderSelected.includes(s.founder_score);
+      const fundingOK=!fundingSelected.length||fundingSelected.some(stage=>(s.funding_stage||"").toLowerCase().includes(stage.toLowerCase()));
+      const themeOK=!thesisThemeSelected.length||thesisThemeSelected.includes(s.best_matching_thesis);
       return thesisOK && founderOK && fundingOK && themeOK;
     });
 
     renderGrid(filtered);
   }
 
-  function getHeatmapClass(score) {
-    switch ((score || "").toLowerCase()) {
+  function getHeatmapClass(score){
+    switch((score||"").toLowerCase()){
       case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
       case "cold": case "medium": return "border border-orange-500 text-orange-700 bg-orange-50";
       case "warm": case "good": return "border border-yellow-500 text-yellow-700 bg-yellow-50";
@@ -188,529 +166,277 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function getCountryFlag(country) {
-    if (!country) return "";
-    // Map common country names to ISO codes
-    const map = {
-      "NETHERLANDS": "NL",
-      "UNITED KINGDOM": "GB",
-      "GERMANY": "DE",
-      "FRANCE": "FR",
-      "BELGIUM": "BE",
-      "SPAIN": "ES",
-      "ITALY": "IT",
-      "SWEDEN": "SE",
-      "DENMARK": "DK",
-      "FINLAND": "FI",
-      "NORWAY": "NO",
-      "SWITZERLAND": "CH",
-      "AUSTRIA": "AT",
-      "IRELAND": "IE",
-      "PORTUGAL": "PT",
-      "POLAND": "PL",
-      "CZECH REPUBLIC": "CZ",
-      "HUNGARY": "HU",
-      "ROMANIA": "RO",
-      "BULGARIA": "BG",
-      "GREECE": "GR",
-      "SLOVAKIA": "SK",
-      "SLOVENIA": "SI",
-      "CROATIA": "HR",
-      "ESTONIA": "EE",
-      "LATVIA": "LV",
-      "LITHUANIA": "LT",
-      "LUXEMBOURG": "LU",
-      "MALTA": "MT",
-      "CYPRUS": "CY",
-      "ICELAND": "IS",
-      "SERBIA": "RS",
-      "UKRAINE": "UA",
-      "BELARUS": "BY",
-      "MOLDOVA": "MD",
-      "BOSNIA AND HERZEGOVINA": "BA",
-      "NORTH MACEDONIA": "MK",
-      "ALBANIA": "AL",
-      "MONACO": "MC",
-      "SAN MARINO": "SM",
-      "VATICAN CITY": "VA",
-      "LIECHTENSTEIN": "LI",
-      "ANDORRA": "AD",
-      // fallback for other countries
-      "UNITED STATES": "US",
-      "CANADA": "CA",
-      "AUSTRALIA": "AU",
-      "INDIA": "IN",
-      "CHINA": "CN",
-      "JAPAN": "JP"
-    };
-    let code = country.trim().toUpperCase();
-    code = map[code] || code;
-    if (code.length === 2) {
-      return String.fromCodePoint(
-        ...code.split("").map(c => 127397 + c.charCodeAt())
-      );
-    }
-    return "";
+  function getCountryFlag(country){
+    if(!country) return "";
+    const map={"NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
+      "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
+      "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
+      "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
+      "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
+      "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
+      "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
+      "INDIA":"IN","CHINA":"CN","JAPAN":"JP"};
+    let code=(map[country.trim().toUpperCase()]||country).toUpperCase();
+    return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
   }
 
-  function renderGrid(data) {
-    const results = document.getElementById("results");
-    const noResults = document.getElementById("noResults");
-    results.innerHTML = "";
-    if (!data || data.length === 0) {
-      noResults.classList.remove("hidden");
-      return;
-    }
+  /* --- GRID RENDER --- */
+  function renderGrid(data){
+    const results=document.getElementById("results");
+    const noResults=document.getElementById("noResults");
+    results.innerHTML="";
+    if(!data||!data.length){noResults.classList.remove("hidden");return;}
     noResults.classList.add("hidden");
 
-    data.forEach(s => {
-      const thesisClass = getHeatmapClass(s.thesis_score);
-      const founderClass = getHeatmapClass(s.founder_score);
-      const normalizedName = (s.company_name || "").trim().toLowerCase();
-      const isFav = favorites.includes(normalizedName);
+    data.forEach(s=>{
+      const thesisClass=getHeatmapClass(s.thesis_score);
+      const founderClass=getHeatmapClass(s.founder_score);
+      const normalizedName=(s.company_name||"").trim().toLowerCase();
+      const isFav=favorites.includes(normalizedName);
+      const fundingInfo=[s.funding_stage,s.funding_amount].filter(Boolean).join(" | ");
 
-      // 👇 Add funding_amount next to funding_stage
-      const fundingInfo = [s.funding_stage, s.funding_amount].filter(Boolean).join(" | ");
-
-      // Ensure https:// is present for domain
-      let domainLink = "";
-      if (s.domain) {
-        const url = s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`;
-        domainLink = `<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
+      let domainLink="";
+      if(s.domain){
+        const url=s.domain.startsWith("https://")?s.domain:`https://${s.domain}`;
+        domainLink=`<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
       }
 
-      // Country flag and name (top right, styled as a flag, with more distance from heart)
-      const countryFlag = getCountryFlag(s.country);
-      const countryDisplay = s.country
-        ? `<div class="absolute top-3 right-4 flex flex-col items-end space-y-1 z-10">
-            <span class="block text-2xl" style="filter: drop-shadow(0 1px 2px #ccc);">${countryFlag}</span>
-            <span class="text-xs text-slate-700 bg-white/80 rounded px-2 py-0.5 shadow">${s.country}</span>
-         </div>`
-        : "";
+      const countryFlag=getCountryFlag(s.country);
+      const countryDisplay=s.country?`
+        <div class="absolute top-3 right-4 flex flex-col items-end space-y-1 z-10">
+          <span class="block text-2xl" style="filter: drop-shadow(0 1px 2px #ccc);">${countryFlag}</span>
+          <span class="text-xs text-slate-700 bg-white/80 rounded px-2 py-0.5 shadow">${s.country}</span>
+        </div>`:"";
 
-      const card = document.createElement("div");
-      card.className = "startup-card bg-white border border-slate-200 rounded-md p-4 relative";
-      card.innerHTML = `
+      const notes=parseAffinityNotes(s.affinity_notes);
+      let affinityHTML="";
+      if(notes.length>0){
+        const latest=notes[0];
+        const moreCount=notes.length-1;
+        const date=formatMonthYear(latest.createdAt);
+        const who=latest?.creator?.firstName||"Unknown";
+        const link=`https://keenventurepartners.affinity.co/notes/${latest.id}`;
+        affinityHTML=`
+          <p class="text-xs text-slate-500 mt-1">
+            👤 <a href="${link}" target="_blank" class="underline">${who} (${date}) ↗</a>
+            ${moreCount>0?` • <span class="cursor-pointer underline text-slate-600" onclick="openAffinityHistory(event,'${s.company_name.replace(/'/g,"\\'")}')">+${moreCount} more</span>`:""}
+          </p>`;
+      }
+
+      const card=document.createElement("div");
+      card.className="startup-card bg-white border border-slate-200 rounded-md p-4 relative";
+      card.innerHTML=`
         ${countryDisplay}
         <div class="flex justify-between items-start">
           <div>
             <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
-            <p class="text-xs text-slate-500 mb-2">${s.industry || "-"}</p>
+            <p class="text-xs text-slate-500 mb-2">${s.industry||"-"}</p>
           </div>
-          <div class="flex flex-col items-end" style="gap: 1.5rem;">
-            <button class="heart-btn ${isFav ? "red" : "gray"}" data-company="${s.company_name}" style="margin-top: 2.5rem;">♥</button>
-          </div>
+          <button class="heart-btn ${isFav?"red":"gray"}" data-company="${s.company_name}" style="margin-top: 2.5rem;">♥</button>
         </div>
         <div class="space-y-1 text-sm">
-          <p><span class="font-medium text-slate-700">Thesis Score:</span>
-             <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
-          <p><span class="font-medium text-slate-700">Founder Score:</span>
-             <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
-          <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo || "-"}</p>
-          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
-          ${domainLink ? `<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>` : ""}
-        </div>
-      `;
+          <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
+          <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
+          <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo||"-"}</p>
+          ${affinityHTML}
+          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
+          ${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
+        </div>`;
 
-      card.addEventListener("click", e => {
-        if (!e.target.classList.contains("heart-btn")) openModal(s);
+      card.addEventListener("click",e=>{
+        if(e.target.classList.contains("heart-btn"))return;
+        if(e.target.closest("a") && e.target.closest("a").getAttribute("target")==="_blank")return;
+        openModal(s);
       });
-
       results.appendChild(card);
     });
 
-    document.querySelectorAll(".heart-btn").forEach(btn => {
-      btn.addEventListener("click", e => {
+    document.querySelectorAll(".heart-btn").forEach(btn=>{
+      btn.addEventListener("click",e=>{
         e.stopPropagation();
-        const company = btn.dataset.company;
-        const normalized = company.trim().toLowerCase();
-        const isFav = favorites.includes(normalized);
-
-        if (isFav) {
-          favorites = favorites.filter(f => f !== normalized);
-          btn.classList.replace("red", "gray");
-        } else {
-          favorites.push(normalized);
-          btn.classList.replace("gray", "red");
-        }
+        const company=btn.dataset.company;
+        const normalized=company.trim().toLowerCase();
+        const isFav=favorites.includes(normalized);
+        if(isFav){favorites=favorites.filter(f=>f!==normalized);btn.classList.replace("red","gray")}
+        else{favorites.push(normalized);btn.classList.replace("gray","red")}
         renderFavoritesSidebar();
       });
     });
   }
+  /* --- MAIN MODAL (only latest affinity) --- */
+  function openModal(s){
+    const modal=document.getElementById("modal");
+    const content=document.getElementById("modalContent");
+    const thesisClass=getHeatmapClass(s.thesis_score);
+    const founderClass=getHeatmapClass(s.founder_score);
+    const fundingInfo=[s.funding_stage,s.funding_amount].filter(Boolean).join(" | ");
+    const domainLink=s.domain?`<a href="${s.domain.startsWith("https://")?s.domain:`https://${s.domain}`}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`:"";
 
-// 🚀 OPEN MODAL — INSTANT + LAZY LOAD COMMENT
-function openModal(s) {
-  const modal = document.getElementById("modal");
-  const content = document.getElementById("modalContent");
-  const thesisClass = getHeatmapClass(s.thesis_score);
-  const founderClass = getHeatmapClass(s.founder_score);
-  const fundingInfo = [s.funding_stage, s.funding_amount].filter(Boolean).join(" | ");
-  let domainLink = s.domain
-    ? `<a href="${s.domain.startsWith("https://") ? s.domain : `https://${s.domain}`}" 
-         target="_blank" class="text-slate-700 underline">${s.domain}</a>`
-    : "";
+    /* --- latest affinity only --- */
+    const notes=parseAffinityNotes(s.affinity_notes);
+    let modalAffinity="";
+    if(notes.length>0){
+      const latest=notes[0];
+      const moreCount=notes.length-1;
+      const link=`https://keenventurepartners.affinity.co/notes/${latest.id}`;
+      const date=formatMonthYear(latest.createdAt);
+      const who=[latest?.creator?.firstName,latest?.creator?.lastName].filter(Boolean).join(" ")||"Unknown";
+      modalAffinity=`
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-2">Latest Affinity Touch</h3>
+        <p class="text-xs text-slate-600">
+          👤 <a href="${link}" target="_blank" class="underline">${who} (${date}) ↗</a>
+          ${moreCount>0?` • <span class='underline cursor-pointer' onclick="openAffinityHistory(event,'${s.company_name.replace(/'/g,"\\'")}')">+${moreCount} more</span>`:""}
+        </p>
+      </div>`;
+    }
 
-  // 🧩 Show cached comment or empty placeholder immediately
-  const cachedComment = companyComments[s.company_name] || "";
-  const loadingMsg = cachedComment ? "" : "Loading previous comment...";
+    /* --- existing comment --- */
+    const cachedComment=companyComments[s.company_name]||"";
+    const loadingMsg=cachedComment?"":"Loading previous comment...";
 
-  content.innerHTML = `
-    <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
-    <p class="text-sm text-slate-500 mb-2">${s.industry || "-"}</p>
-    ${domainLink}
-    <div class="mt-3 text-sm space-y-1">
-      <p><span class="font-medium">Thesis Score:</span>
-         <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score || "-"}</span></p>
-      <p><span class="font-medium">Founder Score:</span>
-         <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score || "-"}</span></p>
-      <p><span class="font-medium">Funding:</span> ${fundingInfo || "-"}</p>
-      <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis || "-"}</p>
-      <p><span class="font-medium">Reasoning:</span> ${s.reasoning || ""}</p>
-      <p><span class="font-medium">Founder Background:</span> ${s.founder_background || ""}</p>
-    </div>
-    <div class="mt-4 border-t pt-4">
-      <h3 class="text-sm font-medium text-slate-700 mb-2">Feedback Comment</h3>
-      <textarea id="feedbackComment"
-        class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 resize-none"
-        rows="4"
-        placeholder="Write your feedback about this company...">${cachedComment}</textarea>
-      <p id="commentStatus" class="text-xs text-slate-500 mt-1">${loadingMsg}</p>
-      <div class="flex justify-end mt-3">
-        <button id="saveCommentBtn"
-          class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">
-          Save Comment
-        </button>
+    content.innerHTML=`
+      <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
+      <p class="text-sm text-slate-500 mb-2">${s.industry||"-"}</p>
+      ${domainLink}
+      <div class="mt-3 text-sm space-y-1">
+        <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
+        <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
+        <p><span class="font-medium">Funding:</span> ${fundingInfo||"-"}</p>
+        <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis||"-"}</span></p>
+        <p><span class="font-medium">Reasoning:</span> ${s.reasoning||""}</p>
+        <p><span class="font-medium">Founder Background:</span> ${s.founder_background||""}</p>
       </div>
-    </div>`;
 
-  modal.classList.remove("hidden");
+      ${modalAffinity}
 
-  const textarea = document.getElementById("feedbackComment");
-  const saveBtn = document.getElementById("saveCommentBtn");
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-2">Feedback Comment</h3>
+        <textarea id="feedbackComment"
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 resize-none"
+          rows="4"
+          placeholder="Write your feedback about this company...">${cachedComment}</textarea>
+        <p id="commentStatus" class="text-xs text-slate-500 mt-1">${loadingMsg}</p>
+        <div class="flex justify-end mt-3">
+          <button id="saveCommentBtn"
+            class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">Save Comment</button>
+        </div>
+      </div>`;
 
-  saveBtn.addEventListener("click", () => saveComment(s.company_name, textarea.value));
-  textarea.addEventListener("blur", () => saveComment(s.company_name, textarea.value));
+    modal.classList.remove("hidden");
 
-  // 🧠 Lazy-load real comment from Google Sheets in background
-  (async () => {
-    try {
-      const response = await fetch(`${APPS_SCRIPT_URL}?action=getComment&companyName=${encodeURIComponent(s.company_name)}`);
-      const result = await response.json();
-      if (result && result.comment !== undefined) {
-        companyComments[s.company_name] = result.comment;
-        localStorage.setItem('companyComments', JSON.stringify(companyComments));
-        textarea.value = result.comment;
-        document.getElementById("commentStatus").textContent = "Loaded from Sheets ✓";
-      }
-    } catch (err) {
-      document.getElementById("commentStatus").textContent = "⚠️ Could not sync with Sheets";
-      console.warn("Comment fetch error:", err);
-    }
-  })();
-}
-
-
-
-// 🚀 SAVE COMMENT — OPTIMISTIC UPDATE
-async function saveComment(companyName, comment) {
-  // 🧩 Instant local update
-  companyComments[companyName] = comment;
-  localStorage.setItem('companyComments', JSON.stringify(companyComments));
-
-  const saveBtn = document.getElementById("saveCommentBtn");
-  const status = document.getElementById("commentStatus");
-
-  if (saveBtn) {
-    saveBtn.textContent = "Saving...";
-    saveBtn.className = "bg-yellow-600 text-white px-4 py-2 rounded text-sm";
-  }
-  if (status) status.textContent = "Saving to Google Sheets...";
-
-  // 🧠 Run background request (non-blocking)
-  (async () => {
-    try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) throw new Error("Not authenticated");
-
-      const sessionToken = session.access_token;
-      const userEmail = session.user.email;
-
-      const params = new URLSearchParams({
-        action: 'saveComment',
-        sessionToken,
-        companyName,
-        comment,
-        userEmail
-      });
-
-      const res = await fetch(`${APPS_SCRIPT_URL}?${params}`, { method: "GET" });
-      const result = await res.json();
-
-      if (!result.success) throw new Error(result.error || "Failed to save");
-
-      // ✅ Success visual feedback
-      if (saveBtn) {
-        saveBtn.textContent = "Saved ✓";
-        saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
-        setTimeout(() => {
-          saveBtn.textContent = "Save Comment";
-          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
-        }, 1500);
-      }
-      if (status) status.textContent = "Saved to Google Sheets ✓";
-
-    } catch (err) {
-      console.error("❌ Save failed:", err);
-      if (status) status.textContent = "⚠️ Saved locally (Sheets error)";
-      if (saveBtn) {
-        saveBtn.textContent = "Saved Locally ⚠️";
-        saveBtn.className = "bg-orange-600 text-white px-4 py-2 rounded text-sm";
-        setTimeout(() => {
-          saveBtn.textContent = "Save Comment";
-          saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
-        }, 3000);
-      }
-    }
-  })();
-}
-
-
-  // Simplified initialization - just load local comments
-  function initComments() {
-    console.log('Loading comments from localStorage (user already authenticated via Supabase)');
-    loadCommentsFromLocalStorage();
-  }
-  
-  function loadCommentsFromLocalStorage() {
-    const savedComments = localStorage.getItem('companyComments');
-    if (savedComments) {
-      companyComments = JSON.parse(savedComments);
-    }
+    /* --- comment save events --- */
+    const textarea=document.getElementById("feedbackComment");
+    const saveBtn=document.getElementById("saveCommentBtn");
+    saveBtn.addEventListener("click",()=>saveComment(s.company_name,textarea.value));
+    textarea.addEventListener("blur",()=>saveComment(s.company_name,textarea.value));
   }
 
-  Papa.parse(CSV_URL, {
-    download: true,
-    header: true,
-    complete: async results => {
-      startups = results.data.filter(s => s.company_name);
+  /* --- FULLSCREEN AFFINITY HISTORY (minimal) --- */
+  window.openAffinityHistory=function(e,companyName){
+    e.stopPropagation();
+    const s=startups.find(x=>x.company_name===companyName);
+    if(!s) return;
+    const notes=parseAffinityNotes(s.affinity_notes);
+    if(!notes.length) return;
 
-      // Extract unique thesis themes
-      thesisThemes = Array.from(
-        new Set(startups.map(s => s.best_matching_thesis).filter(Boolean))
-      ).sort();
+    const rows=notes.map(n=>{
+      const date=formatMonthYear(n.createdAt);
+      const who=[n?.creator?.firstName,n?.creator?.lastName].filter(Boolean).join(" ")||"Unknown";
+      const link=`https://keenventurepartners.affinity.co/notes/${n.id}`;
+      return `<li class="mb-2 text-sm">👤 ${who} (${date}) · <a href='${link}' target='_blank' class='underline'>↗</a></li>`;
+    }).join("");
 
-      document.getElementById("stat-startups").textContent = startups.length;
+    const modal=document.getElementById("modal");
+    const content=document.getElementById("modalContent");
+    content.innerHTML=`
+      <h2 class="text-lg font-bold mb-3">All Affinity Touches</h2>
+      <ul class="mb-6">${rows}</ul>
+      <button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-slate-700 text-white px-4 py-2 rounded text-sm">Close</button>`;
+    modal.classList.remove("hidden");
+  };
+
+  /* --- COMMENT SAVE (unchanged) --- */
+  async function saveComment(companyName,comment){
+    companyComments[companyName]=comment;
+    localStorage.setItem('companyComments',JSON.stringify(companyComments));
+    const saveBtn=document.getElementById("saveCommentBtn");
+    const status=document.getElementById("commentStatus");
+    saveBtn.textContent="Saving...";saveBtn.className="bg-yellow-600 text-white px-4 py-2 rounded text-sm";
+    status.textContent="Saving to Google Sheets...";
+    try{
+      const{data:{session}}=await supabase.auth.getSession();
+      if(!session) throw new Error("Not authenticated");
+      const params=new URLSearchParams({action:'saveComment',sessionToken:session.access_token,companyName,comment,userEmail:session.user.email});
+      const res=await fetch(`${APPS_SCRIPT_URL}?${params}`,{method:"GET"});
+      const json=await res.json();
+      if(!json.success) throw new Error("Save failed");
+      saveBtn.textContent="Saved ✓";saveBtn.className="bg-green-600 text-white px-4 py-2 rounded text-sm";
+      status.textContent="Saved to Google Sheets ✓";
+    }catch{
+      saveBtn.textContent="Saved Locally ⚠️";saveBtn.className="bg-orange-600 text-white px-4 py-2 rounded text-sm";
+      status.textContent="⚠️ Saved locally (Sheets error)";
+    }
+    setTimeout(()=>{saveBtn.textContent="Save Comment";saveBtn.className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";},1800);
+  }
+
+  /* --- LOAD COMMENTS --- */
+  function loadCommentsFromLocalStorage(){
+    const saved=localStorage.getItem('companyComments');
+    if(saved) companyComments=JSON.parse(saved);
+  }
+
+  function initComments(){ loadCommentsFromLocalStorage(); }
+
+  /* --- CSV LOAD --- */
+  Papa.parse(CSV_URL,{
+    download:true,header:true,
+    complete:async results=>{
+      startups=results.data.filter(s=>s.company_name);
+      thesisThemes=[...new Set(startups.map(s=>s.best_matching_thesis).filter(Boolean))].sort();
+      document.getElementById("stat-startups").textContent=startups.length;
       renderFilters();
-      window.startups = startups;
-
-      // Initialize comments (user already authenticated via Supabase)
+      window.startups=startups;
       initComments();
-
-      setTimeout(() => {
-        renderGrid(startups);
-        if (window.renderFavoritesSidebar) window.renderFavoritesSidebar();
-      }, 300);
-    },
+      setTimeout(()=>{renderGrid(startups);renderFavoritesSidebar();},200);
+    }
   });
 
-  document.getElementById("chatSearch").addEventListener("input", e => {
-    const q = e.target.value.toLowerCase();
-    const filtered = startups.filter(s =>
-      (s.company_name && s.company_name.toLowerCase().includes(q)) ||
-      (s.industry && s.industry.toLowerCase().includes(q)) ||
-      (s.reasoning && s.reasoning.toLowerCase().includes(q))
-    );
+  /* --- SEARCH --- */
+  document.getElementById("chatSearch").addEventListener("input",e=>{
+    const q=e.target.value.toLowerCase();
+    const filtered=startups.filter(s=>
+      (s.company_name||"").toLowerCase().includes(q)||
+      (s.industry||"").toLowerCase().includes(q)||
+      (s.reasoning||"").toLowerCase().includes(q));
     renderGrid(filtered);
   });
 
-  window.renderFavoritesSidebar = function() {
-    const list = document.getElementById("favoritesList");
-    list.innerHTML = favorites.length
-      ? favorites.map(name => {
-          const favStartup = startups.find(s => (s.company_name || "").trim().toLowerCase() === name);
-          return `<li class="flex justify-between items-center">
-            <span>${favStartup?.company_name || name}</span>
-            <button data-remove-id="${favStartup?.id}" class="text-red-500 text-xs">❌</button></li>`;
-        }).join("")
-      : `<li class="text-slate-400">No favorites yet</li>`;
+  /* --- FAVORITES SIDEBAR --- */
+  window.renderFavoritesSidebar=function(){
+    const list=document.getElementById("favoritesList");
+    list.innerHTML=favorites.length?
+      favorites.map(f=>{
+        const st=startups.find(s=>(s.company_name||"").trim().toLowerCase()===f);
+        return `<li class="flex justify-between items-center"><span>${st?.company_name||f}</span></li>`;
+      }).join(""):
+      `<li class="text-slate-400">No favorites yet</li>`;
   };
-
-  document.addEventListener("click", e => {
-    if (e.target.dataset.removeId) {
-      const id = parseInt(e.target.dataset.removeId, 10);
-      favorites = favorites.filter(f => startups.find(s => s.id === id)?.company_name.trim().toLowerCase() !== f);
-      renderFavoritesSidebar();
-      renderGrid(startups);
-    }
-  });
-
-  // 🧠 Open modal with thesis filters when "Subscribe to Thesis" is clicked
-  document.addEventListener("click", e => {
-    if (e.target.id === "subscribeThesisBtn") {
-      const modal = document.getElementById("modal");
-      const content = document.getElementById("modalContent");
-
-      // Get all current thesis themes
-      const thesisContainer = document.getElementById("thesis-theme-filters");
-      const filtersHTML = thesisContainer.innerHTML; // copy current filters
-
-      // Fill the modal with same checkboxes
-      content.innerHTML = `
-        <h2 class="text-xl font-bold mb-2 text-slate-900">Subscribe to Thesis Topics</h2>
-        <p class="text-sm text-slate-600 mb-3">Select the thesis themes you want to subscribe to:</p>
-
-        <!-- ✅ Add Select All / Deselect All -->
-        <div class="flex justify-end mb-2">
-          <button id="toggleAllBtn" class="text-xs text-blue-600 hover:text-blue-800 underline">
-            Select All
-          </button>
-        </div>
-
-        <div id="modalThesisList" class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
-          ${filtersHTML}
-        </div>
-
-        <div class="mt-4 flex justify-end gap-2">
-          <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">
-            Save Selection
-          </button>
-          <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">
-            Set Up Auto Slack Me List
-          </button>
-        </div>
-      `;
-
-      // ✅ Handle Select All / Deselect All toggle
-      let allSelected = false;
-      document.getElementById("toggleAllBtn").addEventListener("click", () => {
-        const checkboxes = document.querySelectorAll("#modalThesisList input[type='checkbox']");
-        allSelected = !allSelected;
-        checkboxes.forEach(cb => cb.checked = allSelected);
-        document.getElementById("toggleAllBtn").textContent = allSelected ? "Deselect All" : "Select All";
-      });
-
-      // ✅ Pre-check saved theses for logged-in user (reliable)
-      async function preCheckSavedTheses() {
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) return;
-
-          const userEmail = session.user.email;
-          const { data, error } = await supabase
-            .from("thesis_subscriptions")
-            .select("selected_theses")
-            .eq("user_email", userEmail)
-            .single();
-
-          if (error) {
-            console.warn("⚠️ No previous theses found:", error.message);
-            return;
-          }
-
-          const savedTheses = data?.selected_theses || [];
-          window.savedThesisSubscriptions = savedTheses;
-
-          savedTheses.forEach(theme => {
-            const checkbox = [...document.querySelectorAll("#modalContent input[type='checkbox']")]
-              .find(cb => cb.value === theme);
-            if (checkbox) checkbox.checked = true;
-          });
-
-          console.log("✅ Pre-checked saved theses:", savedTheses);
-        } catch (err) {
-          console.error("❌ Error pre-checking theses:", err);
-        }
-      }
-      preCheckSavedTheses();
-
-      modal.classList.remove("hidden");
-
-      // Optional: Handle save (no Supabase)
-      document.getElementById("saveSubscription").addEventListener("click", () => {
-        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
-        console.log("✅ Selected thesis subscriptions:", selected);
-        alert(`Subscribed to ${selected.length} thesis topics!`);
-        modal.classList.add("hidden");
-      });
-
-      // 🧠 Handle Auto Slack Me (save selected theses to Supabase)
-      document.getElementById("autoSlackBtn").addEventListener("click", async () => {
-        const selected = [...document.querySelectorAll("#modalContent input:checked")].map(cb => cb.value);
-        if (selected.length === 0) {
-          alert("Please select at least one thesis topic before saving.");
-          return;
-        }
-
-        try {
-          const { data: { session } } = await supabase.auth.getSession();
-          if (!session) {
-            alert("Please log in first.");
-            return;
-          }
-
-          const user = session.user;
-          const userEmail = user.email;
-
-          const { error } = await supabase.from("thesis_subscriptions").upsert(
-            {
-              user_email: userEmail,
-              selected_theses: selected,
-              created_at: new Date().toISOString(),
-            },
-            { onConflict: "user_email" }
-          );
-
-          if (error) throw error;
-
-          alert(`✅ Auto Slack setup saved!
-Amazing! Now you will get the best weekly Monday results in your Slack linked to these theses.`);
-
-          modal.classList.add("hidden");
-        } catch (err) {
-          console.error("❌ Error saving to Supabase:", err);
-          alert("Failed to save to Supabase. Check console for details.");
-        }
-      });
-    }
-  });
 });
 </script>
 
-<!-- ✅ Google Sign-in Integration (keep this, remove Supabase favorites logic) -->
+<!-- ✅ Supabase Auth -->
 <script type="module">
-  import { supabase } from "./lib/supabaseClient.js";
-  window.supabase = supabase;
-
-  async function initSupabase() {
-    const { data: { session } } = await supabase.auth.getSession();
-
-    if (!session) {
-      window.location.href = "login.html";
-      return;
-    }
-
-    const user = session.user;
-    const userEmail = user.email;
-    console.log("✅ Logged in:", user.email);
-
-    // 🧠 Fetch user's saved thesis subscriptions
-    try {
-      const { data, error } = await supabase
-        .from("thesis_subscriptions")
-        .select("selected_theses")
-        .eq("user_email", userEmail)  // ✅ FIXED HERE
-        .single();
-
-      if (!error && data && data.selected_theses) {
-        window.savedThesisSubscriptions = data.selected_theses;
-        console.log("✅ Loaded saved thesis selections:", data.selected_theses);
-      }
-    } catch (err) {
-      console.error("❌ Error loading thesis subscriptions:", err);
-    }
-  }
-
-  initSupabase();
+import { supabase } from "./lib/supabaseClient.js";
+window.supabase=supabase;
+(async()=>{
+  const {data:{session}}=await supabase.auth.getSession();
+  if(!session) return window.location.href="login.html";
+})();
 </script>
+
 </body>
 </html>
+
+
+
