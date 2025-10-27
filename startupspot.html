@@ -272,13 +272,19 @@ function getCountryFlag(country){
           <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo||"-"}</p>
-          ${affinityHTML}
-          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
-          ${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
+${affinityHTML ? `<p class="text-xs text-slate-600 mt-1"><span class="font-medium text-slate-700">Latest Touch:</span> ${affinityHTML}</p>` : ""}
 
-          ${s.investors && s.investors.length ? `<p class="text-xs text-slate-600 mt-2">${formatInvestorsCard(s.investors)}</p>` : ""}
+<p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
+${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
 
-          ${s.last_contact ? `<p class="text-xs text-slate-600">${formatLastContactCard(s.last_contact)}</p>` : ""}
+${s.investors && s.investors.length ? `
+  <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Investors:</span> ${formatInvestorsCard(s.investors)}</p>
+` : ""}
+
+${s.last_contact ? `
+  <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Last Contact:</span> ${formatLastContactCard(s.last_contact)}</p>
+` : ""}
+
 
         </div>`;
 
@@ -432,7 +438,3 @@ window.supabase=supabase;
 
 </body>
 </html>
-
-
-
-
