@@ -98,6 +98,35 @@ document.addEventListener("DOMContentLoaded", () => {
   let startups=[],favorites=[],thesisSelected=[],founderSelected=[],fundingSelected=[],thesisThemes=[],thesisThemeSelected=[],companyComments={};
   window.savedThesisSubscriptions=[];
 
+  /* --- Heatmap / Flag Helpers RESTORED --- */
+  function getHeatmapClass(score){
+    switch((score||"").toLowerCase()){
+      case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
+      case "cold": case "medium": return "border border-orange-500 text-orange-700 bg-orange-50";
+      case "warm": case "good": return "border border-yellow-500 text-yellow-700 bg-yellow-50";
+      case "hot": return "border border-lime-600 text-lime-700 bg-lime-50";
+      case "nuclear hot": case "fantastic": return "border border-green-600 text-green-700 bg-green-50";
+      default: return "border border-slate-300 text-slate-600 bg-slate-50";
+    }
+  }
+
+function getCountryFlag(country){
+  if(!country) return "";
+  const map={
+    "NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
+    "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
+    "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
+    "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
+    "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
+    "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
+    "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
+    "INDIA":"IN","CHINA":"CN","JAPAN":"JP"
+  };
+  let code=(map[country.trim().toUpperCase()]||country).toUpperCase();
+  return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
+}
+
+
   /* --- Affinity Helpers --- */
   function parseAffinityNotes(raw){
     if(!raw) return [];
@@ -113,9 +142,39 @@ document.addEventListener("DOMContentLoaded", () => {
     return d.toLocaleString("en-US",{month:"short",year:"numeric"});
   }
 
+  function formatInvestorsCard(inv){
+    if(!inv || !inv.length) return "";
+    if(inv.length <= 3) return `💰 ${inv.join(", ")}`;
+    return `💰 ${inv.slice(0,3).join(", ")} +${inv.length-3}`;
+  }
+
+  function formatInvestorsModal(inv){
+    if(!inv || !inv.length) return "";
+    return `💰 ${inv.join(", ")}`;
+  }
+
+  function formatLastContactCard(lc){
+    if(!lc) return "";
+    const icon = lc.type==="meeting"?"🤝":lc.type==="email"?"📧":"💬";
+    const date = new Date(lc.timestamp).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    return `${icon} ${date}`;
+  }
+
+  function formatLastContactModal(lc){
+    if(!lc) return "";
+    const icon = lc.type==="meeting"?"🤝":lc.type==="email"?"📧":"💬";
+    const date = new Date(lc.timestamp).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    return `
+    <div class="mt-4 border-t pt-4">
+      <h3 class="text-sm font-medium text-slate-700 mb-1">Last Contact</h3>
+      <p class="text-sm text-slate-700 mb-1">${icon} ${date}</p>
+      ${lc.title?`<p class="text-xs text-slate-500 italic">"${lc.title}"</p>`:""}
+    </div>`;
+  }
+
   /* --- Filters --- */
   function renderFilters(){
-    const thesisScale=["Stone Cold","Cold","Warm","Hot","Nuclear Hot"];
+    thesisScale=["Stone Cold","Cold","Warm","Hot","Nuclear Hot"];
     const founderScale=["Bad","Medium","Good","Fantastic"];
     const fundingStages=["Pre-Seed","Seed","Series A","Series B","Series C","Series D"];
     const thesisContainer=document.getElementById("thesis-filters");
@@ -153,31 +212,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     renderGrid(filtered);
-  }
-
-  function getHeatmapClass(score){
-    switch((score||"").toLowerCase()){
-      case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
-      case "cold": case "medium": return "border border-orange-500 text-orange-700 bg-orange-50";
-      case "warm": case "good": return "border border-yellow-500 text-yellow-700 bg-yellow-50";
-      case "hot": return "border border-lime-600 text-lime-700 bg-lime-50";
-      case "nuclear hot": case "fantastic": return "border border-green-600 text-green-700 bg-green-50";
-      default: return "border border-slate-300 text-slate-600 bg-slate-50";
-    }
-  }
-
-  function getCountryFlag(country){
-    if(!country) return "";
-    const map={"NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
-      "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
-      "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
-      "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
-      "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
-      "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
-      "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
-      "INDIA":"IN","CHINA":"CN","JAPAN":"JP"};
-    let code=(map[country.trim().toUpperCase()]||country).toUpperCase();
-    return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
   }
 
   /* --- GRID RENDER --- */
@@ -241,6 +275,11 @@ document.addEventListener("DOMContentLoaded", () => {
           ${affinityHTML}
           <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
           ${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
+
+          ${s.investors && s.investors.length ? `<p class="text-xs text-slate-600 mt-2">${formatInvestorsCard(s.investors)}</p>` : ""}
+
+          ${s.last_contact ? `<p class="text-xs text-slate-600">${formatLastContactCard(s.last_contact)}</p>` : ""}
+
         </div>`;
 
       card.addEventListener("click",e=>{
@@ -254,7 +293,7 @@ document.addEventListener("DOMContentLoaded", () => {
     document.querySelectorAll(".heart-btn").forEach(btn=>{
       btn.addEventListener("click",e=>{
         e.stopPropagation();
-        const company=btn.dataset.company;
+         const company=btn.dataset.company;
         const normalized=company.trim().toLowerCase();
         const isFav=favorites.includes(normalized);
         if(isFav){favorites=favorites.filter(f=>f!==normalized);btn.classList.replace("red","gray")}
@@ -263,7 +302,8 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
   }
-  /* --- MAIN MODAL (only latest affinity) --- */
+
+  /* --- MAIN MODAL + INVESTORS + LAST CONTACT --- */
   function openModal(s){
     const modal=document.getElementById("modal");
     const content=document.getElementById("modalContent");
@@ -272,7 +312,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const fundingInfo=[s.funding_stage,s.funding_amount].filter(Boolean).join(" | ");
     const domainLink=s.domain?`<a href="${s.domain.startsWith("https://")?s.domain:`https://${s.domain}`}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`:"";
 
-    /* --- latest affinity only --- */
     const notes=parseAffinityNotes(s.affinity_notes);
     let modalAffinity="";
     if(notes.length>0){
@@ -291,7 +330,6 @@ document.addEventListener("DOMContentLoaded", () => {
       </div>`;
     }
 
-    /* --- existing comment --- */
     const cachedComment=companyComments[s.company_name]||"";
     const loadingMsg=cachedComment?"":"Loading previous comment...";
 
@@ -303,12 +341,20 @@ document.addEventListener("DOMContentLoaded", () => {
         <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
         <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
         <p><span class="font-medium">Funding:</span> ${fundingInfo||"-"}</p>
-        <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis||"-"}</span></p>
+        <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
         <p><span class="font-medium">Reasoning:</span> ${s.reasoning||""}</p>
         <p><span class="font-medium">Founder Background:</span> ${s.founder_background||""}</p>
       </div>
 
       ${modalAffinity}
+
+      ${s.investors && s.investors.length ? `
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-1">Investors</h3>
+        <p class="text-xs text-slate-700">${formatInvestorsModal(s.investors)}</p>
+      </div>` : ""}
+
+      ${s.last_contact ? formatLastContactModal(s.last_contact) : ""}
 
       <div class="mt-4 border-t pt-4">
         <h3 class="text-sm font-medium text-slate-700 mb-2">Feedback Comment</h3>
@@ -325,74 +371,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
     modal.classList.remove("hidden");
 
-    /* --- comment save events --- */
     const textarea=document.getElementById("feedbackComment");
     const saveBtn=document.getElementById("saveCommentBtn");
     saveBtn.addEventListener("click",()=>saveComment(s.company_name,textarea.value));
     textarea.addEventListener("blur",()=>saveComment(s.company_name,textarea.value));
   }
 
-  /* --- FULLSCREEN AFFINITY HISTORY (minimal) --- */
-  window.openAffinityHistory=function(e,companyName){
-    e.stopPropagation();
-    const s=startups.find(x=>x.company_name===companyName);
-    if(!s) return;
-    const notes=parseAffinityNotes(s.affinity_notes);
-    if(!notes.length) return;
-
-    const rows=notes.map(n=>{
-      const date=formatMonthYear(n.createdAt);
-      const who=[n?.creator?.firstName,n?.creator?.lastName].filter(Boolean).join(" ")||"Unknown";
-      const link=`https://keenventurepartners.affinity.co/notes/${n.id}`;
-      return `<li class="mb-2 text-sm">👤 ${who} (${date}) · <a href='${link}' target='_blank' class='underline'>↗</a></li>`;
-    }).join("");
-
-    const modal=document.getElementById("modal");
-    const content=document.getElementById("modalContent");
-    content.innerHTML=`
-      <h2 class="text-lg font-bold mb-3">All Affinity Touches</h2>
-      <ul class="mb-6">${rows}</ul>
-      <button onclick="document.getElementById('modal').classList.add('hidden')" class="bg-slate-700 text-white px-4 py-2 rounded text-sm">Close</button>`;
-    modal.classList.remove("hidden");
-  };
-
-  /* --- COMMENT SAVE (unchanged) --- */
-  async function saveComment(companyName,comment){
-    companyComments[companyName]=comment;
-    localStorage.setItem('companyComments',JSON.stringify(companyComments));
-    const saveBtn=document.getElementById("saveCommentBtn");
-    const status=document.getElementById("commentStatus");
-    saveBtn.textContent="Saving...";saveBtn.className="bg-yellow-600 text-white px-4 py-2 rounded text-sm";
-    status.textContent="Saving to Google Sheets...";
-    try{
-      const{data:{session}}=await supabase.auth.getSession();
-      if(!session) throw new Error("Not authenticated");
-      const params=new URLSearchParams({action:'saveComment',sessionToken:session.access_token,companyName,comment,userEmail:session.user.email});
-      const res=await fetch(`${APPS_SCRIPT_URL}?${params}`,{method:"GET"});
-      const json=await res.json();
-      if(!json.success) throw new Error("Save failed");
-      saveBtn.textContent="Saved ✓";saveBtn.className="bg-green-600 text-white px-4 py-2 rounded text-sm";
-      status.textContent="Saved to Google Sheets ✓";
-    }catch{
-      saveBtn.textContent="Saved Locally ⚠️";saveBtn.className="bg-orange-600 text-white px-4 py-2 rounded text-sm";
-      status.textContent="⚠️ Saved locally (Sheets error)";
-    }
-    setTimeout(()=>{saveBtn.textContent="Save Comment";saveBtn.className="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";},1800);
-  }
-
-  /* --- LOAD COMMENTS --- */
-  function loadCommentsFromLocalStorage(){
-    const saved=localStorage.getItem('companyComments');
-    if(saved) companyComments=JSON.parse(saved);
-  }
-
-  function initComments(){ loadCommentsFromLocalStorage(); }
-
-  /* --- CSV LOAD --- */
+  /* --- CSV LOAD PATCHED --- */
   Papa.parse(CSV_URL,{
     download:true,header:true,
     complete:async results=>{
-      startups=results.data.filter(s=>s.company_name);
+      startups = results.data.filter(s=>s.company_name).map(s=>{
+        try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
+        catch { s.investors = []; }
+        try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
+        catch { s.last_contact = null; }
+        return s;
+      });
       thesisThemes=[...new Set(startups.map(s=>s.best_matching_thesis).filter(Boolean))].sort();
       document.getElementById("stat-startups").textContent=startups.length;
       renderFilters();
@@ -402,7 +397,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  /* --- SEARCH --- */
+  /* Existing SEARCH + FAVORITES sidebar stays same… */
   document.getElementById("chatSearch").addEventListener("input",e=>{
     const q=e.target.value.toLowerCase();
     const filtered=startups.filter(s=>
@@ -412,7 +407,6 @@ document.addEventListener("DOMContentLoaded", () => {
     renderGrid(filtered);
   });
 
-  /* --- FAVORITES SIDEBAR --- */
   window.renderFavoritesSidebar=function(){
     const list=document.getElementById("favoritesList");
     list.innerHTML=favorites.length?
@@ -422,7 +416,8 @@ document.addEventListener("DOMContentLoaded", () => {
       }).join(""):
       `<li class="text-slate-400">No favorites yet</li>`;
   };
-});
+
+}); // END DOMContentLoaded
 </script>
 
 <!-- ✅ Supabase Auth -->
@@ -437,6 +432,7 @@ window.supabase=supabase;
 
 </body>
 </html>
+
 
 
 
