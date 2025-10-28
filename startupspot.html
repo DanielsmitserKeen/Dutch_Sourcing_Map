@@ -51,7 +51,11 @@
     </div>
     <div>
       <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
-      <button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">Subscribe to Thesis</button>
+      <!-- ✅ Subscribe button -->
+      <button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">
+        Subscribe to Thesis
+      </button>
+      <!-- Thesis filters -->
       <div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
     </div>
   </aside>
@@ -69,19 +73,18 @@
       </div>
     </div>
 
-<div class="flex items-center gap-3">
-  <div class="flex-1 relative">
-    <input id="chatSearch" type="text" placeholder="Search organizations..."
-      class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
-  </div>
-  <select id="sortSelect"
-    class="border border-slate-300 rounded-lg text-sm p-2 bg-white cursor-pointer focus:ring-2 focus:ring-slate-700">
-    <option value="default">Keen Fit Score</option>
-    <option value="score_desc">Score: High → Low</option>
-    <option value="score_asc">Score: Low → High</option>
-  </select>
-</div>
-
+    <div class="flex items-center gap-3">
+      <div class="flex-1 relative">
+        <input id="chatSearch" type="text" placeholder="Search organizations..."
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
+      </div>
+      <select id="sortSelect"
+        class="border border-slate-300 rounded-lg text-sm p-2 bg-white cursor-pointer focus:ring-2 focus:ring-slate-700">
+        <option value="default">Keen Fit Score</option>
+        <option value="score_desc">Score: High → Low</option>
+        <option value="score_asc">Score: Low → High</option>
+      </select>
+    </div>
 
     <section>
       <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
@@ -100,6 +103,12 @@
 </div>
 
 <script>
+/* Simple stub so +X more doesn't crash. Replace later if you want a real history modal. */
+function openAffinityHistory(e, companyName) {
+  e?.stopPropagation?.();
+  alert(`Full Affinity history for: ${companyName}\n\n(To be implemented)`);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
   const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyxqIiYNF6ig2ytHi7sq8p8zzdQjjJRdw7gOC7h1l44t_io_V2AEKt6TCYKwYeWf-xb/exec';
@@ -107,7 +116,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let startups=[],favorites=[],thesisSelected=[],founderSelected=[],fundingSelected=[],thesisThemes=[],thesisThemeSelected=[],companyComments={};
   window.savedThesisSubscriptions=[];
 
-  /* --- Heatmap / Flag Helpers RESTORED --- */
+  /* --- Heatmap / Flag Helpers --- */
   function getHeatmapClass(score){
     switch((score||"").toLowerCase()){
       case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
@@ -119,24 +128,23 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-function getCountryFlag(country){
-  if(!country) return "";
-  const map={
-    "NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
-    "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
-    "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
-    "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
-    "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
-    "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
-    "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
-    "INDIA":"IN","CHINA":"CN","JAPAN":"JP"
-  };
-  let code=(map[country.trim().toUpperCase()]||country).toUpperCase();
-  return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
-}
+  function getCountryFlag(country){
+    if(!country) return "";
+    const map={
+      "NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
+      "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
+      "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
+      "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
+      "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
+      "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
+      "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
+      "INDIA":"IN","CHINA":"CN","JAPAN":"JP"
+    };
+    let code=(map[country?.trim()?.toUpperCase()]||country||"").toUpperCase();
+    return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
+  }
 
-
-  /* --- Affinity Helpers --- */
+  /* --- Affinity helpers --- */
   function parseAffinityNotes(raw){
     if(!raw) return [];
     try{
@@ -156,7 +164,6 @@ function getCountryFlag(country){
     if(inv.length <= 3) return `💰 ${inv.join(", ")}`;
     return `💰 ${inv.slice(0,3).join(", ")} +${inv.length-3}`;
   }
-
   function formatInvestorsModal(inv){
     if(!inv || !inv.length) return "";
     return `💰 ${inv.join(", ")}`;
@@ -168,7 +175,6 @@ function getCountryFlag(country){
     const date = new Date(lc.timestamp).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
     return `${icon} ${date}`;
   }
-
   function formatLastContactModal(lc){
     if(!lc) return "";
     const icon = lc.type==="meeting"?"🤝":lc.type==="email"?"📧":"💬";
@@ -282,20 +288,15 @@ function getCountryFlag(country){
           <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo||"-"}</p>
-${affinityHTML ? `<p class="text-xs text-slate-600 mt-1"><span class="font-medium text-slate-700">Latest Touch:</span> ${affinityHTML}</p>` : ""}
-
-<p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
-${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
-
-${s.investors && s.investors.length ? `
-  <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Investors:</span> ${formatInvestorsCard(s.investors)}</p>
-` : ""}
-
-${s.last_contact ? `
-  <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Last Contact:</span> ${formatLastContactCard(s.last_contact)}</p>
-` : ""}
-
-
+          ${affinityHTML ? `<p class="text-xs text-slate-600 mt-1"><span class="font-medium text-slate-700">Latest Touch:</span> ${affinityHTML}</p>` : ""}
+          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
+          ${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
+          ${s.investors && s.investors.length ? `
+            <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Investors:</span> ${formatInvestorsCard(s.investors)}</p>
+          ` : ""}
+          ${s.last_contact ? `
+            <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Last Contact:</span> ${formatLastContactCard(s.last_contact)}</p>
+          ` : ""}
         </div>`;
 
       card.addEventListener("click",e=>{
@@ -309,7 +310,7 @@ ${s.last_contact ? `
     document.querySelectorAll(".heart-btn").forEach(btn=>{
       btn.addEventListener("click",e=>{
         e.stopPropagation();
-         const company=btn.dataset.company;
+        const company=btn.dataset.company;
         const normalized=company.trim().toLowerCase();
         const isFav=favorites.includes(normalized);
         if(isFav){favorites=favorites.filter(f=>f!==normalized);btn.classList.replace("red","gray")}
@@ -393,21 +394,77 @@ ${s.last_contact ? `
     textarea.addEventListener("blur",()=>saveComment(s.company_name,textarea.value));
   }
 
-  /* --- CSV LOAD PATCHED --- */
+  /* --- COMMENTS save via Apps Script (Supabase auth session) --- */
+  async function saveComment(companyName, comment) {
+    companyComments[companyName] = comment;
+    localStorage.setItem('companyComments', JSON.stringify(companyComments));
+
+    const saveBtn = document.getElementById("saveCommentBtn");
+    const status = document.getElementById("commentStatus");
+    if (saveBtn) { saveBtn.textContent = "Saving..."; saveBtn.className = "bg-yellow-600 text-white px-4 py-2 rounded text-sm"; }
+    if (status) status.textContent = "Saving to Google Sheets...";
+
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Not authenticated");
+
+        const sessionToken = session.access_token;
+        const userEmail = session.user.email;
+
+        const params = new URLSearchParams({
+          action: 'saveComment',
+          sessionToken,
+          companyName,
+          comment,
+          userEmail
+        });
+
+        const res = await fetch(`${APPS_SCRIPT_URL}?${params}`, { method: "GET" });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || "Failed to save");
+
+        if (saveBtn) {
+          saveBtn.textContent = "Saved ✓";
+          saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
+          setTimeout(() => {
+            saveBtn.textContent = "Save Comment";
+            saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+          }, 1500);
+        }
+        if (status) status.textContent = "Saved to Google Sheets ✓";
+      } catch (err) {
+        console.error("❌ Save failed:", err);
+        if (status) status.textContent = "⚠️ Saved locally (Sheets error)";
+        if (saveBtn) {
+          saveBtn.textContent = "Saved Locally ⚠️";
+          saveBtn.className = "bg-orange-600 text-white px-4 py-2 rounded text-sm";
+          setTimeout(() => {
+            saveBtn.textContent = "Save Comment";
+            saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+          }, 3000);
+        }
+      }
+    })();
+  }
+
+  function initComments() {
+    const saved = localStorage.getItem('companyComments');
+    if (saved) companyComments = JSON.parse(saved);
+  }
+
+  /* --- CSV LOAD + field parsing --- */
   Papa.parse(CSV_URL,{
     download:true,header:true,
     complete:async results=>{
-startups = results.data.filter(s=>s.company_name).map(s=>{
-  try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
-  catch { s.investors = []; }
-  try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
-  catch { s.last_contact = null; }
-
-  // ✅ Load points_total and convert to number
-  s.points_total = Number(s.points_total || s["points_total"] || 0);
-
-  return s;
-});
+      startups = results.data.filter(s=>s.company_name).map(s=>{
+        try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
+        catch { s.investors = []; }
+        try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
+        catch { s.last_contact = null; }
+        s.points_total = Number(s.points_total || s["points_total"] || 0);
+        return s;
+      });
 
       thesisThemes=[...new Set(startups.map(s=>s.best_matching_thesis).filter(Boolean))].sort();
       document.getElementById("stat-startups").textContent=startups.length;
@@ -418,7 +475,7 @@ startups = results.data.filter(s=>s.company_name).map(s=>{
     }
   });
 
-  /* Existing SEARCH + FAVORITES sidebar stays same… */
+  /* Search + Sort */
   document.getElementById("chatSearch").addEventListener("input",e=>{
     const q=e.target.value.toLowerCase();
     const filtered=startups.filter(s=>
@@ -427,17 +484,16 @@ startups = results.data.filter(s=>s.company_name).map(s=>{
       (s.reasoning||"").toLowerCase().includes(q));
     renderGrid(filtered);
   });
-document.getElementById("sortSelect").addEventListener("change", e => {
-  let arr = [...startups];
-  if (e.target.value === "score_desc") {
-    arr.sort((a, b) => Number(b.points_total || 0) - Number(a.points_total || 0));
-  } else if (e.target.value === "score_asc") {
-    arr.sort((a, b) => Number(a.points_total || 0) - Number(b.points_total || 0));
-  }
-  renderGrid(arr);
-});
 
-
+  document.getElementById("sortSelect").addEventListener("change", e => {
+    let arr = [...startups];
+    if (e.target.value === "score_desc") {
+      arr.sort((a, b) => Number(b.points_total || 0) - Number(a.points_total || 0));
+    } else if (e.target.value === "score_asc") {
+      arr.sort((a, b) => Number(a.points_total || 0) - Number(b.points_total || 0));
+    }
+    renderGrid(arr);
+  });
 
   window.renderFavoritesSidebar=function(){
     const list=document.getElementById("favoritesList");
@@ -449,16 +505,140 @@ document.getElementById("sortSelect").addEventListener("change", e => {
       `<li class="text-slate-400">No favorites yet</li>`;
   };
 
+  /* ----------------- Subscribe to Thesis (Supabase) ----------------- */
+  document.addEventListener("click", async (e) => {
+    if (e.target.id !== "subscribeThesisBtn") return;
+
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+
+    // Copy existing thesis theme filters into modal
+    const thesisContainer = document.getElementById("thesis-theme-filters");
+    const filtersHTML = thesisContainer.innerHTML;
+
+    content.innerHTML = `
+      <h2 class="text-xl font-bold mb-2 text-slate-900">Subscribe to Thesis Topics</h2>
+      <p class="text-sm text-slate-600 mb-3">Select the thesis themes you want to subscribe to:</p>
+
+      <div class="flex justify-end mb-2">
+        <button id="toggleAllBtn" class="text-xs text-blue-600 hover:text-blue-800 underline">Select All</button>
+      </div>
+
+      <div id="modalThesisList" class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
+        ${filtersHTML}
+      </div>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">Save Selection</button>
+        <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Set Up Auto Slack Me List</button>
+      </div>
+    `;
+
+    // Toggle all
+    let allSelected = false;
+    content.querySelector("#toggleAllBtn").addEventListener("click", () => {
+      const checkboxes = content.querySelectorAll("#modalThesisList input[type='checkbox']");
+      allSelected = !allSelected;
+      checkboxes.forEach(cb => cb.checked = allSelected);
+      content.querySelector("#toggleAllBtn").textContent = allSelected ? "Deselect All" : "Select All";
+    });
+
+    // Pre-check from Supabase
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const userEmail = session.user.email;
+        const { data, error } = await supabase
+          .from("thesis_subscriptions")
+          .select("selected_theses")
+          .eq("user_email", userEmail)
+          .single();
+
+        if (!error && data?.selected_theses?.length) {
+          window.savedThesisSubscriptions = data.selected_theses;
+          data.selected_theses.forEach(theme => {
+            const checkbox = [...content.querySelectorAll("input[type='checkbox']")].find(cb => cb.value === theme);
+            if (checkbox) checkbox.checked = true;
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Pre-check theses failed:", err);
+    }
+
+    modal.classList.remove("hidden");
+
+    // Simple save (no DB write)
+    content.querySelector("#saveSubscription").addEventListener("click", () => {
+      const selected = [...content.querySelectorAll("input:checked")].map(cb => cb.value);
+      alert(`Subscribed to ${selected.length} thesis topics!`);
+      modal.classList.add("hidden");
+    });
+
+    // Persist selection to Supabase
+    content.querySelector("#autoSlackBtn").addEventListener("click", async () => {
+      const selected = [...content.querySelectorAll("input:checked")].map(cb => cb.value);
+      if (selected.length === 0) {
+        alert("Please select at least one thesis topic before saving.");
+        return;
+      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          alert("Please log in first.");
+          return;
+        }
+        const userEmail = session.user.email;
+
+        const { error } = await supabase.from("thesis_subscriptions").upsert(
+          {
+            user_email: userEmail,
+            selected_theses: selected,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "user_email" }
+        );
+        if (error) throw error;
+
+        alert(`✅ Auto Slack setup saved!
+Amazing! Now you will get the best weekly Monday results in your Slack linked to these theses.`);
+        modal.classList.add("hidden");
+      } catch (err) {
+        console.error("❌ Error saving to Supabase:", err);
+        alert("Failed to save to Supabase. Check console for details.");
+      }
+    });
+  });
+  /* ------------------------------------------------------------------ */
+
 }); // END DOMContentLoaded
 </script>
 
 <!-- ✅ Supabase Auth -->
 <script type="module">
 import { supabase } from "./lib/supabaseClient.js";
-window.supabase=supabase;
-(async()=>{
-  const {data:{session}}=await supabase.auth.getSession();
-  if(!session) return window.location.href="login.html";
+window.supabase = supabase;
+
+(async () => {
+  const { data:{ session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+  // Preload saved subscriptions for quick access
+  try {
+    const { data, error } = await supabase
+      .from("thesis_subscriptions")
+      .select("selected_theses")
+      .eq("user_email", session.user.email)
+      .single();
+    if (!error && data?.selected_theses) {
+      window.savedThesisSubscriptions = data.selected_theses;
+      console.log("Loaded saved thesis selections:", data.selected_theses);
+    }
+  } catch (e) {
+    console.warn("Load thesis_subscriptions failed:", e.message);
+  }
 })();
 </script>
 
