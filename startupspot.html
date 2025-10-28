@@ -69,10 +69,19 @@
       </div>
     </div>
 
-    <div class="relative">
-      <input id="chatSearch" type="text" placeholder="Search organizations..."
-        class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
-    </div>
+<div class="flex items-center gap-3">
+  <div class="flex-1 relative">
+    <input id="chatSearch" type="text" placeholder="Search organizations..."
+      class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
+  </div>
+  <select id="sortSelect"
+    class="border border-slate-300 rounded-lg text-sm p-2 bg-white cursor-pointer focus:ring-2 focus:ring-slate-700">
+    <option value="default">Keen Fit Score</option>
+    <option value="score_desc">Score: High → Low</option>
+    <option value="score_asc">Score: Low → High</option>
+  </select>
+</div>
+
 
     <section>
       <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
@@ -269,6 +278,7 @@ function getCountryFlag(country){
           <button class="heart-btn ${isFav?"red":"gray"}" data-company="${s.company_name}" style="margin-top: 2.5rem;">♥</button>
         </div>
         <div class="space-y-1 text-sm">
+          <p><span class="font-medium text-slate-700">Total Score:</span> ${s.points_total || 0}</p>
           <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
           <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo||"-"}</p>
@@ -387,13 +397,18 @@ ${s.last_contact ? `
   Papa.parse(CSV_URL,{
     download:true,header:true,
     complete:async results=>{
-      startups = results.data.filter(s=>s.company_name).map(s=>{
-        try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
-        catch { s.investors = []; }
-        try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
-        catch { s.last_contact = null; }
-        return s;
-      });
+startups = results.data.filter(s=>s.company_name).map(s=>{
+  try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
+  catch { s.investors = []; }
+  try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
+  catch { s.last_contact = null; }
+
+  // ✅ Load points_total and convert to number
+  s.points_total = Number(s.points_total || s["points_total"] || 0);
+
+  return s;
+});
+
       thesisThemes=[...new Set(startups.map(s=>s.best_matching_thesis).filter(Boolean))].sort();
       document.getElementById("stat-startups").textContent=startups.length;
       renderFilters();
@@ -412,6 +427,17 @@ ${s.last_contact ? `
       (s.reasoning||"").toLowerCase().includes(q));
     renderGrid(filtered);
   });
+document.getElementById("sortSelect").addEventListener("change", e => {
+  let arr = [...startups];
+  if (e.target.value === "score_desc") {
+    arr.sort((a, b) => Number(b.points_total || 0) - Number(a.points_total || 0));
+  } else if (e.target.value === "score_asc") {
+    arr.sort((a, b) => Number(a.points_total || 0) - Number(b.points_total || 0));
+  }
+  renderGrid(arr);
+});
+
+
 
   window.renderFavoritesSidebar=function(){
     const list=document.getElementById("favoritesList");
