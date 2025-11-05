@@ -1,312 +1,145 @@
 <!DOCTYPE html>
-<html lang="nl">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>SaaS KPI Benchmarks – ARR • Churn • Growth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>B2B SaaS Benchmarks 2024 – Consulting Style</title>
 
-  <!-- Tailwind + PapaParse -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
-
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
-    body { background:#f8fafc; }
-    h2 { scroll-margin-top: 90px; }
-    table th { background:#f1f5f9; position: sticky; top: 0; }
-    .card { background:#fff; border:1px solid #e2e8f0; border-radius:16px; box-shadow: 0 2px 10px rgba(2,6,23,.04); }
-    .section-title { color:#0f172a }
-    .chip { background:#e2e8f0; color:#0f172a; border-radius:9999px; font-size:.75rem; padding:.15rem .5rem; }
-    .muted { color:#64748b }
-    .loader { animation: pulse 1.2s ease-in-out infinite; }
-    @keyframes pulse { 0%,100%{opacity:.35} 50%{opacity:1} }
+    body { background-color: #f9fafb; font-family: "Inter", sans-serif; }
+    .section-block { display: flex; align-items: center; justify-content: space-between; gap: 3rem; padding: 6rem 2rem; }
+    .section-alt { background-color: #f3f4f6; }
+    .text-block { max-width: 550px; }
+    .text-block h2 { font-size: 2rem; font-weight: 800; color: #111827; margin-bottom: 1rem; }
+    .text-block p { font-size: 1.1rem; color: #374151; line-height: 1.6; }
+    table { border-collapse: collapse; width: 100%; min-width: 550px; background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+    th, td { border: 1px solid #e5e7eb; padding: 0.75rem 1.25rem; text-align: left; font-size: 1rem; }
+    th { background: #f9fafb; font-weight: 700; color: #111827; }
+    td { color: #1f2937; }
+    td.negative { color: #dc2626; font-weight: 600; }
+    td.blue { color: #2563eb; font-weight: 600; }
   </style>
 </head>
-<body class="text-slate-800">
-  <div class="max-w-6xl mx-auto p-6 space-y-10">
 
-    <!-- ===== Header ===== -->
-    <header class="flex items-center justify-between">
-      <div>
-        <h1 class="text-2xl font-bold">SaaS KPI Benchmarks (Live uit Google Sheets)</h1>
-        <p class="muted mt-1">ARR-ranges, Churn en Growth – automatisch geladen uit je Sheet tabs.</p>
-      </div>
-      <nav class="hidden md:flex gap-2">
-        <a href="#arr" class="chip">ARR Benchmarks</a>
-        <a href="#churn" class="chip">Churn</a>
-        <a href="#growth" class="chip">Growth</a>
-      </nav>
-    </header>
+<body>
+  <header class="text-center py-12">
+    <h1 class="text-5xl font-extrabold text-gray-900">📊 B2B SaaS Benchmarks 2024</h1>
+    <p class="text-gray-600 mt-4 text-lg">Automatically pulled from Google Sheets — Growth, Gross Margin, and Rule of 40.</p>
+    <div id="status" class="text-gray-500 mt-4 text-sm">Loading data...</div>
+  </header>
 
-    <!-- ===== ARR Section ===== -->
-    <section id="arr" class="space-y-3">
-      <h2 class="text-xl font-semibold section-title">ARR Benchmarks per ARR-segment</h2>
-      <p class="muted text-sm">Bron: tab <em>Standard KPI</em> uit je sheet.</p>
-      <div id="arr-blocks" class="space-y-8">
-        <div class="loader text-sm px-4">ARR data laden…</div>
-      </div>
-    </section>
+  <main id="content" class="space-y-12"></main>
 
-    <!-- ===== CHURN Section ===== -->
-    <section id="churn" class="space-y-3">
-      <h2 class="text-xl font-semibold section-title">Churn Benchmarks (SMB/SME SaaS)</h2>
-      <p class="muted text-sm">Bron: tab <em>Churn</em> uit je sheet.</p>
-      <div id="churn-table" class="card overflow-x-auto">
-        <div class="p-4 loader text-sm">Churn data laden…</div>
-      </div>
-    </section>
+  <script>
+  (() => {
+    const SHEETS = {
+      "Growth 2024":
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=2027488571&single=true&output=csv",
+      "Gross Margin 2024":
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=1135790165&single=true&output=csv",
+      "Rule of 40 2024":
+        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=996726301&single=true&output=csv",
+    };
 
-    <!-- ===== GROWTH Section ===== -->
-    <section id="growth" class="space-y-3">
-      <h2 class="text-xl font-semibold section-title">Growth Benchmarks</h2>
-      <p class="muted text-sm">Bron: tab <em>Growth</em>.</p>
-      <div id="growth-sections" class="space-y-8">
-        <div class="p-4 loader text-sm">Growth data laden…</div>
-      </div>
-    </section>
+    const parsePercent = str => {
+      if (!str) return null;
+      const num = parseFloat(String(str).replace(/[%\s]/g, "").replace(",", "."));
+      return isNaN(num) ? null : num;
+    };
 
-  </div>
+    function extractTableData(rows) {
+      const headerRow = rows.find(r =>
+        r.join("").toLowerCase().includes("25") &&
+        r.join("").toLowerCase().includes("median") &&
+        r.join("").toLowerCase().includes("75")
+      );
+      const findIndex = (keys) => headerRow.findIndex(c => keys.some(k => c.toLowerCase().includes(k)));
+      const idxRange = 0, idx25 = findIndex(["25"]), idx50 = findIndex(["50"]), idx75 = findIndex(["75"]),
+            idxAvg = findIndex(["average"]), idxFund = findIndex(["fund"]);
 
-<script>
-/* ===== Sheet URLs ===== */
-const ARR_CSV = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pub?output=csv";
-const CHURN_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=121452829";
-const GROWTH_PUBHTML = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTeXJAw0oVjkxxIKHXjLNlOomV7xIb8K8_lcJK68ctSPDG0XuaocDrCOqPObq0-PDgdLUEWbp1fbhzg/pubhtml#gid=1857898706";
+      const labels=[], p25=[], med=[], p75=[], avg=[], fund=[];
+      const normalize = t => t.replace(/[–—−]/g,"-").replace(/\s+/g,"").toUpperCase();
 
-/* ===== Helpers ===== */
-function pubhtmlToCsv(url) {
-  const base = url.split("/pubhtml")[0];
-  const gid = url.split("#gid=")[1];
-  return `${base}/pub?gid=${gid}&single=true&output=csv`;
-}
-function trimRow(row) {
-  let last = -1;
-  for (let i = 0; i < row.length; i++) if (String(row[i]).trim() !== "") last = i;
-  return last >= 0 ? row.slice(0, last + 1) : [];
-}
-function isEmptyRow(r) { return r.every(c => String(c).trim() === ""); }
-function toLinks(text) {
-  if (!text) return "";
-  const urls = String(text).match(/https?:\/\/\S+/g) || [];
-  return urls.map(u => `<a href="${u}" target="_blank" class="text-blue-600 hover:underline">${u}</a>`).join("<br>");
-}
-/* tolerant matching for ARR segments */
-function normalizeDash(s) { return String(s || "").replace(/-/g, "–"); }
-function cmpKey(s) { return normalizeDash(String(s||"")).replace(/\s+/g, "").toLowerCase(); }
-
-/* =====================================
-   ARR MODULE START
-   ===================================== */
-(function ARRModule(){
-  const target = document.getElementById("arr-blocks");
-  const SEGMENTS_ORDER = ["$0–1M", "$1M – $3M", "$3M – $10M", "> $10M"];
-  const SEGMENT_TITLES = {
-    "$0–1M": "< $1M ARR",
-    "$1M – $3M": "$1M – $3M ARR",
-    "$3M – $10M": "$3M – $10M ARR",
-    "> $10M": "> $10M ARR",
-  };
-  const ORDER_KEYS = SEGMENTS_ORDER.map(cmpKey);
-
-  Papa.parse(ARR_CSV, {
-    download: true,
-    complete: res => {
-      const rows = res.data
-        .map(trimRow)
-        .filter(r => r.length && !isEmptyRow(r))
-        .map(r => r.map(c => (c || "").toString()));
-
-      const isHeaderRow = (r) => (r[0]||"").toLowerCase().includes("kpi") && (r[2]||"").toLowerCase().includes("benchmark");
-      const headerRow = rows.find(isHeaderRow) || [];
-      const base = headerRow.map(h => h.trim().toLowerCase());
-      const headerIdx = {
-        kpi: base.indexOf("kpi / metric"),
-        desc: base.indexOf("omschrijving"),
-        bench: base.indexOf("benchmark (range)"),
-        source: base.indexOf("bron"),
-      };
-
-      const segments = {};
-      let currentSegment = null, collecting = false;
-
-      for (const r of rows) {
-        if (isHeaderRow(r)) { collecting = false; currentSegment = null; continue; }
-
-        const kpi = (r[headerIdx.kpi] || "").trim();
-        const desc = (r[headerIdx.desc] || "").trim();
-        const bench = (r[headerIdx.bench] || "").trim();
-        const source = (r[headerIdx.source] || "").trim();
-
-        if (kpi.toLowerCase() === "arr" && bench) {
-          const key = cmpKey(bench);
-          const idx = ORDER_KEYS.indexOf(key);
-          currentSegment = idx >= 0 ? SEGMENTS_ORDER[idx] : bench;
-          if (!segments[currentSegment]) segments[currentSegment] = [];
-          collecting = true;
-          continue;
-        }
-        const isBlank = [kpi, desc, bench, source].every(x => !x);
-        if (isBlank) { collecting = false; currentSegment = null; continue; }
-
-        if (collecting && currentSegment && kpi.toLowerCase() !== "arr") {
-          segments[currentSegment].push({ kpi, desc, bench, source });
-        }
+      for(const r of rows){
+        if(!r||!r.length) continue;
+        const label=(r[idxRange]||"").trim(), norm=normalize(label);
+        if(!norm.match(/[0-9].*M/i)&&!norm.startsWith("<")&&!norm.startsWith(">")) continue;
+        labels.push(label);
+        p25.push(parsePercent(r[idx25])); med.push(parsePercent(r[idx50]));
+        p75.push(parsePercent(r[idx75])); avg.push(parsePercent(r[idxAvg]));
+        fund.push(parsePercent(r[idxFund]));
       }
-      /* RENDER ARR */
-      target.innerHTML = SEGMENTS_ORDER
-        .filter(seg => segments[seg] && segments[seg].length)
-        .map(seg => {
-          const rowsHTML = segments[seg].map(item => `
-            <tr class="border-b border-slate-100 hover:bg-slate-50">
-              <td class="px-4 py-2 font-medium">${item.kpi}</td>
-              <td class="px-4 py-2">${item.desc}</td>
-              <td class="px-4 py-2 whitespace-nowrap">${item.bench}</td>
-              <td class="px-4 py-2">${toLinks(item.source) || item.source}</td>
-            </tr>
-          `).join("");
-
-          return `
-            <div class="card overflow-x-auto">
-              <div class="px-4 pt-4">
-                <h3 class="text-lg font-semibold">${seg}</h3>
-                <p class="muted text-xs">KPI’s voor dit ARR-segment.</p>
-              </div>
-              <table class="min-w-full text-sm mt-2">
-                <thead>
-                  <tr class="border-b border-slate-200 text-left text-slate-600">
-                    <th class="px-4 py-3">KPI / Metric</th>
-                    <th class="px-4 py-3">Omschrijving</th>
-                    <th class="px-4 py-3">Benchmark (Range)</th>
-                    <th class="px-4 py-3">Bron</th>
-                  </tr>
-                </thead>
-                <tbody>${rowsHTML}</tbody>
-              </table>
-            </div>
-          `;
-        }).join("") || `<div class="p-4 text-sm">Geen ARR-gegevens gevonden.</div>`;
+      return {labels,p25,med,p75,avg,fund};
     }
-  });
-})();
-/* =====================================
-   CHURN MODULE
-   ===================================== */
-(function ChurnModule(){
-  const churnCsv = pubhtmlToCsv(CHURN_PUBHTML);
-  const target = document.getElementById("churn-table");
 
-  Papa.parse(churnCsv, {
-    download: true,
-    complete: res => {
-      const rows = res.data.filter(r => r.some(cell => cell && String(cell).trim() !== ""));
-      const headerRow = rows[0].map(h => h.trim().toLowerCase());
-      const dataRows = rows.slice(1);
-
-      const colIndex = {
-        arr: headerRow.indexOf("arr segment"),
-        monthly: headerRow.indexOf("monthly churn"),
-        annual: headerRow.indexOf("annual churn"),
-        src: headerRow.indexOf("bronnen")
-      };
-
-      const html = `
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="border-b border-slate-200 text-left text-slate-600">
-              <th class="px-4 py-3">ARR Segment</th>
-              <th class="px-4 py-3">Monthly Churn</th>
-              <th class="px-4 py-3">Annual Churn</th>
-              <th class="px-4 py-3">Bronnen</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${dataRows.map(r => `
-              <tr class="border-b border-slate-100 hover:bg-slate-50">
-                <td class="px-4 py-2">${r[colIndex.arr] || ""}</td>
-                <td class="px-4 py-2">${r[colIndex.monthly] || ""}</td>
-                <td class="px-4 py-2">${r[colIndex.annual] || ""}</td>
-                <td class="px-4 py-2">${toLinks(r[colIndex.src])}</td>
-              </tr>
-            `).join("")}
-          </tbody>
-        </table>
-      `;
-      target.innerHTML = html;
-    }
-  })
-})();
-/* =====================================
-   GROWTH MODULE — Tabellen
-   ===================================== */
-(function GrowthModule(){
-  const target = document.getElementById("growth-sections");
-  const growthCsv = pubhtmlToCsv(GROWTH_PUBHTML);
-
-  const TITLES = [
-    "median growth by arr",
-    "growth by arr for remaining percentiles",
-    "growth by arr and funding",
-    "growth rate by median net revenue retention",
-    "growth and arr by company age",
-  ];
-
-  Papa.parse(growthCsv, {
-    download: true,
-    complete: res => {
-      const rows = res.data.map(trimRow);
-      const blocks = [];
-
-      for (let i = 0; i < rows.length; i++) {
-        const r = rows[i];
-        if (!r.length) continue;
-        const cellA = String(r[0]||"").trim().toLowerCase();
-
-        if (TITLES.includes(cellA)) {
-          const title = rows[i][0].trim();
-          let h = [], j = i + 1;
-          while (j < rows.length && (!rows[j].length || isEmptyRow(rows[j]))) j++;
-          if (j < rows.length) h = rows[j].map(v => String(v||"").trim());
-          const data = [];
-          j = j + 1;
-          while (j < rows.length && rows[j].length && !isEmptyRow(rows[j])) {
-            data.push(rows[j].map(v => String(v||"").trim()));
-            j++;
-          }
-          blocks.push({ title, header: h, rows: data });
-          i = j;
-        }
-      }
-
-      const htmlTables = blocks.map(b => {
-        if (!b.header.length || !b.rows.length) return "";
-        const headerHTML = b.header.map(h => `<th class="px-4 py-3">${h}</th>`).join("");
-        const rowsHTML = b.rows.map(row => `
-          <tr class="border-b border-slate-100 hover:bg-slate-50">
-            ${row.slice(0, b.header.length).map(c => `<td class="px-4 py-2">${c}</td>`).join("")}
+    function makeTable(data){
+      const {labels,p25,med,p75,avg,fund}=data;
+      return `
+      <table>
+        <thead>
+          <tr>
+            <th>ARR Range</th><th>25th %</th><th>Median</th><th>75th %</th><th>Average ≈</th><th>Fund I & II Avg</th>
           </tr>
-        `).join("");
-
-        return `
-        <div class="card overflow-x-auto">
-          <div class="px-4 pt-4">
-            <h3 class="text-lg font-semibold">${b.title}</h3>
-          </div>
-          <table class="min-w-full text-sm mt-2">
-            <thead>
-              <tr class="border-b border-slate-200 text-left text-slate-600">
-                ${headerHTML}
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHTML}
-            </tbody>
-          </table>
-        </div>`;
-      }).join("");
-
-      target.innerHTML = htmlTables || `<div class="p-4 text-sm">Geen Growth-gegevens gevonden.</div>`;
+        </thead>
+        <tbody>
+          ${labels.map((l,i)=>`
+          <tr class="${i%2?"bg-gray-50":""}">
+            <td>${l}</td>
+            <td class="${p25[i]<0?"negative":""}">${p25[i]??""}%</td>
+            <td class="${med[i]<0?"negative":""}">${med[i]??""}%</td>
+            <td class="${p75[i]<0?"negative":""}">${p75[i]??""}%</td>
+            <td class="${avg[i]<0?"negative":""}">${avg[i]??""}%</td>
+            <td class="${fund[i]<0?"negative blue":"blue"}">${fund[i]??""}%</td>
+          </tr>`).join("")}
+        </tbody>
+      </table>`;
     }
-  });
-})();
-</script>
+
+    const SECTIONS = [
+      {
+        name: "Growth 2024",
+        title: "Your Business Growth",
+        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed neque eget enim elementum imperdiet. Cras faucibus lorem sit amet lorem sollicitudin porta. Integer porttitor tellus nec malesuada posuere.",
+        layout: "text-left",
+      },
+      {
+        name: "Gross Margin 2024",
+        title: "Gross Margin",
+        text: "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec interdum, eros sed gravida ultricies, urna leo bibendum libero, vitae gravida orci risus vel turpis.",
+        layout: "text-right",
+      },
+      {
+        name: "Rule of 40 2024",
+        title: "Monitor Profitability with the Rule of 40 Metric",
+        text: "Fusce aliquet, libero ac sollicitudin imperdiet, nisi ligula pharetra orci, a luctus urna ipsum nec velit. Mauris euismod lacus nec fermentum lacinia. Integer a lacus non lorem bibendum faucibus.",
+        layout: "text-left",
+      },
+    ];
+
+    let loaded = 0;
+    SECTIONS.forEach((sec, i)=>{
+      Papa.parse(SHEETS[sec.name],{
+        download:true,skipEmptyLines:false,
+        complete:res=>{
+          const data=extractTableData(res.data);
+          const table=makeTable(data);
+          const html=`
+          <section class="section-block ${i%2?"section-alt":""} ${sec.layout==='text-left'?'flex-row':'flex-row-reverse'}">
+            <div class="text-block">
+              <h2>${sec.title}</h2>
+              <p>${sec.text}</p>
+            </div>
+            <div class="table-block flex-1">${table}</div>
+          </section>`;
+          document.getElementById("content").insertAdjacentHTML("beforeend",html);
+          document.getElementById("status").textContent=`✅ Loaded ${++loaded}/${SECTIONS.length} sections successfully.`;
+        },
+        error:err=>document.getElementById("status").textContent=`⚠️ Failed: ${err.message}`
+      });
+    });
+  })();
+  </script>
 </body>
 </html>
