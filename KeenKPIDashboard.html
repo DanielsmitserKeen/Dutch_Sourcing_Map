@@ -1,145 +1,903 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>B2B SaaS Benchmarks 2024 – Consulting Style</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keen KPI Dashboard - Growth 2024</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-  <style>
-    body { background-color: #f9fafb; font-family: "Inter", sans-serif; }
-    .section-block { display: flex; align-items: center; justify-content: space-between; gap: 3rem; padding: 6rem 2rem; }
-    .section-alt { background-color: #f3f4f6; }
-    .text-block { max-width: 550px; }
-    .text-block h2 { font-size: 2rem; font-weight: 800; color: #111827; margin-bottom: 1rem; }
-    .text-block p { font-size: 1.1rem; color: #374151; line-height: 1.6; }
-    table { border-collapse: collapse; width: 100%; min-width: 550px; background: white; border-radius: 1rem; overflow: hidden; box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
-    th, td { border: 1px solid #e5e7eb; padding: 0.75rem 1.25rem; text-align: left; font-size: 1rem; }
-    th { background: #f9fafb; font-weight: 700; color: #111827; }
-    td { color: #1f2937; }
-    td.negative { color: #dc2626; font-weight: 600; }
-    td.blue { color: #2563eb; font-weight: 600; }
-  </style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+            background: #ffffff;
+            padding: 0;
+            color: #1a1a1a;
+        }
+
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        .top-header {
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            padding: 20px 60px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .logo {
+            height: 100px;
+            width: auto;
+        }
+
+        .content-wrapper {
+            display: flex;
+            gap: 40px;
+            padding: 40px 60px;
+            flex: 1;
+        }
+
+        .sidebar {
+            width: 200px;
+            flex-shrink: 0;
+        }
+
+        .sidebar-menu {
+            position: sticky;
+            top: 40px;
+        }
+
+        .menu-title {
+            font-size: 0.75em;
+            font-weight: 600;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 15px;
+        }
+
+        .menu-item {
+            padding: 10px 15px;
+            margin-bottom: 5px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 0.9em;
+            color: #666;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: #f5f5f5;
+            color: #1a1a1a;
+        }
+
+        .menu-item.active {
+            background: #f0f0f0;
+            color: #1a1a1a;
+            font-weight: 500;
+            border-left-color: #1a1a1a;
+        }
+
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .header {
+            margin-bottom: 50px;
+            border-bottom: 1px solid #e0e0e0;
+            padding-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 1.5em;
+            color: #1a1a1a;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .card {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            padding: 40px;
+        }
+
+        .chart-header {
+            margin-bottom: 10px;
+        }
+
+        .chart-title {
+            font-size: 1.1em;
+            color: #1a1a1a;
+            margin-bottom: 3px;
+            font-weight: 600;
+        }
+
+        .chart-subtitle {
+            font-size: 0.875em;
+            color: #666;
+            font-weight: 400;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 550px;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            margin-top: 20px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        .year-selector {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .year-selector label {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.875em;
+        }
+
+        .year-selector select {
+            padding: 6px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            background: #ffffff;
+            color: #1a1a1a;
+            font-size: 0.875em;
+            cursor: pointer;
+            font-weight: 500;
+            transition: border-color 0.2s;
+        }
+
+        .year-selector select:hover {
+            border-color: #999;
+        }
+
+        .year-selector select:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        .your-position {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-left: 30px;
+            padding-left: 30px;
+            border-left: 1px solid #e0e0e0;
+        }
+
+        .your-position label {
+            font-weight: 500;
+            color: #666;
+            font-size: 0.875em;
+        }
+
+        .your-position input {
+            padding: 6px 12px;
+            border: 1px solid #d0d0d0;
+            border-radius: 3px;
+            background: #ffffff;
+            color: #1a1a1a;
+            font-size: 0.875em;
+            width: 100px;
+        }
+
+        .your-position input:focus {
+            outline: none;
+            border-color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .top-header {
+                padding: 20px;
+            }
+            
+            .content-wrapper {
+                padding: 20px;
+            }
+            
+            .chart-container {
+                height: 400px;
+            }
+        }
+    </style>
 </head>
-
 <body>
-  <header class="text-center py-12">
-    <h1 class="text-5xl font-extrabold text-gray-900">📊 B2B SaaS Benchmarks 2024</h1>
-    <p class="text-gray-600 mt-4 text-lg">Automatically pulled from Google Sheets — Growth, Gross Margin, and Rule of 40.</p>
-    <div id="status" class="text-gray-500 mt-4 text-sm">Loading data...</div>
-  </header>
+    <div class="page-wrapper">
+        <div class="top-header">
+            <img src="Keen-logo-color-RGB@2x.png" alt="Keen Venture Partners" class="logo">
+        </div>
+        
+        <div class="content-wrapper">
+            <div class="sidebar">
+                <div class="sidebar-menu">
+                    <div class="menu-title">Metrics</div>
+                    <div class="menu-item active" onclick="selectMetric('growth')">Growth %</div>
+            <div class="menu-item" onclick="selectMetric('rule40')">Rule of 40</div>
+            <div class="menu-item" onclick="selectMetric('gross-margin')">Gross Margin</div>
+        </div>
+    </div>
 
-  <main id="content" class="space-y-12"></main>
+    <div class="main-content">
+        <div class="container">
+        <div class="header">
+            <h1>Keen Venture Partners KPI Dashboard</h1>
+        </div>
 
-  <script>
-  (() => {
-    const SHEETS = {
-      "Growth 2024":
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=2027488571&single=true&output=csv",
-      "Gross Margin 2024":
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=1135790165&single=true&output=csv",
-      "Rule of 40 2024":
-        "https://docs.google.com/spreadsheets/d/e/2PACX-1vSRmwEvh_eGepTHxxJUBhxLSFVFzKMxd0WRgX9YKRwTg8d9ifV3C_-IaDYH1cnBji4s6hS5cH80WfzX/pub?gid=996726301&single=true&output=csv",
-    };
-
-    const parsePercent = str => {
-      if (!str) return null;
-      const num = parseFloat(String(str).replace(/[%\s]/g, "").replace(",", "."));
-      return isNaN(num) ? null : num;
-    };
-
-    function extractTableData(rows) {
-      const headerRow = rows.find(r =>
-        r.join("").toLowerCase().includes("25") &&
-        r.join("").toLowerCase().includes("median") &&
-        r.join("").toLowerCase().includes("75")
-      );
-      const findIndex = (keys) => headerRow.findIndex(c => keys.some(k => c.toLowerCase().includes(k)));
-      const idxRange = 0, idx25 = findIndex(["25"]), idx50 = findIndex(["50"]), idx75 = findIndex(["75"]),
-            idxAvg = findIndex(["average"]), idxFund = findIndex(["fund"]);
-
-      const labels=[], p25=[], med=[], p75=[], avg=[], fund=[];
-      const normalize = t => t.replace(/[–—−]/g,"-").replace(/\s+/g,"").toUpperCase();
-
-      for(const r of rows){
-        if(!r||!r.length) continue;
-        const label=(r[idxRange]||"").trim(), norm=normalize(label);
-        if(!norm.match(/[0-9].*M/i)&&!norm.startsWith("<")&&!norm.startsWith(">")) continue;
-        labels.push(label);
-        p25.push(parsePercent(r[idx25])); med.push(parsePercent(r[idx50]));
-        p75.push(parsePercent(r[idx75])); avg.push(parsePercent(r[idxAvg]));
-        fund.push(parsePercent(r[idxFund]));
-      }
-      return {labels,p25,med,p75,avg,fund};
-    }
-
-    function makeTable(data){
-      const {labels,p25,med,p75,avg,fund}=data;
-      return `
-      <table>
-        <thead>
-          <tr>
-            <th>ARR Range</th><th>25th %</th><th>Median</th><th>75th %</th><th>Average ≈</th><th>Fund I & II Avg</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${labels.map((l,i)=>`
-          <tr class="${i%2?"bg-gray-50":""}">
-            <td>${l}</td>
-            <td class="${p25[i]<0?"negative":""}">${p25[i]??""}%</td>
-            <td class="${med[i]<0?"negative":""}">${med[i]??""}%</td>
-            <td class="${p75[i]<0?"negative":""}">${p75[i]??""}%</td>
-            <td class="${avg[i]<0?"negative":""}">${avg[i]??""}%</td>
-            <td class="${fund[i]<0?"negative blue":"blue"}">${fund[i]??""}%</td>
-          </tr>`).join("")}
-        </tbody>
-      </table>`;
-    }
-
-    const SECTIONS = [
-      {
-        name: "Growth 2024",
-        title: "Your Business Growth",
-        text: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut sed neque eget enim elementum imperdiet. Cras faucibus lorem sit amet lorem sollicitudin porta. Integer porttitor tellus nec malesuada posuere.",
-        layout: "text-left",
-      },
-      {
-        name: "Gross Margin 2024",
-        title: "Gross Margin",
-        text: "Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Donec interdum, eros sed gravida ultricies, urna leo bibendum libero, vitae gravida orci risus vel turpis.",
-        layout: "text-right",
-      },
-      {
-        name: "Rule of 40 2024",
-        title: "Monitor Profitability with the Rule of 40 Metric",
-        text: "Fusce aliquet, libero ac sollicitudin imperdiet, nisi ligula pharetra orci, a luctus urna ipsum nec velit. Mauris euismod lacus nec fermentum lacinia. Integer a lacus non lorem bibendum faucibus.",
-        layout: "text-left",
-      },
-    ];
-
-    let loaded = 0;
-    SECTIONS.forEach((sec, i)=>{
-      Papa.parse(SHEETS[sec.name],{
-        download:true,skipEmptyLines:false,
-        complete:res=>{
-          const data=extractTableData(res.data);
-          const table=makeTable(data);
-          const html=`
-          <section class="section-block ${i%2?"section-alt":""} ${sec.layout==='text-left'?'flex-row':'flex-row-reverse'}">
-            <div class="text-block">
-              <h2>${sec.title}</h2>
-              <p>${sec.text}</p>
+        <div class="card">
+            <div class="chart-header">
+                <h2 class="chart-title" id="metricTitle">Growth %</h2>
+                <p class="chart-subtitle" id="metricSubtitle">Percentile distribution by ARR range</p>
             </div>
-            <div class="table-block flex-1">${table}</div>
-          </section>`;
-          document.getElementById("content").insertAdjacentHTML("beforeend",html);
-          document.getElementById("status").textContent=`✅ Loaded ${++loaded}/${SECTIONS.length} sections successfully.`;
-        },
-        error:err=>document.getElementById("status").textContent=`⚠️ Failed: ${err.message}`
-      });
-    });
-  })();
-  </script>
+            
+            <div class="controls">
+                <div class="year-selector">
+                    <label for="yearSelect">Select Year:</label>
+                    <select id="yearSelect" onchange="onYearChange()">
+                        <option value="2024" selected>2024</option>
+                        <option value="2023">2023</option>
+                    </select>
+                </div>
+                
+                <div class="your-position" id="yourPositionInputs" style="display: none;">
+                    <label for="arrInput">Your ARR ($M):</label>
+                    <input type="number" id="arrInput" placeholder="e.g., 5" min="0" step="0.1">
+                    
+                    <label for="growthInput" style="margin-left: 15px;">Your Growth (%):</label>
+                    <input type="number" id="growthInput" placeholder="e.g., 50" step="1">
+                    
+                    <button onclick="plotYourPosition()" style="margin-left: 10px; padding: 6px 15px; background: #1a1a1a; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.875em; font-weight: 500;">Plot Position</button>
+                    <button onclick="clearYourPosition()" style="margin-left: 5px; padding: 6px 15px; background: #999; color: white; border: none; border-radius: 3px; cursor: pointer; font-size: 0.875em;">Clear</button>
+                </div>
+            </div>
+            
+            <div class="chart-container">
+                <canvas id="growthChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Current state
+        let currentMetric = 'growth';
+        let currentYear = '2024';
+        let yourPosition = null; // Stores {arr: number, value: number, arrBucket: string}
+        
+        // Data cache - stores all fetched data
+        let dataCache = {
+            '2024': {
+                'growth': null,
+                'rule40': null,
+                'gross-margin': null
+            },
+            '2023': {
+                'growth': null,
+                'rule40': null,
+                'gross-margin': null
+            }
+        };
+        
+        let isDataLoading = false;
+        let dataLoadPromise = null;
+
+        // GRAPH ENGINE - Reusable chart creator
+        class PercentileChartEngine {
+            constructor(canvasId) {
+                this.canvas = document.getElementById(canvasId);
+                this.ctx = this.canvas.getContext('2d');
+                this.chart = null;
+                this.chartData = null;
+            }
+
+            // Main method to create/update chart with data
+            createChart(inputData) {
+                /*
+                Expected inputData format:
+                [
+                    {
+                        label: "Less Than $1M ARR",
+                        percentile25: 60,
+                        median: 74,
+                        percentile75: 80
+                    },
+                    {...}
+                ]
+                */
+                
+                this.chartData = this.processData(inputData);
+                
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+                
+                this.chart = new Chart(this.ctx, {
+                    type: 'scatter',
+                    data: {
+                        datasets: [{
+                            label: 'Percentiles',
+                            data: this.chartData.scatterPoints,
+                            borderColor: 'rgba(147, 112, 219, 0)',
+                            backgroundColor: 'rgba(147, 112, 219, 0)',
+                            pointRadius: 0,  // Hide the dots
+                            pointHoverRadius: 0,
+                            borderWidth: 0
+                        }]
+                    },
+                    plugins: [this.createVerticalLinePlugin(), this.createLabelPlugin()],
+                    options: this.getChartOptions()
+                });
+            }
+
+            // Process input data into chart-ready format
+            processData(inputData) {
+                const labels = [];
+                const rangeData = [];
+                const scatterPoints = [];
+                
+                inputData.forEach((item, index) => {
+                    labels.push(item.label);
+                    
+                    const values = [
+                        item.percentile25,
+                        item.median,
+                        item.percentile75
+                    ].filter(v => v !== null && v !== undefined && !isNaN(v));
+                    
+                    rangeData.push({
+                        xIndex: index,
+                        values: values,
+                        percentile25: item.percentile25,
+                        median: item.median,
+                        percentile75: item.percentile75
+                    });
+                    
+                    // Add scatter points for each percentile with type info
+                    if (item.percentile25 !== null && item.percentile25 !== undefined && !isNaN(item.percentile25)) {
+                        scatterPoints.push({x: index, y: item.percentile25, type: 'min'});
+                    }
+                    if (item.median !== null && item.median !== undefined && !isNaN(item.median)) {
+                        scatterPoints.push({x: index, y: item.median, type: 'median'});
+                    }
+                    if (item.percentile75 !== null && item.percentile75 !== undefined && !isNaN(item.percentile75)) {
+                        scatterPoints.push({x: index, y: item.percentile75, type: 'max'});
+                    }
+                });
+                
+                // Auto-calculate y-axis range
+                const allValues = scatterPoints.map(p => p.y);
+                const minValue = Math.min(...allValues);
+                const maxValue = Math.max(...allValues);
+                const range = maxValue - minValue;
+                const padding = range * 0.1;
+                
+                return {
+                    labels: labels,
+                    rangeData: rangeData,
+                    scatterPoints: scatterPoints,
+                    yMin: Math.floor((minValue - padding) / 5) * 5,
+                    yMax: Math.ceil((maxValue + padding) / 5) * 5
+                };
+            }
+
+            // Plugin to draw vertical lines connecting percentiles
+            createVerticalLinePlugin() {
+                const chartData = this.chartData;
+                
+                return {
+                    id: 'verticalLinePlugin',
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        
+                        ctx.save();
+                        ctx.strokeStyle = '#1a1a1a';
+                        ctx.lineWidth = 3;
+                        ctx.lineCap = 'round';
+                        
+                        // Draw vertical line for each category
+                        chartData.rangeData.forEach((range) => {
+                            if (range.values.length < 2) return;
+                            
+                            const xPos = chart.scales.x.getPixelForValue(range.xIndex);
+                            const minVal = Math.min(...range.values);
+                            const maxVal = Math.max(...range.values);
+                            
+                            const yMin = chart.scales.y.getPixelForValue(minVal);
+                            const yMax = chart.scales.y.getPixelForValue(maxVal);
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(xPos, yMin);
+                            ctx.lineTo(xPos, yMax);
+                            ctx.stroke();
+                            
+                            // Draw small circles at endpoints
+                            ctx.fillStyle = '#1a1a1a';
+                            ctx.beginPath();
+                            ctx.arc(xPos, yMin, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                            ctx.beginPath();
+                            ctx.arc(xPos, yMax, 4, 0, Math.PI * 2);
+                            ctx.fill();
+                        });
+                        
+                        ctx.restore();
+                    }
+                };
+            }
+
+            // Plugin to draw percentage labels
+            createLabelPlugin() {
+                const scatterPoints = this.chartData.scatterPoints;
+                const labels = this.chartData.labels;
+                
+                return {
+                    id: 'labelPlugin',
+                    afterDatasetsDraw: function(chart) {
+                        const ctx = chart.ctx;
+                        ctx.save();
+                        
+                        ctx.font = 'bold 13px Arial';
+                        ctx.fillStyle = '#000';
+                        
+                        // Draw labels for each scatter point
+                        scatterPoints.forEach((point) => {
+                            const xPos = chart.scales.x.getPixelForValue(point.x);
+                            const yPos = chart.scales.y.getPixelForValue(point.y);
+                            
+                            if (point.type === 'min') {
+                                // Bottom value - label below
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'top';
+                                ctx.fillText(Math.round(point.y) + '%', xPos, yPos + 10);
+                            } else if (point.type === 'max') {
+                                // Top value - label above
+                                ctx.textAlign = 'center';
+                                ctx.textBaseline = 'bottom';
+                                ctx.fillText(Math.round(point.y) + '%', xPos, yPos - 10);
+                            } else if (point.type === 'median') {
+                                // Median - draw dot and label to the right
+                                ctx.fillStyle = '#1a1a1a';
+                                ctx.beginPath();
+                                ctx.arc(xPos, yPos, 5, 0, Math.PI * 2);
+                                ctx.fill();
+                                
+                                ctx.fillStyle = '#1a1a1a';
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText(Math.round(point.y) + '%', xPos + 15, yPos);
+                            }
+                        });
+                        
+                        // Draw "You Are Here!" marker if position is set
+                        if (yourPosition) {
+                            console.log('🎯 Drawing marker for:', yourPosition);
+                            console.log('📋 Available labels:', labels);
+                            
+                            // Find the bucket index
+                            const bucketIndex = labels.findIndex(label => {
+                                console.log(`Comparing: "${label}" with "${yourPosition.arrBucket}"`);
+                                return label === yourPosition.arrBucket;
+                            });
+                            
+                            console.log('📌 Bucket index found:', bucketIndex);
+                            
+                            if (bucketIndex !== -1) {
+                                const xPos = chart.scales.x.getPixelForValue(bucketIndex);
+                                const yPos = chart.scales.y.getPixelForValue(yourPosition.value);
+                                
+                                // Draw blue dot at position
+                                ctx.fillStyle = '#87CEEB';
+                                ctx.beginPath();
+                                ctx.arc(xPos, yPos, 5, 0, Math.PI * 2);
+                                ctx.fill();
+                                
+                                // Draw "You!" text next to position
+                                ctx.font = 'bold 16px Arial';
+                                ctx.fillStyle = '#87CEEB';
+                                ctx.textAlign = 'left';
+                                ctx.textBaseline = 'middle';
+                                ctx.fillText('You!', xPos + 15, yPos);
+                            }
+                        }
+                        
+                        ctx.restore();
+                    }
+                };
+            }
+
+            // Chart configuration options
+            getChartOptions() {
+                const chartData = this.chartData;
+                
+                return {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        },
+                        tooltip: {
+                            enabled: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '%';
+                                },
+                                title: function(context) {
+                                    const xValue = context[0].parsed.x;
+                                    return chartData.labels[xValue];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            min: chartData.yMin,
+                            max: chartData.yMax,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%';
+                                },
+                                stepSize: 20,
+                                font: {
+                                    size: 11,
+                                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI"'
+                                },
+                                color: '#999'
+                            },
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            border: {
+                                display: false
+                            }
+                        },
+                        x: {
+                            type: 'category',
+                            labels: chartData.labels,
+                            offset: true,
+                            grid: {
+                                display: false,
+                                drawBorder: false
+                            },
+                            border: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    size: 11,
+                                    weight: '500',
+                                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI"'
+                                },
+                                color: '#1a1a1a',
+                                padding: 10,
+                                autoSkip: false,
+                                maxRotation: 0,
+                                minRotation: 0
+                            },
+                            title: {
+                                display: true,
+                                text: 'ARR Buckets',
+                                font: {
+                                    size: 12,
+                                    weight: '500',
+                                    family: '-apple-system, BlinkMacSystemFont, "Segoe UI"'
+                                },
+                                color: '#666',
+                                padding: {
+                                    top: 15
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: {
+                            top: 20,
+                            right: 20,
+                            bottom: 20,
+                            left: 100
+                        }
+                    }
+                };
+            }
+        }
+
+        // Initialize the chart engine
+        const chartEngine = new PercentileChartEngine('growthChart');
+
+        // Apps Script URL for fetching data
+        const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxcnVopVmHkPyH_h_NJsHXZK5fSD9eOYK7xqUBQ2DPtVJKPmnbL_IDbwb_K05L9GGEc/exec';
+
+        // Function to fetch data for a specific metric and year from API
+        async function fetchMetricData(metric, year) {
+            const sheetPrefix = {
+                'growth': 'Growth',
+                'rule40': 'Rule40',
+                'gross-margin': 'GrossMargin'
+            }[metric];
+            
+            const timestamp = new Date().getTime();
+            const apiUrl = `${APPS_SCRIPT_URL}?action=get${sheetPrefix}&year=${year}&t=${timestamp}&v=2`;
+            
+            console.log(`🔄 Fetching ${metric} data for ${year}:`, apiUrl);
+            
+            const response = await fetch(apiUrl);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const responseText = await response.text();
+            const jsonResponse = JSON.parse(responseText);
+            
+            if (!jsonResponse.success) {
+                throw new Error(jsonResponse.error || 'Unknown error');
+            }
+            
+            const sheetData = jsonResponse.data;
+            
+            // Exclude non-ARR ranges
+            const excludedRanges = ['Subscription', 'Usage-Based Pricing', 'Hybrid', 'Average'];
+            const filteredData = sheetData.filter(item => !excludedRanges.includes(item.range));
+            
+            // Convert to chart-ready format
+            const chartData = filteredData.map(item => {
+                return {
+                    label: item.range,
+                    percentile25: item.percentile25 !== null ? item.percentile25 * 100 : null,
+                    median: item.median !== null ? item.median * 100 : null,
+                    percentile75: item.percentile75 !== null ? item.percentile75 * 100 : null
+                };
+            });
+            
+            return chartData;
+        }
+
+        // Function to preload ALL data for all metrics and years
+        async function preloadAllData() {
+            if (isDataLoading) {
+                return dataLoadPromise;
+            }
+            
+            isDataLoading = true;
+            console.log('🚀 Preloading all data...');
+            
+            const metrics = ['growth', 'rule40', 'gross-margin'];
+            const years = ['2024', '2023'];
+            
+            // Create array of all fetch promises
+            const fetchPromises = [];
+            
+            for (const year of years) {
+                for (const metric of metrics) {
+                    const promise = fetchMetricData(metric, year)
+                        .then(data => {
+                            dataCache[year][metric] = data;
+                            console.log(`✅ Cached ${metric} ${year}:`, data.length, 'data points');
+                        })
+                        .catch(error => {
+                            console.error(`❌ Error loading ${metric} ${year}:`, error);
+                            dataCache[year][metric] = null;
+                        });
+                    fetchPromises.push(promise);
+                }
+            }
+            
+            // Wait for all data to load
+            dataLoadPromise = Promise.all(fetchPromises).then(() => {
+                console.log('✅ All data preloaded successfully!');
+                isDataLoading = false;
+            });
+            
+            return dataLoadPromise;
+        }
+
+        // Function to render chart from cached data
+        function renderChartFromCache(metric, year) {
+            const cachedData = dataCache[year][metric];
+            
+            if (!cachedData) {
+                console.error(`❌ No cached data for ${metric} ${year}`);
+                return;
+            }
+            
+            console.log(`⚡ Rendering ${metric} ${year} from cache (instant!)`);
+            chartEngine.createChart(cachedData);
+        }
+
+        // Handler for year selection change
+        function onYearChange() {
+            currentYear = document.getElementById('yearSelect').value;
+            console.log('📅 Year changed to:', currentYear);
+            renderChartFromCache(currentMetric, currentYear);
+        }
+
+        // Handler for metric selection
+        function selectMetric(metric) {
+            currentMetric = metric;
+            
+            // Show/hide "Your Position" inputs only for Growth metric
+            const yourPositionDiv = document.getElementById('yourPositionInputs');
+            if (metric === 'growth') {
+                yourPositionDiv.style.display = 'flex';
+            } else {
+                yourPositionDiv.style.display = 'none';
+                clearYourPosition();
+            }
+            
+            // Update active menu item
+            document.querySelectorAll('.menu-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Update titles
+            const metricConfig = {
+                'growth': {
+                    title: 'Growth %',
+                    subtitle: 'Percentile distribution by ARR range'
+                },
+                'rule40': {
+                    title: 'Rule of 40',
+                    subtitle: 'Percentile distribution by ARR range'
+                },
+                'gross-margin': {
+                    title: 'Gross Margin',
+                    subtitle: 'Percentile distribution by ARR range'
+                }
+            };
+            
+            const config = metricConfig[metric];
+            document.getElementById('metricTitle').textContent = config.title;
+            document.getElementById('metricSubtitle').textContent = config.subtitle;
+            
+            // Render from cache instantly!
+            renderChartFromCache(metric, currentYear);
+        }
+
+        // Function to determine ARR bucket from ARR value
+        function getARRBucket(arr) {
+            if (arr < 1) return '< 1M';
+            if (arr >= 1 && arr < 5) return '1–5M';
+            if (arr >= 5 && arr < 10) return '5-10M';
+            if (arr >= 10 && arr < 20) return '10-20M';
+            if (arr >= 20 && arr < 50) return '20-50M';
+            if (arr >= 50 && arr < 100) return '50-100M';
+            return '>100M';
+        }
+
+        // Function to plot user's position on the chart
+        function plotYourPosition() {
+            const arrInput = parseFloat(document.getElementById('arrInput').value);
+            const growthInput = parseFloat(document.getElementById('growthInput').value);
+            
+            if (isNaN(arrInput) || isNaN(growthInput)) {
+                alert('Please enter valid numbers for both ARR and Growth');
+                return;
+            }
+            
+            if (arrInput < 0) {
+                alert('ARR must be a positive number');
+                return;
+            }
+            
+            const arrBucket = getARRBucket(arrInput);
+            
+            yourPosition = {
+                arr: arrInput,
+                value: growthInput,
+                arrBucket: arrBucket
+            };
+            
+            console.log('📍 Your position:', yourPosition);
+            
+            // Redraw chart with position marker
+            chartEngine.chart.update();
+        }
+
+        // Function to clear user's position
+        function clearYourPosition() {
+            yourPosition = null;
+            document.getElementById('arrInput').value = '';
+            document.getElementById('growthInput').value = '';
+            
+            if (chartEngine.chart) {
+                chartEngine.chart.update();
+            }
+        }
+
+        // Load data from sheet on page load
+        preloadAllData().then(() => {
+            // Render initial chart after data is loaded
+            renderChartFromCache(currentMetric, currentYear);
+        });
+        
+        // Show "Your Position" inputs by default since Growth is default metric
+        document.getElementById('yourPositionInputs').style.display = 'flex';
+        
+        // Test function to load sample data
+        function loadSampleData() {
+            const sampleData = [
+                {
+                    label: "Less Than\n$1M ARR",
+                    percentile25: 49,
+                    median: 93,
+                    percentile75: 213
+                },
+                {
+                    label: "$1-5M\nARR",
+                    percentile25: 23,
+                    median: 48,
+                    percentile75: 105
+                },
+                {
+                    label: "$5-10M\nARR",
+                    percentile25: 15,
+                    median: 30,
+                    percentile75: 61
+                },
+                {
+                    label: "$10-20M\nARR",
+                    percentile25: null,
+                    median: null,
+                    percentile75: null
+                },
+                {
+                    label: "$20-50M\nARR",
+                    percentile25: 10,
+                    median: 22,
+                    percentile75: 40
+                },
+                {
+                    label: "$50-100M\nARR",
+                    percentile25: 10,
+                    median: 13,
+                    percentile75: 24
+                },
+                {
+                    label: "Greater Than\n$100M ARR",
+                    percentile25: -6,
+                    median: 6,
+                    percentile75: 9
+                }
+            ];
+            
+            console.log('✅ Loading sample data:', sampleData);
+            chartEngine.createChart(sampleData);
+        }
+        
+        // Test function to manually trigger load
+        function testLoad() {
+            console.log('🔄 Manual load triggered');
+            loadDataFromSheet();
+        }
+    </script>
+        </div>
+    </div>
 </body>
 </html>
