@@ -257,20 +257,175 @@
         }
 
         @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+                min-height: 400px;
+            }
+
             .hero h1 {
-                font-size: 2.5em;
+                font-size: 2em;
+                padding: 0 15px;
             }
             
             .hero p {
-                font-size: 1.2em;
+                font-size: 1em;
+                padding: 0 15px;
+            }
+
+            .hero .date-badge {
+                font-size: 0.9em;
+                padding: 10px 20px;
+            }
+
+            .container {
+                margin: -30px auto 0;
+                padding: 0 15px 30px;
             }
 
             .card {
-                padding: 25px;
+                padding: 20px;
+                border-radius: 15px;
+                margin-bottom: 20px;
             }
 
             .card h2 {
-                font-size: 1.8em;
+                font-size: 1.5em;
+                margin-bottom: 15px;
+                gap: 10px;
+            }
+
+            .timeline {
+                padding-left: 25px;
+                border-left-width: 2px;
+            }
+
+            .timeline-item {
+                margin-bottom: 30px;
+            }
+
+            .timeline-item::before {
+                left: -32px;
+                width: 15px;
+                height: 15px;
+            }
+
+            .timeline-item h3 {
+                font-size: 1.3em;
+            }
+
+            .timeline-item .date {
+                font-size: 0.8em;
+                padding: 4px 12px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .info-box {
+                padding: 12px;
+            }
+
+            .info-box strong {
+                font-size: 1em;
+            }
+
+            .activities {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .activity {
+                padding: 15px 10px;
+            }
+
+            .activity .emoji {
+                font-size: 2em;
+            }
+
+            .features {
+                gap: 8px;
+            }
+
+            .feature-badge {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+
+            .location {
+                padding: 15px;
+            }
+
+            .location h4 {
+                font-size: 1.1em;
+            }
+
+            .cost-summary {
+                padding: 20px;
+                font-size: 1em;
+            }
+
+            .cost-summary .total {
+                font-size: 2em;
+            }
+
+            .highlight {
+                padding: 15px;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+
+            .mini-map {
+                height: 200px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9em;
+                width: 100%;
+                text-align: center;
+                margin: 5px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5em;
+            }
+
+            .hero p {
+                font-size: 0.9em;
+            }
+
+            .hero .date-badge {
+                font-size: 0.8em;
+                padding: 8px 15px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .card h2 {
+                font-size: 1.3em;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .timeline-item h3 {
+                font-size: 1.1em;
+            }
+
+            .activities {
+                grid-template-columns: 1fr;
+            }
+
+            .activity {
+                padding: 15px;
             }
         }
 
@@ -306,6 +461,55 @@
             background: #003580;
             transform: translateY(-2px);
             box-shadow: 0 4px 12px rgba(0, 53, 128, 0.3);
+        }
+
+        /* Responsive foto galleries */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .photo-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.03);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .photo-card img {
+                height: 200px;
+            }
+        }
+
+        .photo-caption {
+            padding: 10px;
+            background: white;
+        }
+
+        .photo-caption p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
         }
     </style>
 </head>
@@ -382,23 +586,23 @@
                     <!-- Stockholm Photo Gallery -->
                     <div style="margin-top: 25px;">
                         <h4 style="color: #003580; margin-bottom: 15px; font-size: 1.2em;">📸 Appartement Impressie</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Stockholm-1.jpg" alt="Appartement slaapkamer met zolderbalk" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🛏️ Ruime slaapkamer met authentieke balken</p>
+                        <div class="photo-gallery">
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-1.jpg" alt="Appartement slaapkamer met zolderbalk">
+                                <div class="photo-caption">
+                                    <p>🛏️ Ruime slaapkamer met authentieke balken</p>
                                 </div>
                             </div>
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Stockholm-2.jpg" alt="Moderne keuken met eetkamer" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🍽️ Moderne keuken met grote eettafel</p>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-2.jpg" alt="Moderne keuken met eetkamer">
+                                <div class="photo-caption">
+                                    <p>🍽️ Moderne keuken met grote eettafel</p>
                                 </div>
                             </div>
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Stockholm-3.jpg" alt="Dakterras met stadsuitzicht" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🌇 Dakterras met panoramisch stadsuitzicht</p>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-3.jpg" alt="Dakterras met stadsuitzicht">
+                                <div class="photo-caption">
+                                    <p>🌇 Dakterras met panoramisch stadsuitzicht</p>
                                 </div>
                             </div>
                         </div>
@@ -456,23 +660,23 @@
                     <!-- Photo Gallery -->
                     <div style="margin-top: 25px;">
                         <h4 style="color: #003580; margin-bottom: 15px; font-size: 1.2em;">📸 Foto Impressie</h4>
-                        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Houtenhuisje-1.avif" alt="Zweeds houten huisje aan het meer" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🏡 Het authentieke Zweedse huisje</p>
+                        <div class="photo-gallery">
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-1.avif" alt="Zweeds houten huisje aan het meer">
+                                <div class="photo-caption">
+                                    <p>🏡 Het authentieke Zweedse huisje</p>
                                 </div>
                             </div>
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Houtenhuisje-2.avif" alt="Hottub bij zonsondergang aan het meer" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🛁 Hottub met uitzicht op het meer</p>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-2.avif" alt="Hottub bij zonsondergang aan het meer">
+                                <div class="photo-caption">
+                                    <p>🛁 Hottub met uitzicht op het meer</p>
                                 </div>
                             </div>
-                            <div style="border-radius: 10px; overflow: hidden; box-shadow: 0 4px 8px rgba(0,0,0,0.1); transition: transform 0.3s ease;" onmouseover="this.style.transform='scale(1.03)'" onmouseout="this.style.transform='scale(1)'">
-                                <img src="images/zweden-trip/Houtenhuisje-3.avif" alt="Sauna met uitzicht" style="width: 100%; height: 250px; object-fit: cover; display: block;">
-                                <div style="padding: 10px; background: white;">
-                                    <p style="margin: 0; color: #666; font-size: 0.9em;">🔥 Sauna met panoramisch uitzicht</p>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-3.avif" alt="Sauna met uitzicht">
+                                <div class="photo-caption">
+                                    <p>🔥 Sauna met panoramisch uitzicht</p>
                                 </div>
                             </div>
                         </div>
