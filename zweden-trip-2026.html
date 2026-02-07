@@ -547,17 +547,10 @@
         </video>
     </div>
 
-    <!-- Halo Muziek via YouTube (verborgen iframe) -->
-    <div style="position: fixed; bottom: -100px; left: -100px; width: 1px; height: 1px; overflow: hidden; z-index: -1;">
-        <iframe id="halo-music" 
-                width="1" 
-                height="1" 
-                src="https://www.youtube.com/embed/0jXTBAGv9ZQ?autoplay=1&loop=1&playlist=0jXTBAGv9ZQ&controls=0&showinfo=0&modestbranding=1"
-                frameborder="0" 
-                allow="autoplay; encrypted-media"
-                allowfullscreen>
-        </iframe>
-    </div>
+    <!-- Halo Muziek (speelt door) -->
+    <audio id="halo-music" loop>
+        <source src="Halo Theme Song Original - Katlan Youssef.mp3" type="audio/mpeg">
+    </audio>
 
     <div class="hero">
         <h1>🇸🇪 ZWEDEN TRIP 2026 🇸🇪</h1>
@@ -866,10 +859,16 @@
     </div>
 
     <script>
-        // Intro overlay beheer
+        // Intro overlay en muziek beheer
         window.addEventListener('DOMContentLoaded', function() {
             const overlay = document.getElementById('intro-overlay');
+            const music = document.getElementById('halo-music');
             const video = document.getElementById('intro-video');
+            
+            // Start muziek na korte delay (voor browser autoplay policies)
+            setTimeout(() => {
+                music.play().catch(e => console.log('Audio play prevented:', e));
+            }, 500);
             
             // Na 5 seconden: verberg overlay met fade out
             setTimeout(() => {
