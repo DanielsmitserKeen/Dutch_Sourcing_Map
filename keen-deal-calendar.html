@@ -1,0 +1,74 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Keen Deal Calendar</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+      background: #f9f9f9;
+      color: #333;
+    }
+    h1 {
+      color: #1f77b4;
+    }
+    ul {
+      margin-top: 20px;
+      padding-left: 20px;
+    }
+    li {
+      margin-bottom: 12px;
+      background: #fff;
+      padding: 12px;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+  </style>
+</head>
+<body>
+  <h1>🗓️ Keen Deal Calendar</h1>
+  <p>Notes pulled from Affinity for <b>ComplAion</b>:</p>
+  <ul id="notes">Loading...</ul>
+
+  <script>
+    async function loadNotes() {
+      const email = "intern@keenventurepartners.com"; // ⚠️ visible publicly FIX later
+      const apiKey = "JWwPorIFl3BFoLVFtieHqX0pMJjoNYQPE4LOqiVZbCg"; // ⚠️ FIX later
+      const company = "ComplAion";
+
+      const token = btoa(`${email}:${apiKey}`);
+
+      try {
+        // Step 1: Find org
+        let res = await fetch(`https://api.affinity.co/organizations?term=${company}`, {
+          headers: { "Authorization": "Basic " + token }
+        });
+        let orgs = await res.json();
+        let orgId = orgs[0]?.id;
+
+        if (!orgId) {
+          document.getElementById("notes").innerHTML = "<li>No company found</li>";
+          return;
+        }
+
+        // Step 2: Get notes
+        res = await fetch(`https://api.affinity.co/organizations/${orgId}/notes`, {
+          headers: { "Authorization": "Basic " + token }
+        });
+        let notes = await res.json();
+
+        // Step 3: Render
+        document.getElementById("notes").innerHTML =
+          notes.map(n => `<li>${n.content}</li>`).join("");
+
+      } catch (err) {
+        document.getElementById("notes").innerHTML = `<li>Error: ${err.message}</li>`;
+      }
+    }
+
+    loadNotes();
+  </script>
+</body>
+</html>

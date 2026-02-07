@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>NL Early Stage Map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  .filter-group {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    font-family: sans-serif;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    z-index: 2;
+  }
+  button {
+    margin: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: white;
+    padding: 15px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 3;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar h2 {
+    margin-top: 0;
+  }
+  .sidebar ul {
+    padding-left: 0;
+    list-style: none;
+  }
+  .sidebar li {
+    margin-bottom: 6px;
+  }
+  .sidebar li a {
+    font-weight: bold;
+    text-decoration: none;
+    color: #1f77b4;
+  }
+  .sidebar li small {
+    color: #555;
+    margin-left: 4px;
+  }
+  .close-btn {
+    float: right;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    background: none;
+  }
+  /* Scrollable startup list */
+  .startup-list {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div class="filter-group">
+  <button onclick="filterCategory('Incubator')">Incubators</button>
+  <button onclick="filterCategory('Venture Builder')">Venture Builders</button>
+  <button onclick="filterCategory('University Venture Arm')">Uni Venture Arms</button>
+  <button onclick="filterCategory('VC (Pre-seed/Seed)')">Pre-seed/Seed VCs</button>
+  <button onclick="filterCategory('Accelerator/VC')">Accelerators</button>
+  <button onclick="filterCategory('Student VC')">Student VCs</button>
+  <button onclick="filterCategory('Pre-seed VC')">Pre-seed VCs (Antler)</button>
+  <button onclick="filterCategory('University')">Universities</button>
+  <button onclick="resetFilter()">Show All</button>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <button class="close-btn" onclick="closeSidebar()">×</button>
+  <h2 id="sidebar-title"></h2>
+  <p id="sidebar-address"></p>
+  <p id="sidebar-description"></p>
+  <h3>Latest Startups</h3>
+  <ul id="sidebar-startups" class="startup-list"></ul>
+</div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuaWVsc21pdHNlciIsImEiOiJjbWVzb3ZpM3IwMmw4MmxxdWthMWM1bmx3In0.c64qRBtiX33E0UD7Ex8_eA';
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [5.1214, 52.0907], // Center on NL
+  zoom: 7
+});
+
+// 🔹 Helper: Load startups from your Google Sheet CSV
+async function loadStartupsFromCSV() {
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vRJW_G4CMkP1uJRZYJSogThyKxWNA_Q1Km1H4cdE9UcFJpAWZ4bnuXUzJJvvbDgYrmaTgXLulzsV_h3/pub?output=csv";
+  const res = await fetch(url);
+  const text = await res.text();
+
+  const rows = text.split("\n").slice(1); // skip header
+  return rows.map(r => {
+    const cols = r.split(",");
+    return {
+      name: cols[0],
+      url: cols[1],
+      date: cols[2],
+      source: cols[3]
+    };
+  }).filter(r => r.name && r.name !== "name");
+}
+
+map.on('load', () => {
+  // load your dataset from GitHub
+  map.addSource('earlystage', {
+    type: 'geojson',
+    data: 'https://raw.githubusercontent.com/DanielsmitserKeen/Dutch_Sourcing_Map/main/nl_earlystage_map.geojson'
+  });
+
+  // points
+  map.addLayer({
+    id: 'points',
+    type: 'circle',
+    source: 'earlystage',
+    paint: {
+      'circle-radius': 7,
+      'circle-color': [
+        'match',
+        ['get', 'category'],
+        'Incubator', '#1f77b4',
+        'Venture Builder', '#9467bd',
+        'University Venture Arm', '#ff7f0e',
+        'VC (Pre-seed/Seed)', '#2ca02c',
+        'Accelerator/VC', '#e377c2',
+        'Student VC', '#17becf',
+        'Pre-seed VC', '#bcbd22',
+        'University', '#d62728',
+        '#888'
+      ]
+    }
+  });
+
+  // labels
+  map.addLayer({
+    id: 'labels',
+    type: 'symbol',
+    source: 'earlystage',
+    layout: {
+      'text-field': ['get', 'name'],
+      'text-size': 12,
+      'text-offset': [0, 1.2]
+    },
+    paint: {
+      'text-color': '#000000',
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 1
+    }
+  });
+
+  // click handler for sidebar
+  map.on('click', 'points', async (e) => {
+    const props = e.features[0].properties;
+
+    document.getElementById('sidebar-title').textContent = props.name;
+    document.getElementById('sidebar-address').textContent = props.address || '';
+    document.getElementById('sidebar-description').textContent = props.description || '';
+
+    const list = document.getElementById('sidebar-startups');
+    list.innerHTML = '';
+
+    try {
+      const startups = await loadStartupsFromCSV();
+
+      // 🔹 Filter startups by source column matching the clicked location
+      const filtered = startups.filter(s => s.source && s.source.trim() === props.name.trim());
+
+      if (filtered.length === 0) {
+        list.innerHTML = "<li><i>No startups listed yet for this location.</i></li>";
+      } else {
+        // newest first (if date exists)
+        filtered.sort((a,b) => (b.date || "").localeCompare(a.date || ""));
+        filtered.forEach(s => {
+          const li = document.createElement('li');
+          li.innerHTML = `<a href="${s.url || '#'}" target="_blank">${s.name}</a> <small>${s.date || ""}</small>`;
+          list.appendChild(li);
+        });
+      }
+    } catch (err) {
+      console.warn("Could not load startups from sheet", err);
+    }
+
+    document.getElementById('sidebar').classList.add('open');
+  });
+
+  map.on('mouseenter', 'points', () => {
+    map.getCanvas().style.cursor = 'pointer';
+  });
+  map.on('mouseleave', 'points', () => {
+    map.getCanvas().style.cursor = '';
+  });
+
+  // close sidebar when clicking on map background
+  map.on('click', (e) => {
+    const features = map.queryRenderedFeatures(e.point, { layers: ['points'] });
+    if (!features.length) {
+      closeSidebar();
+    }
+  });
+});
+
+// filters
+function filterCategory(cat) {
+  map.setFilter('points', ['==', ['get', 'category'], cat]);
+  map.setFilter('labels', ['==', ['get', 'category'], cat]);
+}
+function resetFilter() {
+  map.setFilter('points', null);
+  map.setFilter('labels', null);
+}
+
+// close sidebar
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+</script>
+
+</body>
+</html>
