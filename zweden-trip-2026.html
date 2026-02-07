@@ -31,6 +31,7 @@
             align-items: center;
             z-index: 9999;
             transition: opacity 1s ease-out;
+            cursor: pointer;
         }
 
         #intro-overlay.fade-out {
@@ -42,6 +43,31 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        #start-button {
+            position: absolute;
+            z-index: 10000;
+            background: rgba(255, 255, 255, 0.9);
+            color: #003580;
+            padding: 20px 40px;
+            border-radius: 50px;
+            font-size: 1.5em;
+            font-weight: bold;
+            border: 3px solid #0071c2;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+        }
+
+        #start-button:hover {
+            background: #0071c2;
+            color: white;
+            transform: scale(1.05);
+        }
+
+        #start-button.hidden {
+            display: none;
         }
 
         .hero {
@@ -542,7 +568,8 @@
 <body>
     <!-- Intro Overlay met Kaars Video -->
     <div id="intro-overlay">
-        <video id="intro-video" autoplay muted playsinline>
+        <button id="start-button">🎇 Klik om te beginnen 🎇</button>
+        <video id="intro-video" muted playsinline>
             <source src="BLACK SCREEN CANDLE FLAMES in FULL HD 1080p - Buddy Star (720p, h264).mp4" type="video/mp4">
         </video>
     </div>
@@ -862,29 +889,35 @@
         // Intro overlay en muziek beheer
         window.addEventListener('DOMContentLoaded', function() {
             const overlay = document.getElementById('intro-overlay');
+            const startButton = document.getElementById('start-button');
             const music = document.getElementById('halo-music');
             const video = document.getElementById('intro-video');
             
-            // Start muziek na korte delay (voor browser autoplay policies)
-            setTimeout(() => {
-                music.play().catch(e => console.log('Audio play prevented:', e));
-            }, 500);
-            
-            // Na 5 seconden: verberg overlay met fade out
-            setTimeout(() => {
-                overlay.classList.add('fade-out');
-                
-                // Verwijder overlay volledig na fade animation
-                setTimeout(() => {
-                    overlay.style.display = 'none';
-                }, 1000);
-            }, 5000);
-            
-            // Zorg dat body scrollbaar blijft
+            // Block scrolling initially
             document.body.style.overflow = 'hidden';
-            setTimeout(() => {
-                document.body.style.overflow = 'auto';
-            }, 5000);
+            
+            // Start experience on button click
+            startButton.addEventListener('click', function() {
+                // Verberg knop
+                startButton.classList.add('hidden');
+                
+                // Start video en muziek
+                video.play().catch(e => console.log('Video play prevented:', e));
+                music.play().catch(e => console.log('Audio play prevented:', e));
+                
+                // Na 5 seconden: verberg overlay met fade out
+                setTimeout(() => {
+                    overlay.classList.add('fade-out');
+                    
+                    // Verwijder overlay volledig na fade animation
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 1000);
+                    
+                    // Enable scrolling
+                    document.body.style.overflow = 'auto';
+                }, 5000);
+            });
         });
     </script>
 </body>
