@@ -16,6 +16,32 @@
             background: #f7f7f7;
             color: #333;
             line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+        }
+
+        #intro-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
         }
 
         .hero {
@@ -514,6 +540,18 @@
     </style>
 </head>
 <body>
+    <!-- Intro Overlay met Kaars Video -->
+    <div id="intro-overlay">
+        <video id="intro-video" autoplay muted playsinline>
+            <source src="https://videos.pexels.com/video-files/6985292/6985292-hd_1920_1080_30fps.mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Halo Muziek (speelt door) -->
+    <audio id="halo-music" loop>
+        <source src="https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" type="audio/mpeg">
+    </audio>
+
     <div class="hero">
         <h1>🇸🇪 ZWEDEN TRIP 2026 🇸🇪</h1>
         <p>De Lichte Pikken Zijn Back!</p>
@@ -819,5 +857,35 @@
             </div>
         </div>
     </div>
+
+    <script>
+        // Intro overlay en muziek beheer
+        window.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('intro-overlay');
+            const music = document.getElementById('halo-music');
+            const video = document.getElementById('intro-video');
+            
+            // Start muziek na korte delay (voor browser autoplay policies)
+            setTimeout(() => {
+                music.play().catch(e => console.log('Audio play prevented:', e));
+            }, 500);
+            
+            // Na 5 seconden: verberg overlay met fade out
+            setTimeout(() => {
+                overlay.classList.add('fade-out');
+                
+                // Verwijder overlay volledig na fade animation
+                setTimeout(() => {
+                    overlay.style.display = 'none';
+                }, 1000);
+            }, 5000);
+            
+            // Zorg dat body scrollbaar blijft
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => {
+                document.body.style.overflow = 'auto';
+            }, 5000);
+        });
+    </script>
 </body>
 </html>
