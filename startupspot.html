@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VC Startup Hub – Intelligence Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <script src="https://apis.google.com/js/api.js"></script>
+  <style>
+    body { background: #f8fafc; }
+    .startup-card { transition: border-color 0.2s ease, transform 0.15s ease; cursor: pointer; }
+    .startup-card:hover { border-color: #475569; transform: translateY(-2px); }
+    .modal { position: fixed; inset: 0; background: rgba(15,23,42,0.7); display:flex; justify-content:center; align-items:center; z-index:50; }
+    .heart-btn { font-size:1.3rem; cursor:pointer; transition:color .2s ease; }
+    .heart-btn.red { color:#dc2626; }
+    .heart-btn.gray { color:#94a3b8; }
+  </style>
+</head>
+<body class="text-slate-900">
+<header class="bg-slate-900 shadow">
+  <div class="max-w-7xl mx-auto flex items-center justify-between p-4">
+    <h1 class="text-xl font-bold text-white tracking-wide">VC Startup Hub</h1>
+    <p class="text-sm text-slate-300 hidden md:block">Dealflow Intelligence Dashboard</p>
+    <div class="flex items-center gap-2">
+      <span id="authStatus" class="text-sm text-slate-300">✓ Signed in - Comments save to Sheets</span>
+      <button id="logout" class="bg-red-600 text-white px-3 py-1 rounded">Logout</button>
+    </div>
+  </div>
+</header>
+
+<div class="max-w-7xl mx-auto p-6 grid grid-cols-4 gap-6">
+  <!-- Sidebar -->
+  <aside class="col-span-1 bg-white border border-slate-200 rounded-lg p-4 space-y-6">
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">My Favorites</h2>
+      <ul id="favoritesList" class="text-sm space-y-2 text-slate-700"></ul>
+    </div>
+    <hr>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Score</h2>
+      <div id="thesis-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Founder Score</h2>
+      <div id="founder-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Funding Stage</h2>
+      <div id="funding-filters" class="space-y-1 text-sm"></div>
+    </div>
+    <div>
+      <h2 class="font-semibold text-slate-800 mb-2 text-sm uppercase tracking-wide">Filter by Thesis Theme</h2>
+      <!-- ✅ Subscribe button -->
+      <button id="subscribeThesisBtn" class="bg-blue-600 hover:bg-blue-700 text-white w-full py-2 rounded mb-3 text-sm font-medium">
+        Subscribe to Thesis
+      </button>
+      <!-- Thesis filters -->
+      <div id="thesis-theme-filters" class="overflow-y-auto max-h-[40rem] space-y-1 text-sm border border-slate-100 rounded p-2"></div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="col-span-3 space-y-6">
+    <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+      <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+        <h3 class="text-2xl font-semibold text-slate-900" id="stat-startups">0</h3>
+        <p class="text-xs text-slate-500 uppercase">Organizations</p>
+      </div>
+      <div class="bg-white border border-slate-200 rounded-lg p-4 text-center">
+        <h3 class="text-2xl font-semibold text-emerald-600">Live</h3>
+        <p class="text-xs text-slate-500 uppercase">Tracker</p>
+      </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <div class="flex-1 relative">
+        <input id="chatSearch" type="text" placeholder="Search organizations..."
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700" />
+      </div>
+      <select id="sortSelect"
+        class="border border-slate-300 rounded-lg text-sm p-2 bg-white cursor-pointer focus:ring-2 focus:ring-slate-700">
+        <option value="default">Keen Fit Score</option>
+        <option value="score_desc">Score: High → Low</option>
+        <option value="score_asc">Score: Low → High</option>
+      </select>
+    </div>
+
+    <section>
+      <h2 class="text-base font-semibold text-slate-700 mb-3">Results</h2>
+      <div id="results" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+      <p id="noResults" class="text-slate-500 hidden">No organizations found.</p>
+    </section>
+  </main>
+</div>
+
+<!-- Modal -->
+<div id="modal" class="modal hidden">
+  <div class="bg-white rounded-lg border border-slate-300 shadow-xl max-w-2xl w-full p-6 relative overflow-y-auto max-h-[80vh]">
+    <button onclick="document.getElementById('modal').classList.add('hidden')" class="absolute top-2 right-2 text-slate-500 hover:text-slate-700 text-lg">✖</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+/* Simple stub so +X more doesn't crash. Replace later if you want a real history modal. */
+function openAffinityHistory(e, companyName) {
+  e?.stopPropagation?.();
+  alert(`Full Affinity history for: ${companyName}\n\n(To be implemented)`);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const CSV_URL="https://docs.google.com/spreadsheets/d/e/2PACX-1vQTvvvRJU0Ed6acdxerh3iqNUffgtO9JZ5jDKDEKJkF4JvtWY6Y2RorT5lD_gROLH3YZ3plYEkJAddx/pub?gid=389083235&single=true&output=csv";
+  const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbyxqIiYNF6ig2ytHi7sq8p8zzdQjjJRdw7gOC7h1l44t_io_V2AEKt6TCYKwYeWf-xb/exec';
+
+  let startups=[],favorites=[],thesisSelected=[],founderSelected=[],fundingSelected=[],thesisThemes=[],thesisThemeSelected=[],companyComments={};
+  window.savedThesisSubscriptions=[];
+
+  /* --- Heatmap / Flag Helpers --- */
+  function getHeatmapClass(score){
+    switch((score||"").toLowerCase()){
+      case "stone cold": case "bad": return "border border-red-600 text-red-700 bg-red-50";
+      case "cold": case "medium": return "border border-orange-500 text-orange-700 bg-orange-50";
+      case "warm": case "good": return "border border-yellow-500 text-yellow-700 bg-yellow-50";
+      case "hot": return "border border-lime-600 text-lime-700 bg-lime-50";
+      case "nuclear hot": case "fantastic": return "border border-green-600 text-green-700 bg-green-50";
+      default: return "border border-slate-300 text-slate-600 bg-slate-50";
+    }
+  }
+
+  function getCountryFlag(country){
+    if(!country) return "";
+    const map={
+      "NETHERLANDS":"NL","UNITED KINGDOM":"GB","GERMANY":"DE","FRANCE":"FR","BELGIUM":"BE","SPAIN":"ES",
+      "ITALY":"IT","SWEDEN":"SE","DENMARK":"DK","FINLAND":"FI","NORWAY":"NO","SWITZERLAND":"CH","AUSTRIA":"AT",
+      "IRELAND":"IE","PORTUGAL":"PT","POLAND":"PL","CZECH REPUBLIC":"CZ","HUNGARY":"HU","ROMANIA":"RO","BULGARIA":"BG",
+      "GREECE":"GR","SLOVAKIA":"SK","SLOVENIA":"SI","CROATIA":"HR","ESTONIA":"EE","LATVIA":"LV","LITHUANIA":"LT",
+      "LUXEMBOURG":"LU","MALTA":"MT","CYPRUS":"CY","ICELAND":"IS","SERBIA":"RS","UKRAINE":"UA","BELARUS":"BY",
+      "MOLDOVA":"MD","BOSNIA AND HERZEGOVINA":"BA","NORTH MACEDONIA":"MK","ALBANIA":"AL","MONACO":"MC","SAN MARINO":"SM",
+      "VATICAN CITY":"VA","LIECHTENSTEIN":"LI","ANDORRA":"AD","UNITED STATES":"US","CANADA":"CA","AUSTRALIA":"AU",
+      "INDIA":"IN","CHINA":"CN","JAPAN":"JP"
+    };
+    let code=(map[country?.trim()?.toUpperCase()]||country||"").toUpperCase();
+    return code.length===2?String.fromCodePoint(...code.split("").map(c=>127397+c.charCodeAt())):"";
+  }
+
+  /* --- Affinity helpers --- */
+  function parseAffinityNotes(raw){
+    if(!raw) return [];
+    try{
+      const arr=JSON.parse(raw);
+      if(!Array.isArray(arr)) return [];
+      return arr.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt));
+    }catch{return []}
+  }
+  function formatMonthYear(iso){
+    if(!iso) return "";
+    const d=new Date(iso);
+    return d.toLocaleString("en-US",{month:"short",year:"numeric"});
+  }
+
+  function formatInvestorsCard(inv){
+    if(!inv || !inv.length) return "";
+    if(inv.length <= 3) return `💰 ${inv.join(", ")}`;
+    return `💰 ${inv.slice(0,3).join(", ")} +${inv.length-3}`;
+  }
+  function formatInvestorsModal(inv){
+    if(!inv || !inv.length) return "";
+    return `💰 ${inv.join(", ")}`;
+  }
+
+  function formatLastContactCard(lc){
+    if(!lc) return "";
+    const icon = lc.type==="meeting"?"🤝":lc.type==="email"?"📧":"💬";
+    const date = new Date(lc.timestamp).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    return `${icon} ${date}`;
+  }
+  function formatLastContactModal(lc){
+    if(!lc) return "";
+    const icon = lc.type==="meeting"?"🤝":lc.type==="email"?"📧":"💬";
+    const date = new Date(lc.timestamp).toLocaleDateString("en-GB",{day:"2-digit",month:"short",year:"numeric"});
+    return `
+    <div class="mt-4 border-t pt-4">
+      <h3 class="text-sm font-medium text-slate-700 mb-1">Last Contact</h3>
+      <p class="text-sm text-slate-700 mb-1">${icon} ${date}</p>
+      ${lc.title?`<p class="text-xs text-slate-500 italic">"${lc.title}"</p>`:""}
+    </div>`;
+  }
+
+  /* --- Filters --- */
+  function renderFilters(){
+    thesisScale=["Stone Cold","Cold","Warm","Hot","Nuclear Hot"];
+    const founderScale=["Bad","Medium","Good","Fantastic"];
+    const fundingStages=["Pre-Seed","Seed","Series A","Series B","Series C","Series D"];
+    const thesisContainer=document.getElementById("thesis-filters");
+    const founderContainer=document.getElementById("founder-filters");
+    const fundingContainer=document.getElementById("funding-filters");
+    const thesisThemeContainer=document.getElementById("thesis-theme-filters");
+
+    thesisScale.forEach(s=>thesisContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="thesis-checkbox"><span>${s}</span></label>`);
+    founderScale.forEach(s=>founderContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="founder-checkbox"><span>${s}</span></label>`);
+    fundingStages.forEach(s=>fundingContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${s}" class="funding-checkbox"><span>${s}</span></label>`);
+
+    thesisThemeContainer.innerHTML="";
+    thesisThemes.forEach(t=>thesisThemeContainer.innerHTML+=`<label class="flex items-center space-x-2">
+      <input type="checkbox" value="${t}" class="thesis-theme-checkbox"><span>${t}</span></label>`);
+
+    document.querySelectorAll(".thesis-checkbox,.founder-checkbox,.funding-checkbox,.thesis-theme-checkbox")
+      .forEach(cb=>cb.addEventListener("change",applyFilters));
+  }
+
+  function applyFilters(){
+    thesisSelected=[...document.querySelectorAll(".thesis-checkbox:checked")].map(cb=>cb.value);
+    founderSelected=[...document.querySelectorAll(".founder-checkbox:checked")].map(cb=>cb.value);
+    fundingSelected=[...document.querySelectorAll(".funding-checkbox:checked")].map(cb=>cb.value);
+    thesisThemeSelected=[...document.querySelectorAll(".thesis-theme-checkbox:checked")].map(cb=>cb.value);
+
+    let filtered=startups.filter(s=>{
+      const thesisOK=!thesisSelected.length||thesisSelected.includes(s.thesis_score);
+      const founderOK=!founderSelected.length||founderSelected.includes(s.founder_score);
+      const fundingOK=!fundingSelected.length||fundingSelected.some(stage=>(s.funding_stage||"").toLowerCase().includes(stage.toLowerCase()));
+      const themeOK=!thesisThemeSelected.length||thesisThemeSelected.includes(s.best_matching_thesis);
+      return thesisOK && founderOK && fundingOK && themeOK;
+    });
+
+    renderGrid(filtered);
+  }
+
+  /* --- GRID RENDER --- */
+  function renderGrid(data){
+    const results=document.getElementById("results");
+    const noResults=document.getElementById("noResults");
+    results.innerHTML="";
+    if(!data||!data.length){noResults.classList.remove("hidden");return;}
+    noResults.classList.add("hidden");
+
+    data.forEach(s=>{
+      const thesisClass=getHeatmapClass(s.thesis_score);
+      const founderClass=getHeatmapClass(s.founder_score);
+      const normalizedName=(s.company_name||"").trim().toLowerCase();
+      const isFav=favorites.includes(normalizedName);
+      const fundingInfo=[s.funding_stage,s.funding_amount].filter(Boolean).join(" | ");
+
+      let domainLink="";
+      if(s.domain){
+        const url=s.domain.startsWith("https://")?s.domain:`https://${s.domain}`;
+        domainLink=`<a href="${url}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`;
+      }
+
+      const countryFlag=getCountryFlag(s.country);
+      const countryDisplay=s.country?`
+        <div class="absolute top-3 right-4 flex flex-col items-end space-y-1 z-10">
+          <span class="block text-2xl" style="filter: drop-shadow(0 1px 2px #ccc);">${countryFlag}</span>
+          <span class="text-xs text-slate-700 bg-white/80 rounded px-2 py-0.5 shadow">${s.country}</span>
+        </div>`:"";
+
+      const notes=parseAffinityNotes(s.affinity_notes);
+      let affinityHTML="";
+      if(notes.length>0){
+        const latest=notes[0];
+        const moreCount=notes.length-1;
+        const date=formatMonthYear(latest.createdAt);
+        const who=latest?.creator?.firstName||"Unknown";
+        const link=`https://keenventurepartners.affinity.co/notes/${latest.id}`;
+        affinityHTML=`
+          <p class="text-xs text-slate-500 mt-1">
+            👤 <a href="${link}" target="_blank" class="underline">${who} (${date}) ↗</a>
+            ${moreCount>0?` • <span class="cursor-pointer underline text-slate-600" onclick="openAffinityHistory(event,'${s.company_name.replace(/'/g,"\\'")}')">+${moreCount} more</span>`:""}
+          </p>`;
+      }
+
+      const card=document.createElement("div");
+      card.className="startup-card bg-white border border-slate-200 rounded-md p-4 relative";
+      card.innerHTML=`
+        ${countryDisplay}
+        <div class="flex justify-between items-start">
+          <div>
+            <h3 class="font-semibold text-base text-slate-900 mb-1">${s.company_name}</h3>
+            <p class="text-xs text-slate-500 mb-2">${s.industry||"-"}</p>
+          </div>
+          <button class="heart-btn ${isFav?"red":"gray"}" data-company="${s.company_name}" style="margin-top: 2.5rem;">♥</button>
+        </div>
+        <div class="space-y-1 text-sm">
+          <p><span class="font-medium text-slate-700">Total Score:</span> ${s.points_total || 0}</p>
+          <p><span class="font-medium text-slate-700">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
+          <p><span class="font-medium text-slate-700">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
+          <p><span class="font-medium text-slate-700">Funding:</span> ${fundingInfo||"-"}</p>
+          ${affinityHTML ? `<p class="text-xs text-slate-600 mt-1"><span class="font-medium text-slate-700">Latest Touch:</span> ${affinityHTML}</p>` : ""}
+          <p><span class="font-medium text-slate-700">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
+          ${domainLink?`<p><span class="font-medium text-slate-700">Website:</span> ${domainLink}</p>`:""}
+          ${s.investors && s.investors.length ? `
+            <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Investors:</span> ${formatInvestorsCard(s.investors)}</p>
+          ` : ""}
+          ${s.last_contact ? `
+            <p class="text-xs text-slate-600"><span class="font-medium text-slate-700">Last Contact:</span> ${formatLastContactCard(s.last_contact)}</p>
+          ` : ""}
+        </div>`;
+
+      card.addEventListener("click",e=>{
+        if(e.target.classList.contains("heart-btn"))return;
+        if(e.target.closest("a") && e.target.closest("a").getAttribute("target")==="_blank")return;
+        openModal(s);
+      });
+      results.appendChild(card);
+    });
+
+    document.querySelectorAll(".heart-btn").forEach(btn=>{
+      btn.addEventListener("click",e=>{
+        e.stopPropagation();
+        const company=btn.dataset.company;
+        const normalized=company.trim().toLowerCase();
+        const isFav=favorites.includes(normalized);
+        if(isFav){favorites=favorites.filter(f=>f!==normalized);btn.classList.replace("red","gray")}
+        else{favorites.push(normalized);btn.classList.replace("gray","red")}
+        renderFavoritesSidebar();
+      });
+    });
+  }
+
+  /* --- MAIN MODAL + INVESTORS + LAST CONTACT --- */
+  function openModal(s){
+    const modal=document.getElementById("modal");
+    const content=document.getElementById("modalContent");
+    const thesisClass=getHeatmapClass(s.thesis_score);
+    const founderClass=getHeatmapClass(s.founder_score);
+    const fundingInfo=[s.funding_stage,s.funding_amount].filter(Boolean).join(" | ");
+    const domainLink=s.domain?`<a href="${s.domain.startsWith("https://")?s.domain:`https://${s.domain}`}" target="_blank" class="text-slate-700 underline">${s.domain}</a>`:"";
+
+    const notes=parseAffinityNotes(s.affinity_notes);
+    let modalAffinity="";
+    if(notes.length>0){
+      const latest=notes[0];
+      const moreCount=notes.length-1;
+      const link=`https://keenventurepartners.affinity.co/notes/${latest.id}`;
+      const date=formatMonthYear(latest.createdAt);
+      const who=[latest?.creator?.firstName,latest?.creator?.lastName].filter(Boolean).join(" ")||"Unknown";
+      modalAffinity=`
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-2">Latest Affinity Touch</h3>
+        <p class="text-xs text-slate-600">
+          👤 <a href="${link}" target="_blank" class="underline">${who} (${date}) ↗</a>
+          ${moreCount>0?` • <span class='underline cursor-pointer' onclick="openAffinityHistory(event,'${s.company_name.replace(/'/g,"\\'")}')">+${moreCount} more</span>`:""}
+        </p>
+      </div>`;
+    }
+
+    const cachedComment=companyComments[s.company_name]||"";
+    const loadingMsg=cachedComment?"":"Loading previous comment...";
+
+    content.innerHTML=`
+      <h2 class="text-xl font-bold text-slate-900 mb-2">${s.company_name}</h2>
+      <p class="text-sm text-slate-500 mb-2">${s.industry||"-"}</p>
+      ${domainLink}
+      <div class="mt-3 text-sm space-y-1">
+        <p><span class="font-medium">Thesis Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${thesisClass}">${s.thesis_score||"-"}</span></p>
+        <p><span class="font-medium">Founder Score:</span> <span class="px-2 py-0.5 text-xs rounded-md ${founderClass}">${s.founder_score||"-"}</span></p>
+        <p><span class="font-medium">Funding:</span> ${fundingInfo||"-"}</p>
+        <p><span class="font-medium">Best Thesis:</span> ${s.best_matching_thesis||"-"}</p>
+        <p><span class="font-medium">Reasoning:</span> ${s.reasoning||""}</p>
+        <p><span class="font-medium">Founder Background:</span> ${s.founder_background||""}</p>
+      </div>
+
+      ${modalAffinity}
+
+      ${s.investors && s.investors.length ? `
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-1">Investors</h3>
+        <p class="text-xs text-slate-700">${formatInvestorsModal(s.investors)}</p>
+      </div>` : ""}
+
+      ${s.last_contact ? formatLastContactModal(s.last_contact) : ""}
+
+      <div class="mt-4 border-t pt-4">
+        <h3 class="text-sm font-medium text-slate-700 mb-2">Feedback Comment</h3>
+        <textarea id="feedbackComment"
+          class="w-full p-3 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-slate-700 resize-none"
+          rows="4"
+          placeholder="Write your feedback about this company...">${cachedComment}</textarea>
+        <p id="commentStatus" class="text-xs text-slate-500 mt-1">${loadingMsg}</p>
+        <div class="flex justify-end mt-3">
+          <button id="saveCommentBtn"
+            class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm">Save Comment</button>
+        </div>
+      </div>`;
+
+    modal.classList.remove("hidden");
+
+    const textarea=document.getElementById("feedbackComment");
+    const saveBtn=document.getElementById("saveCommentBtn");
+    saveBtn.addEventListener("click",()=>saveComment(s.company_name,textarea.value));
+    textarea.addEventListener("blur",()=>saveComment(s.company_name,textarea.value));
+  }
+
+  /* --- COMMENTS save via Apps Script (Supabase auth session) --- */
+  async function saveComment(companyName, comment) {
+    companyComments[companyName] = comment;
+    localStorage.setItem('companyComments', JSON.stringify(companyComments));
+
+    const saveBtn = document.getElementById("saveCommentBtn");
+    const status = document.getElementById("commentStatus");
+    if (saveBtn) { saveBtn.textContent = "Saving..."; saveBtn.className = "bg-yellow-600 text-white px-4 py-2 rounded text-sm"; }
+    if (status) status.textContent = "Saving to Google Sheets...";
+
+    (async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) throw new Error("Not authenticated");
+
+        const sessionToken = session.access_token;
+        const userEmail = session.user.email;
+
+        const params = new URLSearchParams({
+          action: 'saveComment',
+          sessionToken,
+          companyName,
+          comment,
+          userEmail
+        });
+
+        const res = await fetch(`${APPS_SCRIPT_URL}?${params}`, { method: "GET" });
+        const result = await res.json();
+        if (!result.success) throw new Error(result.error || "Failed to save");
+
+        if (saveBtn) {
+          saveBtn.textContent = "Saved ✓";
+          saveBtn.className = "bg-green-600 text-white px-4 py-2 rounded text-sm";
+          setTimeout(() => {
+            saveBtn.textContent = "Save Comment";
+            saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+          }, 1500);
+        }
+        if (status) status.textContent = "Saved to Google Sheets ✓";
+      } catch (err) {
+        console.error("❌ Save failed:", err);
+        if (status) status.textContent = "⚠️ Saved locally (Sheets error)";
+        if (saveBtn) {
+          saveBtn.textContent = "Saved Locally ⚠️";
+          saveBtn.className = "bg-orange-600 text-white px-4 py-2 rounded text-sm";
+          setTimeout(() => {
+            saveBtn.textContent = "Save Comment";
+            saveBtn.className = "bg-slate-600 hover:bg-slate-700 text-white px-4 py-2 rounded text-sm";
+          }, 3000);
+        }
+      }
+    })();
+  }
+
+  function initComments() {
+    const saved = localStorage.getItem('companyComments');
+    if (saved) companyComments = JSON.parse(saved);
+  }
+
+  /* --- CSV LOAD + field parsing --- */
+  Papa.parse(CSV_URL,{
+    download:true,header:true,
+    complete:async results=>{
+      startups = results.data.filter(s=>s.company_name).map(s=>{
+        try { s.investors = JSON.parse(s["investors(affinity)"] || "[]"); }
+        catch { s.investors = []; }
+        try { s.last_contact = JSON.parse(s["last contact(affinity)"] || "null"); }
+        catch { s.last_contact = null; }
+        s.points_total = Number(s.points_total || s["points_total"] || 0);
+        return s;
+      });
+
+      thesisThemes=[...new Set(startups.map(s=>s.best_matching_thesis).filter(Boolean))].sort();
+      document.getElementById("stat-startups").textContent=startups.length;
+      renderFilters();
+      window.startups=startups;
+      initComments();
+      setTimeout(()=>{renderGrid(startups);renderFavoritesSidebar();},200);
+    }
+  });
+
+  /* Search + Sort */
+  document.getElementById("chatSearch").addEventListener("input",e=>{
+    const q=e.target.value.toLowerCase();
+    const filtered=startups.filter(s=>
+      (s.company_name||"").toLowerCase().includes(q)||
+      (s.industry||"").toLowerCase().includes(q)||
+      (s.reasoning||"").toLowerCase().includes(q));
+    renderGrid(filtered);
+  });
+
+  document.getElementById("sortSelect").addEventListener("change", e => {
+    let arr = [...startups];
+    if (e.target.value === "score_desc") {
+      arr.sort((a, b) => Number(b.points_total || 0) - Number(a.points_total || 0));
+    } else if (e.target.value === "score_asc") {
+      arr.sort((a, b) => Number(a.points_total || 0) - Number(b.points_total || 0));
+    }
+    renderGrid(arr);
+  });
+
+  window.renderFavoritesSidebar=function(){
+    const list=document.getElementById("favoritesList");
+    list.innerHTML=favorites.length?
+      favorites.map(f=>{
+        const st=startups.find(s=>(s.company_name||"").trim().toLowerCase()===f);
+        return `<li class="flex justify-between items-center"><span>${st?.company_name||f}</span></li>`;
+      }).join(""):
+      `<li class="text-slate-400">No favorites yet</li>`;
+  };
+
+  /* ----------------- Subscribe to Thesis (Supabase) ----------------- */
+  document.addEventListener("click", async (e) => {
+    if (e.target.id !== "subscribeThesisBtn") return;
+
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+
+    // Copy existing thesis theme filters into modal
+    const thesisContainer = document.getElementById("thesis-theme-filters");
+    const filtersHTML = thesisContainer.innerHTML;
+
+    content.innerHTML = `
+      <h2 class="text-xl font-bold mb-2 text-slate-900">Subscribe to Thesis Topics</h2>
+      <p class="text-sm text-slate-600 mb-3">Select the thesis themes you want to subscribe to:</p>
+
+      <div class="flex justify-end mb-2">
+        <button id="toggleAllBtn" class="text-xs text-blue-600 hover:text-blue-800 underline">Select All</button>
+      </div>
+
+      <div id="modalThesisList" class="border border-slate-200 rounded p-3 max-h-[60vh] overflow-y-auto space-y-2 text-sm">
+        ${filtersHTML}
+      </div>
+
+      <div class="mt-4 flex justify-end gap-2">
+        <button id="saveSubscription" class="bg-slate-500 hover:bg-slate-600 text-white px-4 py-2 rounded">Save Selection</button>
+        <button id="autoSlackBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Set Up Auto Slack Me List</button>
+      </div>
+    `;
+
+    // Toggle all
+    let allSelected = false;
+    content.querySelector("#toggleAllBtn").addEventListener("click", () => {
+      const checkboxes = content.querySelectorAll("#modalThesisList input[type='checkbox']");
+      allSelected = !allSelected;
+      checkboxes.forEach(cb => cb.checked = allSelected);
+      content.querySelector("#toggleAllBtn").textContent = allSelected ? "Deselect All" : "Select All";
+    });
+
+    // Pre-check from Supabase
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        const userEmail = session.user.email;
+        const { data, error } = await supabase
+          .from("thesis_subscriptions")
+          .select("selected_theses")
+          .eq("user_email", userEmail)
+          .single();
+
+        if (!error && data?.selected_theses?.length) {
+          window.savedThesisSubscriptions = data.selected_theses;
+          data.selected_theses.forEach(theme => {
+            const checkbox = [...content.querySelectorAll("input[type='checkbox']")].find(cb => cb.value === theme);
+            if (checkbox) checkbox.checked = true;
+          });
+        }
+      }
+    } catch (err) {
+      console.warn("Pre-check theses failed:", err);
+    }
+
+    modal.classList.remove("hidden");
+
+    // Simple save (no DB write)
+    content.querySelector("#saveSubscription").addEventListener("click", () => {
+      const selected = [...content.querySelectorAll("input:checked")].map(cb => cb.value);
+      alert(`Subscribed to ${selected.length} thesis topics!`);
+      modal.classList.add("hidden");
+    });
+
+    // Persist selection to Supabase
+    content.querySelector("#autoSlackBtn").addEventListener("click", async () => {
+      const selected = [...content.querySelectorAll("input:checked")].map(cb => cb.value);
+      if (selected.length === 0) {
+        alert("Please select at least one thesis topic before saving.");
+        return;
+      }
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (!session) {
+          alert("Please log in first.");
+          return;
+        }
+        const userEmail = session.user.email;
+
+        const { error } = await supabase.from("thesis_subscriptions").upsert(
+          {
+            user_email: userEmail,
+            selected_theses: selected,
+            created_at: new Date().toISOString(),
+          },
+          { onConflict: "user_email" }
+        );
+        if (error) throw error;
+
+        alert(`✅ Auto Slack setup saved!
+Amazing! Now you will get the best weekly Monday results in your Slack linked to these theses.`);
+        modal.classList.add("hidden");
+      } catch (err) {
+        console.error("❌ Error saving to Supabase:", err);
+        alert("Failed to save to Supabase. Check console for details.");
+      }
+    });
+  });
+  /* ------------------------------------------------------------------ */
+
+}); // END DOMContentLoaded
+</script>
+
+<!-- ✅ Supabase Auth -->
+<script type="module">
+import { supabase } from "./lib/supabaseClient.js";
+window.supabase = supabase;
+
+(async () => {
+  const { data:{ session } } = await supabase.auth.getSession();
+  if (!session) {
+    window.location.href = "login.html";
+    return;
+  }
+  // Preload saved subscriptions for quick access
+  try {
+    const { data, error } = await supabase
+      .from("thesis_subscriptions")
+      .select("selected_theses")
+      .eq("user_email", session.user.email)
+      .single();
+    if (!error && data?.selected_theses) {
+      window.savedThesisSubscriptions = data.selected_theses;
+      console.log("Loaded saved thesis selections:", data.selected_theses);
+    }
+  } catch (e) {
+    console.warn("Load thesis_subscriptions failed:", e.message);
+  }
+})();
+</script>
+
+</body>
+</html>

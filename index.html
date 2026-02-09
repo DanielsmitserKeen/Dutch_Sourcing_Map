@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Keen Venture Partners Hub</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    /* Reset */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      background: #ffffff;
+      color: #333;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+    }
+
+    .container {
+      text-align: center;
+      max-width: 900px;
+      padding: 20px;
+    }
+
+    h1 {
+      font-size: 2.8em;
+      font-weight: 700;
+      color: #1f77b4;
+      margin-bottom: 15px;
+      letter-spacing: -1px;
+    }
+
+    p.subtitle {
+      font-size: 1.2em;
+      color: #555;
+      margin-bottom: 50px;
+    }
+
+    .cards {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 30px;
+    }
+
+    .card {
+      flex: 1 1 300px;
+      max-width: 350px;
+      background: #fafafa;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+      text-align: left;
+      transition: all 0.3s ease;
+      cursor: pointer;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .card h2 {
+      font-size: 1.6em;
+      color: #1f77b4;
+      margin-bottom: 12px;
+    }
+
+    .card p {
+      font-size: 1em;
+      color: #444;
+      line-height: 1.5;
+    }
+
+    /* Small screens */
+    @media (max-width: 768px) {
+      h1 { font-size: 2.2em; }
+      p.subtitle { font-size: 1em; }
+      .card { padding: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Company Stage Hub</h1>
+    <p class="subtitle">Map the ecosystem or follow portfolio company news.</p>
+    
+    <div class="cards">
+      <a href="map.html" class="card">
+        <h2>🌍 Explore the Map</h2>
+        <p>Discover incubators, VCs, accelerators, and universities across the Netherlands. Navigate the early-stage ecosystem visually.</p>
+      </a>
+
+      <a href="portfolio.html" class="card">
+        <h2>📰 Portfolio News</h2>
+        <p>Stay updated with the latest news from portfolio companies. Summaries and links directly from LinkedIn and other sources.</p>
+      </a>
+
+      <a href="https://danielsmitserkeen.github.io/Dutch_Sourcing_Map/startupspot.html" class="card">
+        <h2>🚀 Startup Spot</h2>
+        <p>Search and scout startups across the market from our scraping. Ideal for sourcing.</p>
+      </a>
+
+      <a href="https://danielsmitserkeen.github.io/Dutch_Sourcing_Map/KeenKPIDashboard.html" class="card">
+        <h2>📊 KPI Dashboard</h2>
+        <p>Benchmark startup KPIs across stages and track performance.</p>
+      </a>
+    </div>
+  </div>
+</body>
+</html>

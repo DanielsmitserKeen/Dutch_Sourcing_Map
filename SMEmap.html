@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>European Startups by Country Map</title>
+<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+<script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
+<link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
+<style>
+  body { margin:0; padding:0; }
+  #map { position:absolute; top:0; bottom:0; width:100%; }
+  .filter-group {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    background: white;
+    padding: 10px;
+    font-family: sans-serif;
+    border-radius: 6px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    z-index: 2;
+  }
+  button {
+    margin: 3px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .company-counter {
+    display: inline-block;
+    margin-left: 15px;
+    padding: 8px 12px;
+    background: #B3E5FC;
+    color: #000000;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 14px;
+  }
+
+  /* Sidebar */
+  .sidebar {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 320px;
+    height: 100%;
+    background: white;
+    padding: 24px;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+    overflow-y: auto;
+    transform: translateX(100%);
+    transition: transform 0.3s ease;
+    z-index: 3;
+    border-left: 4px solid #B3E5FC;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar h2 {
+    margin-top: 0;
+    color: #000000;
+    font-weight: 700;
+    border-bottom: 2px solid #B3E5FC;
+    padding-bottom: 8px;
+  }
+  .sidebar h3 {
+    color: #000000;
+    font-weight: 600;
+  }
+  .sidebar p {
+    color: #6B7280;
+    line-height: 1.5;
+  }
+  .sidebar ul {
+    padding-left: 0;
+    list-style: none;
+  }
+  .sidebar li {
+    margin-bottom: 12px;
+    padding: 12px;
+    background: #F9FAFB;
+    border-radius: 8px;
+    border-left: 3px solid #B3E5FC;
+  }
+  .sidebar li a {
+    font-weight: 600;
+    text-decoration: none;
+    color: #000000;
+  .sidebar li a:hover {
+    color: #4FC3F7;
+  }
+  .sidebar li small {
+    color: #6B7280;
+    margin-left: 4px;
+  }
+  .close-btn {
+    float: right;
+    cursor: pointer;
+    font-size: 18px;
+    border: none;
+    background: none;
+    color: #000000;
+  }
+  /* Scrollable startup list */
+  .startup-list {
+    max-height: 250px;
+    overflow-y: auto;
+  }
+</style>
+</head>
+<body>
+
+<div id="map"></div>
+<div class="filter-group">
+  <button onclick="filterByFunding('VC')">Venture Capital</button>
+  <button onclick="filterByFunding('Private Equity')">Private Equity</button>
+  <button onclick="filterByFunding('Angel')">Angel</button>
+  <button onclick="filterByFunding('Private')">Private</button>
+  <button onclick="filterByHeadcount('1-10')">1-10 employees</button>
+  <button onclick="filterByHeadcount('11-50')">11-50 employees</button>
+  <button onclick="filterByHeadcount('51-200')">51+ employees</button>
+  <button onclick="resetFilter()">Show All</button>
+  <div class="company-counter">
+    <span id="total-companies">Loading...</span>
+  </div>
+</div>
+
+<!-- Sidebar -->
+<div id="sidebar" class="sidebar">
+  <button class="close-btn" onclick="closeSidebar()">×</button>
+  <h2 id="sidebar-title"></h2>
+  <p id="sidebar-address"></p>
+  <p id="sidebar-description"></p>
+  <h3>Companies</h3>
+  <ul id="sidebar-startups" class="startup-list"></ul>
+</div>
+
+<script>
+mapboxgl.accessToken = 'pk.eyJ1IjoiZGFuaWVsc21pdHNlciIsImEiOiJjbWVzb3ZpM3IwMmw4MmxxdWthMWM1bmx3In0.c64qRBtiX33E0UD7Ex8_eA';
+
+const map = new mapboxgl.Map({
+  container: 'map',
+  style: 'mapbox://styles/mapbox/light-v11',
+  center: [10.0, 54.5], // Center on Europe
+  zoom: 4
+});
+
+// Country coordinates for positioning markers
+const countryCoordinates = {
+  'Germany': [10.4515, 51.1657],
+  'United Kingdom (UK)': [-3.4360, 55.3781],
+  'Netherlands': [5.2913, 52.1326],
+  'France': [2.2137, 46.2276],
+  'Spain': [-3.7492, 40.4637],
+  'Italy': [12.5674, 41.8719],
+  'Switzerland': [8.2275, 46.8182],
+  'Austria': [13.3333, 47.3333],
+  'Belgium': [4.4699, 50.5039],
+  'Poland': [19.1343, 51.9194],
+  'Sweden': [18.6435, 60.1282],
+  'Portugal': [-9.1393, 39.3999],
+  'Ireland': [-8.2439, 53.4129],
+  'Finland': [25.7482, 61.9241],
+  'Denmark': [9.5018, 56.2639],
+  'Czech Republic': [15.4729, 49.8175],
+  'Hungary': [19.5033, 47.1625],
+  'Romania': [24.9668, 45.9432],
+  'Estonia': [25.0136, 58.5953],
+  'Lithuania': [23.8813, 55.1694],
+  'Latvia': [24.6032, 56.8796],
+  'Luxembourg': [6.1296, 49.8153],
+  'Cyprus': [33.4299, 35.1264],
+  'Greece': [21.8243, 39.0742]
+};
+
+let companiesData = [];
+let countriesGeoJSON = {
+  type: 'FeatureCollection',
+  features: []
+};
+
+// Load and parse data from Google Sheets published CSV
+async function loadCSVData() {
+  try {
+    console.log('Loading data from Google Sheets published CSV...');
+    
+    // Published CSV link - this should work without CORS issues
+    const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vR75WVKmIpyTvadJI5DmjmALGEeOO2ogZfiUwcjDblUxyUFKChBlnzP89CWpN4L12A6FkOuTQtblS3I/pub?output=csv';
+    
+    const response = await fetch(csvUrl);
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    
+    const csvText = await response.text();
+    console.log('CSV data loaded, parsing...');
+    
+    // Parse CSV data
+    const lines = csvText.split('\n');
+    const headers = lines[0].split(',').map(h => h.replace(/"/g, '').trim());
+    
+    console.log('CSV Headers:', headers);
+    
+    companiesData = [];
+    
+    for (let i = 1; i < lines.length; i++) {
+      const line = lines[i].trim();
+      if (!line) continue;
+      
+      // Parse CSV line (handle commas within quotes)
+      const values = parseCSVLine(line);
+      
+      if (values.length > 10 && values[2] && values[10]) { // Check if company name (C) and country (K) exist
+        const company = {
+          name: (values[2] || '').replace(/"/g, '').trim(),
+          country: (values[10] || '').replace(/"/g, '').trim(),
+          description: (values[4] || '').replace(/"/g, '').trim(),
+          funding: (values[13] || 'Unknown').replace(/"/g, '').trim(),
+          headcount: (values[9] || 'Unknown').replace(/"/g, '').trim(),
+          website: (values[15] || '').replace(/"/g, '').trim(),
+          founded: (values[11] || '').replace(/"/g, '').trim(),
+          revenue: (values[5] || '').replace(/"/g, '').trim(),
+          totalFunding: (values[7] || '').replace(/"/g, '').trim()
+        };
+        
+        if (company.name && company.country) {
+          companiesData.push(company);
+        }
+      }
+    }
+    
+    console.log(`Successfully loaded ${companiesData.length} companies from CSV`);
+    
+  } catch (error) {
+    console.error('Error loading CSV data:', error);
+    console.log('Using hardcoded fallback data...');
+    
+    // Fallback to hardcoded data if CSV fails
+    companiesData = [
+      { name: 'Nocomed', country: 'Ireland', description: 'nocomed is a sustainability consulting and software solutions company that specializes in providing tools and training for healthcare suppliers to reduce carbon emissions and enhance sustainability practices.', funding: 'Venture Capital', headcount: '1-10', website: 'http://nocomed.com' },
+      { name: 'CREX Capital', country: 'Germany', description: 'CREX is a digital platform specializing in real estate finance. It offers tools for portfolio management, automated cashflow analysis, and risk scoring, catering to real estate investors and financial professionals.', funding: 'Venture Capital', headcount: '1-10', website: 'http://crex.digital' },
+      { name: 'Motion', country: 'Netherlands', description: 'ByCycling International B.V. is a technology company that offers mobility solutions and commuter programs aimed at transitioning commuters from single-occupancy vehicles to active transportation modes.', funding: 'Angel', headcount: '1-10', website: 'http://himotion.co' },
+      { name: 'DataFret', country: 'France', description: 'DataFret is a software company specializing in automating transport invoice processing and managing disputes for logistics and e-commerce businesses.', funding: 'Private Equity', headcount: '1-10', website: 'http://datafret.com' },
+      { name: 'byte robotics', country: 'Germany', description: 'Byte Robotics is a robotics software company specializing in automated robot programming solutions.', funding: 'Venture Capital', headcount: '1-10', website: 'http://byte-robotics.com' },
+      { name: 'Yolly.io', country: 'Austria', description: 'Yolly is a financial services company that offers invoicing, cashflow management, and expense tracking solutions primarily for freelancers and small business owners.', funding: 'Venture Capital', headcount: '1-10', website: 'http://yolly.io' },
+      { name: 'Ubives', country: 'Hungary', description: 'Ubives is a user management solutions provider specializing in passwordless technology and digital identity management.', funding: 'Venture Capital', headcount: '1-10', website: 'http://ubives.com' },
+      { name: 'Chipmind', country: 'Switzerland', description: 'Chipmind AG is a technology company specializing in AI-powered solutions for chip design.', funding: 'Venture Capital', headcount: '1-10', website: 'http://chipmind.ai' }
+    ];
+  }
+}
+
+// Helper function to parse CSV lines with quoted fields containing commas
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current); // Add the last field
+  return result;
+}
+
+// Helper function to parse CSV line with proper quote handling
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    
+    if (char === '"') {
+      inQuotes = !inQuotes;
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  
+  result.push(current);
+  return result;
+}
+
+// Helper function to clean text fields
+function cleanText(text) {
+  if (!text) return '';
+  return text.replace(/^"/, '').replace(/"$/, '').trim();
+}
+
+// Group companies by country and create GeoJSON
+function createCountryGeoJSON() {
+  const countryCounts = {};
+  
+  // Count companies per country
+  companiesData.forEach(company => {
+    const country = company.country;
+    if (!countryCounts[country]) {
+      countryCounts[country] = [];
+    }
+    countryCounts[country].push(company);
+  });
+
+  // Create GeoJSON features for each country with companies
+  countriesGeoJSON.features = Object.keys(countryCounts).map(country => {
+    const coordinates = countryCoordinates[country] || [0, 0];
+    const companies = countryCounts[country];
+    
+    return {
+      type: 'Feature',
+      geometry: {
+        type: 'Point',
+        coordinates: coordinates
+      },
+      properties: {
+        country: country,
+        count: companies.length,
+        companies: companies
+      }
+    };
+  });
+}
+
+map.on('load', async () => {
+  await loadCSVData();
+  createCountryGeoJSON();
+  updateCompanyCounter();
+
+  // Add the country points source
+  map.addSource('countries', {
+    type: 'geojson',
+    data: countriesGeoJSON
+  });
+
+  // Add circles for countries with enhanced styling
+  map.addLayer({
+    id: 'country-points-glow',
+    type: 'circle',
+    source: 'countries',
+    paint: {
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['get', 'count'],
+        1, 12,
+        3, 18,
+        5, 22,
+        10, 25,
+        15, 30,
+        20, 35,
+        50, 45,
+        100, 50,
+        250, 60,
+        500, 70,
+        1000, 90
+      ],
+      'circle-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'count'],
+        1, '#E0F6FF',
+        5, '#B3E5FC', 
+        10, '#81D4FA',
+        20, '#4FC3F7'
+      ],
+      'circle-opacity': 0.15,
+      'circle-stroke-width': 0
+    }
+  });
+
+  // Add main circles for countries
+  map.addLayer({
+    id: 'country-points',
+    type: 'circle',
+    source: 'countries',
+    paint: {
+      'circle-radius': [
+        'interpolate',
+        ['linear'],
+        ['get', 'count'],
+        1, 8,
+        3, 10,
+        5, 12,
+        10, 15,
+        15, 18,
+        20, 25,
+        50, 30,
+        100, 35,
+        250, 42,
+        500, 50,
+        1000, 65
+      ],
+      'circle-color': [
+        'interpolate',
+        ['linear'],
+        ['get', 'count'],
+        1, '#E0F6FF',
+        5, '#B3E5FC', 
+        10, '#81D4FA',
+        20, '#4FC3F7'
+      ],
+      'circle-opacity': 0.85,
+      'circle-stroke-color': '#ffffff',
+      'circle-stroke-width': 3,
+      'circle-stroke-opacity': 0.9
+    }
+  });
+
+  // Add country labels
+  map.addLayer({
+    id: 'country-labels',
+    type: 'symbol',
+    source: 'countries',
+    layout: {
+      'text-field': ['concat', ['get', 'country'], '\n(', ['get', 'count'], ' companies)'],
+      'text-size': 16,
+      'text-offset': [0, 2],
+      'text-anchor': 'top'
+    },
+    paint: {
+      'text-color': '#000000',
+      'text-halo-color': '#ffffff',
+      'text-halo-width': 2
+    }
+  });
+
+  // Click handler for country points
+  map.on('click', 'country-points', (e) => {
+    const props = e.features[0].properties;
+    const companies = JSON.parse(props.companies || '[]');
+
+    document.getElementById('sidebar-title').textContent = props.country;
+    document.getElementById('sidebar-address').textContent = `${props.count} companies`;
+    document.getElementById('sidebar-description').textContent = `Startups and companies located in ${props.country}`;
+
+    const list = document.getElementById('sidebar-startups');
+    list.innerHTML = '';
+
+    companies.forEach(company => {
+      const li = document.createElement('li');
+      li.innerHTML = `
+        <a href="${company.website || '#'}" target="_blank">${company.name}</a>
+        <small>${company.funding || 'Unknown funding'} • ${company.headcount || 'Unknown size'}</small>
+        <div style="font-size: 11px; color: #666; margin-top: 2px;">${company.description || ''}</div>
+      `;
+      list.appendChild(li);
+    });
+
+    document.getElementById('sidebar').classList.add('open');
+  });
+
+  // Enhanced hover effects
+  map.on('mouseenter', 'country-points', (e) => {
+    map.getCanvas().style.cursor = 'pointer';
+    
+    // Add hover animation by scaling the circle
+    map.setPaintProperty('country-points', 'circle-stroke-width', 5);
+    map.setPaintProperty('country-points-glow', 'circle-opacity', 0.3);
+    
+    const coordinates = e.features[0].geometry.coordinates.slice();
+    const properties = e.features[0].properties;
+    const count = properties.count;
+    
+    // Create enhanced popup content
+    const emoji = count > 15 ? '🏢' : count > 8 ? '🏬' : count > 3 ? '🏪' : '🏬';
+    const intensity = count > 15 ? 'Major Hub' : count > 8 ? 'Growing Hub' : count > 3 ? 'Active Scene' : 'Emerging';
+    
+    const popupContent = `
+      <div style="
+        font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif; 
+        padding: 16px; 
+        background: linear-gradient(135deg, #000000 0%, #2c2c2c 100%);
+        color: white;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+        text-align: center;
+        min-width: 180px;
+        border-top: 4px solid #B3E5FC;
+      ">
+        <div style="font-size: 32px; margin-bottom: 8px;">${emoji}</div>
+        <h3 style="
+          margin: 0 0 8px 0; 
+          font-size: 24px; 
+          font-weight: 700;
+          color: #ffffff;
+          text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+        ">
+          ${properties.country}
+        </h3>
+        <div style="
+          background: #B3E5FC; 
+          color: #000000;
+          padding: 8px 16px; 
+          border-radius: 20px; 
+          font-size: 18px; 
+          font-weight: 600;
+          margin-bottom: 6px;
+        ">
+          ${count} startup${count !== 1 ? 's' : ''}
+        </div>
+        <div style="
+          font-size: 12px; 
+          color: #9CA3AF; 
+          font-weight: 500;
+        ">
+          ${intensity} • Click to explore
+        </div>
+      </div>
+    `;
+    
+    new mapboxgl.Popup({
+      closeButton: false,
+      closeOnClick: false,
+      offset: 15
+    })
+    .setLngLat(coordinates)
+    .setHTML(popupContent)
+    .addTo(map);
+  });
+  
+  map.on('mouseleave', 'country-points', () => {
+    map.getCanvas().style.cursor = '';
+    // Reset hover animation
+    map.setPaintProperty('country-points', 'circle-stroke-width', 3);
+    map.setPaintProperty('country-points-glow', 'circle-opacity', 0.15);
+    
+    // Remove popup
+    const popups = document.getElementsByClassName('mapboxgl-popup');
+    if (popups.length) {
+      popups[0].remove();
+    }
+  });
+
+  // Close sidebar when clicking on map background
+  map.on('click', (e) => {
+    const features = map.queryRenderedFeatures(e.point, { layers: ['country-points'] });
+    if (!features.length) {
+      closeSidebar();
+    }
+  });
+});
+
+// Update company counter
+function updateCompanyCounter() {
+  const totalCompanies = companiesData.length;
+  document.getElementById('total-companies').textContent = `${totalCompanies} companies total`;
+}
+
+// Filter functions
+function filterByFunding(fundingType) {
+  const filteredData = {
+    type: 'FeatureCollection',
+    features: countriesGeoJSON.features.map(feature => {
+      const companies = feature.properties.companies.filter(c => c.funding === fundingType);
+      if (companies.length > 0) {
+        return {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            count: companies.length,
+            companies: companies
+          }
+        };
+      }
+      return null;
+    }).filter(f => f !== null)
+  };
+  
+  // Count filtered companies
+  const filteredCount = filteredData.features.reduce((sum, feature) => sum + feature.properties.count, 0);
+  document.getElementById('total-companies').textContent = `${filteredCount} companies (${fundingType})`;
+  
+  map.getSource('countries').setData(filteredData);
+}
+
+function filterByHeadcount(headcountRange) {
+  const filteredData = {
+    type: 'FeatureCollection',
+    features: countriesGeoJSON.features.map(feature => {
+      const companies = feature.properties.companies.filter(c => c.headcount === headcountRange);
+      if (companies.length > 0) {
+        return {
+          ...feature,
+          properties: {
+            ...feature.properties,
+            count: companies.length,
+            companies: companies
+          }
+        };
+      }
+      return null;
+    }).filter(f => f !== null)
+  };
+  
+  // Count filtered companies
+  const filteredCount = filteredData.features.reduce((sum, feature) => sum + feature.properties.count, 0);
+  document.getElementById('total-companies').textContent = `${filteredCount} companies (${headcountRange} employees)`;
+  
+  map.getSource('countries').setData(filteredData);
+}
+
+function resetFilter() {
+  map.getSource('countries').setData(countriesGeoJSON);
+  updateCompanyCounter();
+}
+
+// close sidebar
+function closeSidebar() {
+  document.getElementById('sidebar').classList.remove('open');
+}
+</script>
+
+</body>
+</html>

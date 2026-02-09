@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ScrapeMaster Pro</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/feather-icons"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.globe.min.js"></script>
+  <style>
+    .vanta-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .glass-card {
+      backdrop-filter: blur(16px) saturate(180%);
+      -webkit-backdrop-filter: blur(16px) saturate(180%);
+      background-color: rgba(255, 255, 255, 0.75);
+      border-radius: 12px;
+      border: 1px solid rgba(209, 213, 219, 0.3);
+    }
+    .chip {
+      transition: all 0.3s ease;
+    }
+    .chip:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    }
+    .link-item {
+      transition: all 0.2s ease;
+    }
+    .link-item:hover {
+      background-color: rgba(59, 130, 246, 0.1);
+    }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+  <div class="vanta-container" id="vanta-bg"></div>
+  
+  <div class="container mx-auto px-4 py-12">
+    <div class="text-center mb-12">
+      <h1 class="text-4xl font-bold text-gray-800 mb-2">Keen ScrapeMaster Pro</h1>
+      <p class="text-xl text-gray-600">Your ultimate data extraction ninja tool</p>
+      <div class="flex justify-center mt-4">
+        <div class="w-16 h-1 bg-blue-500 rounded-full"></div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 max-w-6xl mx-auto">
+      <!-- LinkedIn Scraper Card -->
+      <div class="glass-card p-6 shadow-xl">
+        <div class="flex items-center mb-4">
+          <i data-feather="linkedin" class="text-blue-600 mr-3"></i>
+          <h2 class="text-2xl font-semibold text-gray-800">LinkedIn Scraper</h2>
+        </div>
+        
+        <form action="https://danielsmitserkeen.app.n8n.cloud/webhook/f1080734-282b-4d73-a7c1-874fab8948bf" method="POST" class="space-y-4">
+          <!-- Country chips -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Countries</label>
+            <input type="hidden" id="countriesInput" name="countries">
+            <div class="flex flex-wrap gap-2" id="countryChips"></div>
+            <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
+              <!-- EU countries + UK + USA -->
+              <button type="button" onclick="toggleCountry('Netherlands')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Netherlands</button>
+              <button type="button" onclick="toggleCountry('Germany')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Germany</button>
+              <button type="button" onclick="toggleCountry('France')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">France</button>
+              <button type="button" onclick="toggleCountry('Italy')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Italy</button>
+              <button type="button" onclick="toggleCountry('Spain')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Spain</button>
+              <button type="button" onclick="toggleCountry('Poland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Poland</button>
+              <button type="button" onclick="toggleCountry('Romania')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Romania</button>
+              <button type="button" onclick="toggleCountry('Belgium')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Belgium</button>
+              <button type="button" onclick="toggleCountry('Czech Republic')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Czech Republic</button>
+              <button type="button" onclick="toggleCountry('Greece')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Greece</button>
+              <button type="button" onclick="toggleCountry('Portugal')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Portugal</button>
+              <button type="button" onclick="toggleCountry('Sweden')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Sweden</button>
+              <button type="button" onclick="toggleCountry('Hungary')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Hungary</button>
+              <button type="button" onclick="toggleCountry('Austria')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Austria</button>
+              <button type="button" onclick="toggleCountry('Bulgaria')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Bulgaria</button>
+              <button type="button" onclick="toggleCountry('Denmark')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Denmark</button>
+              <button type="button" onclick="toggleCountry('Finland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Finland</button>
+              <button type="button" onclick="toggleCountry('Slovakia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Slovakia</button>
+              <button type="button" onclick="toggleCountry('Ireland')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Ireland</button>
+              <button type="button" onclick="toggleCountry('Croatia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Croatia</button>
+              <button type="button" onclick="toggleCountry('Lithuania')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Lithuania</button>
+              <button type="button" onclick="toggleCountry('Slovenia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Slovenia</button>
+              <button type="button" onclick="toggleCountry('Latvia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Latvia</button>
+              <button type="button" onclick="toggleCountry('Estonia')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Estonia</button>
+              <button type="button" onclick="toggleCountry('Cyprus')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Cyprus</button>
+              <button type="button" onclick="toggleCountry('Luxembourg')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Luxembourg</button>
+              <button type="button" onclick="toggleCountry('Malta')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">Malta</button>
+              <button type="button" onclick="toggleCountry('United Kingdom')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">United Kingdom</button>
+              <button type="button" onclick="toggleCountry('USA')" class="chip px-3 py-1 text-sm rounded-full bg-green-100 text-green-800 hover:bg-green-200">USA</button>
+            </div>
+          </div>
+
+          <!-- Pages/posts -->
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Pages to Scrape</label>
+              <input type="number" name="linkedin_pages_limit" min="1" max="100" value="20" required 
+                     class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Posts per Page</label>
+              <input type="number" name="posts_per_page" min="1" max="50" value="10" required 
+                     class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            </div>
+          </div>
+
+          <!-- Industries -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Industries</label>
+            <input type="hidden" id="industriesInput" name="industries">
+            <div class="flex flex-wrap gap-2" id="industryChips"></div>
+            
+            <!-- Full industry list -->
+            <div class="mt-2 grid grid-cols-2 md:grid-cols-4 gap-2">
+              <button type="button" onclick="toggleIndustry('SaaS')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">SaaS</button>
+              <button type="button" onclick="toggleIndustry('Enterprise Software')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Enterprise Software</button>
+              <button type="button" onclick="toggleIndustry('AI & ML')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AI & ML</button>
+              <button type="button" onclick="toggleIndustry('Cybersecurity')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cybersecurity</button>
+              <button type="button" onclick="toggleIndustry('Data Analytics')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Data Analytics</button>
+              <button type="button" onclick="toggleIndustry('Cloud Infrastructure')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Cloud Infrastructure</button>
+              <button type="button" onclick="toggleIndustry('FinTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">FinTech</button>
+              <button type="button" onclick="toggleIndustry('HealthTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HealthTech</button>
+              <button type="button" onclick="toggleIndustry('EdTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">EdTech</button>
+              <button type="button" onclick="toggleIndustry('HRTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">HRTech</button>
+              <button type="button" onclick="toggleIndustry('MarTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">MarTech</button>
+              <button type="button" onclick="toggleIndustry('Supply Chain Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Supply Chain Tech</button>
+              <button type="button" onclick="toggleIndustry('E-commerce Tech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">E-commerce Tech</button>
+              <button type="button" onclick="toggleIndustry('LegalTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">LegalTech</button>
+              <button type="button" onclick="toggleIndustry('PropTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">PropTech</button>
+              <button type="button" onclick="toggleIndustry('AgriTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">AgriTech</button>
+              <button type="button" onclick="toggleIndustry('ClimateTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">ClimateTech</button>
+              <button type="button" onclick="toggleIndustry('IndustrialTech')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IndustrialTech</button>
+              <button type="button" onclick="toggleIndustry('IoT')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">IoT</button>
+              <button type="button" onclick="toggleIndustry('Productivity Tools')" class="chip px-3 py-1 text-sm rounded-full bg-blue-100 text-blue-800 hover:bg-blue-200">Productivity Tools</button>
+            </div>
+
+            <!-- Custom industry input -->
+            <div class="mt-4">
+              <label class="block text-sm font-medium text-gray-700 mb-1">Add custom industries</label>
+              <input type="text" id="customIndustryInput" 
+                     placeholder="e.g. DroneTech, Food Delivery SaaS"
+                     class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                     onkeydown="if(event.key==='Enter'){ addCustomIndustry(); event.preventDefault(); }">
+            </div>
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+            <i data-feather="download" class="mr-2"></i>
+            Extract Data
+          </button>
+        </form>
+      </div>
+
+      <!-- Substack Manager Card -->
+      <div class="glass-card p-6 shadow-xl">
+        <div class="flex items-center mb-4">
+          <i data-feather="book" class="text-purple-600 mr-3"></i>
+          <h2 class="text-2xl font-semibold text-gray-800">Substack Manager</h2>
+        </div>
+
+        <div class="mb-6">
+          <label class="block text-sm font-medium text-gray-700 mb-2">Paste one or multiple Substack links (one per line)</label>
+          <textarea id="linksTextarea" placeholder="https://example.substack.com/p/post1&#10;https://another.substack.com/p/post2" 
+                    class="w-full h-40 px-4 py-2 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500"></textarea>
+        </div>
+
+        <button onclick="sendLinks()" 
+                class="w-full py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition duration-300 flex items-center justify-center">
+          <i data-feather="send" class="mr-2"></i>
+          Send to n8n
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Initialize Vanta.js background
+    VANTA.GLOBE({
+      el: "#vanta-bg",
+      mouseControls: true,
+      touchControls: true,
+      gyroControls: false,
+      minHeight: 200.00,
+      minWidth: 200.00,
+      scale: 1.00,
+      scaleMobile: 1.00,
+      color: 0x3b82f6,
+      backgroundColor: 0xf8fafc,
+      size: 0.8
+    });
+
+    // Initialize feather icons
+    feather.replace();
+
+    // ----- INDUSTRY CHIP LOGIC -----
+    const selectedIndustries = [];
+    const industriesInput = document.getElementById('industriesInput');
+    const industryChips = document.getElementById('industryChips');
+
+    function toggleIndustry(industry) {
+      const index = selectedIndustries.indexOf(industry);
+      if (index === -1) {
+        selectedIndustries.push(industry);
+      } else {
+        selectedIndustries.splice(index, 1);
+      }
+      updateIndustryChips();
+      industriesInput.value = selectedIndustries.join(',');
+    }
+
+    function updateIndustryChips() {
+      industryChips.innerHTML = '';
+      selectedIndustries.forEach(industry => {
+        const chip = document.createElement('div');
+        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-sm';
+        chip.innerHTML = `${industry} <button onclick="removeIndustry('${industry}')" class="ml-1 text-blue-600 hover:text-blue-800">&times;</button>`;
+        industryChips.appendChild(chip);
+      });
+
+      if (selectedIndustries.length === 0) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'text-gray-500 text-sm';
+        placeholder.textContent = 'No industries selected';
+        industryChips.appendChild(placeholder);
+      }
+    }
+
+    function removeIndustry(industry) {
+      const index = selectedIndustries.indexOf(industry);
+      if (index !== -1) {
+        selectedIndustries.splice(index, 1);
+        updateIndustryChips();
+        industriesInput.value = selectedIndustries.join(',');
+      }
+    }
+
+    function addCustomIndustry() {
+      const input = document.getElementById('customIndustryInput');
+      const value = input.value.trim();
+      if (value && !selectedIndustries.includes(value)) {
+        selectedIndustries.push(value);
+        updateIndustryChips();
+        industriesInput.value = selectedIndustries.join(',');
+        input.value = ''; // clear input
+      }
+    }
+
+    // ----- COUNTRY CHIP LOGIC -----
+    const selectedCountries = [];
+    const countriesInput = document.getElementById('countriesInput');
+    const countryChips = document.getElementById('countryChips');
+
+    function toggleCountry(country) {
+      const index = selectedCountries.indexOf(country);
+      if (index === -1) {
+        selectedCountries.push(country);
+      } else {
+        selectedCountries.splice(index, 1);
+      }
+      updateCountryChips();
+      countriesInput.value = selectedCountries.join(',');
+    }
+
+    function updateCountryChips() {
+      countryChips.innerHTML = '';
+      selectedCountries.forEach(country => {
+        const chip = document.createElement('div');
+        chip.className = 'inline-flex items-center px-3 py-1 rounded-full bg-green-100 text-green-800 text-sm';
+        chip.innerHTML = `${country} <button onclick="removeCountry('${country}')" class="ml-1 text-green-600 hover:text-green-800">&times;</button>`;
+        countryChips.appendChild(chip);
+      });
+
+      if (selectedCountries.length === 0) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'text-gray-500 text-sm';
+        placeholder.textContent = 'No countries selected';
+        countryChips.appendChild(placeholder);
+      }
+    }
+
+    function removeCountry(country) {
+      const index = selectedCountries.indexOf(country);
+      if (index !== -1) {
+        selectedCountries.splice(index, 1);
+        updateCountryChips();
+        countriesInput.value = selectedCountries.join(',');
+      }
+    }
+
+    // ----- SUBSTACK MANAGER -----
+    const webhookUrl = "https://danielsmitserkeen.app.n8n.cloud/webhook/38add8c0-f1e3-4c96-a923-204772eee281"; 
+
+    async function sendLinks() {
+      const textarea = document.getElementById("linksTextarea");
+      const links = textarea.value
+        .split("\n")
+        .map(l => l.trim())
+        .filter(l => l !== "");
+
+      if (links.length === 0) {
+        alert("Please enter at least one link.");
+        return;
+      }
+
+      try {
+        await fetch(webhookUrl, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ links })
+        });
+
+        // Success message
+        const notification = document.createElement("div");
+        notification.className =
+          "fixed bottom-4 right-4 px-4 py-2 bg-green-500 text-white rounded-lg shadow-lg flex items-center";
+        notification.innerHTML = `
+          <i data-feather="check-circle" class="mr-2"></i>
+          Links sent successfully
+        `;
+        document.body.appendChild(notification);
+        feather.replace();
+
+        setTimeout(() => notification.remove(), 3000);
+        textarea.value = ""; // clear after sending
+      } catch (err) {
+        console.error("Error sending links:", err);
+        alert("Failed to send links. Check console.");
+      }
+    }
+  </script>
+</body>
+</html>

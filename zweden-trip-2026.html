@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zweden Trip 2026 ⚔️</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=MedievalSharp&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Cinzel', serif;
+            background: linear-gradient(to bottom, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+            background-attachment: fixed;
+            color: #e0e0e0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        #intro-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 1s ease-out;
+            cursor: pointer;
+        }
+
+        #intro-overlay.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        #intro-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        #start-button {
+            position: absolute;
+            z-index: 10000;
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            color: #f4e4c1;
+            padding: 20px 40px;
+            border-radius: 5px;
+            font-size: 1.5em;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            border: 3px solid #d4af37;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.2);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        #start-button:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #8b7355 100%);
+            color: #1a1a1a;
+            transform: scale(1.05);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.5);
+        }
+
+        #start-button.hidden {
+            display: none;
+        }
+
+        .hero {
+            background: linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.4)), 
+                        url('https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920') center/cover;
+            height: 70vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: #f4e4c1;
+            position: relative;
+            overflow: hidden;
+            border-bottom: 5px solid #d4af37;
+        }
+
+        .hero h1 {
+            font-size: 4.5em;
+            margin-bottom: 20px;
+            text-shadow: 4px 4px 8px rgba(0,0,0,0.9), 0 0 20px rgba(212, 175, 55, 0.5);
+            animation: fadeInDown 1s ease-out;
+            font-family: 'MedievalSharp', cursive;
+            letter-spacing: 3px;
+            color: #d4af37;
+        }
+
+        .hero p {
+            font-size: 1.8em;
+            text-shadow: 3px 3px 6px rgba(0,0,0,0.9);
+            animation: fadeInUp 1s ease-out 0.3s both;
+            font-style: italic;
+        }
+
+        .hero .date-badge {
+            background: linear-gradient(135deg, rgba(139, 115, 85, 0.9) 0%, rgba(92, 74, 58, 0.9) 100%);
+            backdrop-filter: blur(10px);
+            padding: 15px 35px;
+            border-radius: 5px;
+            margin-top: 20px;
+            font-size: 1.2em;
+            border: 2px solid #d4af37;
+            animation: fadeInUp 1s ease-out 0.6s both;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: -50px auto 0;
+            padding: 0 20px 50px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .card {
+            background: linear-gradient(to bottom, #2a2520 0%, #1f1b17 100%);
+            border-radius: 10px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.8), inset 0 1px 0 rgba(212, 175, 55, 0.2);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: 2px solid #3d3328;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(212, 175, 55, 0.3), inset 0 1px 0 rgba(212, 175, 55, 0.3);
+            border-color: #d4af37;
+        }
+
+        .card h2 {
+            font-size: 2.2em;
+            margin-bottom: 25px;
+            color: #d4af37;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-family: 'MedievalSharp', cursive;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border-bottom: 2px solid #3d3328;
+            padding-bottom: 15px;
+        }
+
+        .card h2 .icon {
+            font-size: 1.2em;
+        }
+
+        .timeline {
+            position: relative;
+            padding-left: 40px;
+            border-left: 3px solid #d4af37;
+        }
+
+        .timeline-item {
+            position: relative;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+        }
+
+        .timeline-item::before {
+            content: '⚔️';
+            position: absolute;
+            left: -54px;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            border: 3px solid #d4af37;
+            box-shadow: 0 0 0 3px #2a2520;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8em;
+        }
+
+        .timeline-item h3 {
+            font-size: 1.6em;
+            color: #d4af37;
+            margin-bottom: 15px;
+            font-family: 'MedievalSharp', cursive;
+        }
+
+        .timeline-item .date {
+            display: inline-block;
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            color: #f4e4c1;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            border: 1px solid #d4af37;
+        }
+
+        .location {
+            background: linear-gradient(135deg, #3d2f1f 0%, #2a2010 100%);
+            color: #f4e4c1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 15px 0;
+            border: 2px solid #8b7355;
+            box-shadow: inset 0 1px 0 rgba(212, 175, 55, 0.2);
+        }
+
+        .location h4 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #d4af37;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .info-box {
+            background: rgba(139, 115, 85, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            border: 1px solid rgba(212, 175, 55, 0.3);
+        }
+
+        .info-box strong {
+            display: block;
+            margin-bottom: 5px;
+            font-size: 1.1em;
+        }
+
+        .cost-summary {
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            color: #f4e4c1;
+            padding: 30px;
+            border-radius: 10px;
+            text-align: center;
+            font-size: 1.3em;
+            margin-top: 20px;
+            border: 3px solid #d4af37;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.6);
+        }
+
+        .cost-summary .total {
+            font-size: 2.5em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #d4af37;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .highlight {
+            background: linear-gradient(135deg, #8B4513 0%, #654321 100%);
+            color: #f4e4c1;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 2px solid #d4af37;
+        }
+
+        .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .feature-badge {
+            background: rgba(139, 115, 85, 0.3);
+            color: #d4af37;
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-weight: 500;
+            border: 2px solid #8b7355;
+        }
+
+        .activities {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .activity {
+            background: linear-gradient(to bottom, #3d3328 0%, #2a2520 100%);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #4a3a2a;
+            color: #f4e4c1;
+        }
+
+        .activity:hover {
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            color: #d4af37;
+            transform: scale(1.05);
+            border-color: #d4af37;
+            box-shadow: 0 8px 20px rgba(212, 175, 55, 0.3);
+        }
+
+        .activity .emoji {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .hero {
+                height: 50vh;
+                min-height: 400px;
+            }
+
+            .hero h1 {
+                font-size: 2em;
+                padding: 0 15px;
+            }
+            
+            .hero p {
+                font-size: 1em;
+                padding: 0 15px;
+            }
+
+            .hero .date-badge {
+                font-size: 0.9em;
+                padding: 10px 20px;
+            }
+
+            .container {
+                margin: -30px auto 0;
+                padding: 0 15px 30px;
+            }
+
+            .card {
+                padding: 20px;
+                border-radius: 15px;
+                margin-bottom: 20px;
+            }
+
+            .card h2 {
+                font-size: 1.5em;
+                margin-bottom: 15px;
+                gap: 10px;
+            }
+
+            .timeline {
+                padding-left: 25px;
+                border-left-width: 2px;
+            }
+
+            .timeline-item {
+                margin-bottom: 30px;
+            }
+
+            .timeline-item::before {
+                left: -32px;
+                width: 15px;
+                height: 15px;
+            }
+
+            .timeline-item h3 {
+                font-size: 1.3em;
+            }
+
+            .timeline-item .date {
+                font-size: 0.8em;
+                padding: 4px 12px;
+            }
+
+            .info-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+                margin-top: 15px;
+            }
+
+            .info-box {
+                padding: 12px;
+            }
+
+            .info-box strong {
+                font-size: 1em;
+            }
+
+            .activities {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .activity {
+                padding: 15px 10px;
+            }
+
+            .activity .emoji {
+                font-size: 2em;
+            }
+
+            .features {
+                gap: 8px;
+            }
+
+            .feature-badge {
+                padding: 8px 15px;
+                font-size: 0.9em;
+            }
+
+            .location {
+                padding: 15px;
+            }
+
+            .location h4 {
+                font-size: 1.1em;
+            }
+
+            .cost-summary {
+                padding: 20px;
+                font-size: 1em;
+            }
+
+            .cost-summary .total {
+                font-size: 2em;
+            }
+
+            .highlight {
+                padding: 15px;
+            }
+
+            .map-container {
+                height: 300px;
+            }
+
+            .mini-map {
+                height: 200px;
+            }
+
+            .btn {
+                padding: 12px 20px;
+                font-size: 0.9em;
+                width: 100%;
+                text-align: center;
+                margin: 5px 0;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .hero h1 {
+                font-size: 1.5em;
+            }
+
+            .hero p {
+                font-size: 0.9em;
+            }
+
+            .hero .date-badge {
+                font-size: 0.8em;
+                padding: 8px 15px;
+            }
+
+            .card {
+                padding: 15px;
+            }
+
+            .card h2 {
+                font-size: 1.3em;
+                flex-direction: column;
+                gap: 5px;
+            }
+
+            .timeline-item h3 {
+                font-size: 1.1em;
+            }
+
+            .activities {
+                grid-template-columns: 1fr;
+            }
+
+            .activity {
+                padding: 15px;
+            }
+        }
+
+        .map-container {
+            margin-top: 20px;
+            height: 400px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid #d4af37;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.6);
+        }
+
+        .mini-map {
+            margin-top: 15px;
+            height: 250px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 2px solid #8b7355;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 15px 30px;
+            background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%);
+            color: #f4e4c1;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            font-family: 'Cinzel', serif;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+            border: 2px solid #d4af37;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, #d4af37 0%, #8b7355 100%);
+            color: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+        }
+
+        /* Responsive foto galleries */
+        .photo-gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
+        }
+
+        @media (max-width: 768px) {
+            .photo-gallery {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+        }
+
+        .photo-card {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+
+        .photo-card:hover {
+            transform: scale(1.03);
+        }
+
+        .photo-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        @media (max-width: 768px) {
+            .photo-card img {
+                height: 200px;
+            }
+        }
+
+        .photo-caption {
+            padding: 10px;
+            background: white;
+        }
+
+        .photo-caption p {
+            margin: 0;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <!-- Intro Overlay met Kaars Video -->
+    <div id="intro-overlay">
+        <button id="start-button">🎇 Klik om te beginnen 🎇</button>
+        <video id="intro-video" muted playsinline>
+            <source src="BLACK SCREEN CANDLE FLAMES in FULL HD 1080p - Buddy Star (720p, h264).mp4" type="video/mp4">
+        </video>
+    </div>
+
+    <!-- Halo Muziek (speelt door) -->
+    <audio id="halo-music" loop>
+        <source src="Halo Theme Song Original - Katlan Youssef.mp3" type="audio/mpeg">
+    </audio>
+
+    <div class="hero">
+        <h1>⚔️ ZWEDEN TRIP 2026 ⚔️</h1>
+        <p>De Lichte Pikken Zijn Back!</p>
+        <div class="date-badge">21 - 26 Augustus 2026</div>
+    </div>
+
+    <div class="container">
+        <!-- Flights Section -->
+        <div class="card">
+            <h2><span class="icon">✈️</span> Vluchten</h2>
+            <div class="info-grid">
+                <div class="info-box" style="background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%); color: #f4e4c1;">
+                    <strong>Heenreis</strong>
+                    21 augustus → Stockholm
+                </div>
+                <div class="info-box" style="background: linear-gradient(135deg, #3d2f1f 0%, #2a2010 100%); color: #f4e4c1;">
+                    <strong>Terugreis</strong>
+                    26 augustus → Amsterdam
+                </div>
+            </div>
+        </div>
+
+        <!-- Planning Timeline -->
+        <div class="card">
+            <h2><span class="icon">📅</span> Planning & Accommodaties</h2>
+            
+            <div class="timeline">
+                <!-- Stockholm -->
+                <div class="timeline-item">
+                    <div class="date">Vrijdag 21 t/m Zondag 23 Augustus</div>
+                    <h3>Stockholm - Old Town</h3>
+                    
+                    <div class="location">
+                        <h4>🏛️ Appartement - Old Town Stockholm</h4>
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <strong>Duur</strong>
+                                2 nachten
+                            </div>
+                            <div class="info-box">
+                                <strong>Prijs</strong>
+                                €986,53 totaal
+                            </div>
+                            <div class="info-box">
+                                <strong>Per persoon</strong>
+                                €140,93 pp
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="activities">
+                        <div class="activity">
+                            <div class="emoji">🏛️</div>
+                            <div>Musea bezoeken</div>
+                        </div>
+                        <div class="activity">
+                            <div class="emoji">🚶</div>
+                            <div>Stad verkennen</div>
+                        </div>
+                        <div class="activity">
+                            <div class="emoji">🍽️</div>
+                            <div>Lekker eten</div>
+                        </div>
+                        <div class="activity">
+                            <div class="emoji">🍻</div>
+                            <div>Zuipen!</div>
+                        </div>
+                    </div>
+
+                    <!-- Stockholm Photo Gallery -->
+                    <div style="margin-top: 25px;">
+                        <h4 style="color: #f4e4c1; margin-bottom: 15px; font-size: 1.2em;">📸 Appartement Impressie</h4>
+                        <div class="photo-gallery">
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-1.jpg" alt="Appartement slaapkamer met zolderbalk">
+                                <div class="photo-caption">
+                                    <p>🛏️ Ruime slaapkamer met authentieke balken</p>
+                                </div>
+                            </div>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-2.jpg" alt="Moderne keuken met eetkamer">
+                                <div class="photo-caption">
+                                    <p>🍽️ Moderne keuken met grote eettafel</p>
+                                </div>
+                            </div>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Stockholm-3.jpg" alt="Dakterras met stadsuitzicht">
+                                <div class="photo-caption">
+                                    <p>🌇 Dakterras met panoramisch stadsuitzicht</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(0, 113, 194, 0.1); border-radius: 10px; border-left: 4px solid #0071c2;">
+                            <p style="margin: 0; color: #f4e4c1; font-weight: 500;">✨ <strong>Luxe appartement:</strong> Modern ingericht, centraal gelegen in Old Town, dakterras met uitzicht over Stockholm!</p>
+                        </div>
+                    </div>
+
+                    <div class="mini-map">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            style="border:0" 
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d32372.5!2d18.0685808!3d59.3293235!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x465f763119640bcb%3A0xa80d27d3679d7766!2sGamla%20stan%2C%20Stockholm%2C%20Sweden!5e0!3m2!1sen!2snl!4v1621234567890!5m2!1sen!2snl"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+
+                <!-- Söderhamn -->
+                <div class="timeline-item">
+                    <div class="date">Zondag 23 t/m Woensdag 26 Augustus</div>
+                    <h3>Söderhamn - Lakeside Cabin</h3>
+                    
+                    <div class="location">
+                        <h4>🏡 Houten Huisje aan het Meer</h4>
+                        <div class="info-grid">
+                            <div class="info-box">
+                                <strong>Duur</strong>
+                                3 nachten
+                            </div>
+                            <div class="info-box">
+                                <strong>Prijs</strong>
+                                €1.664,58 totaal
+                            </div>
+                            <div class="info-box">
+                                <strong>Per persoon</strong>
+                                €237,80 pp
+                            </div>
+                        </div>
+
+                        <div class="features">
+                            <div class="feature-badge">️ 6 slaapkamers</div>
+                            <div class="feature-badge">🛌 5 bedden</div>
+                            <div class="feature-badge">🚿 2 badkamers</div>
+                        </div>
+                    </div>
+
+                    <div class="highlight">
+                        <strong>🌲 Natuur Activiteiten</strong>
+                        <p style="margin-top: 10px;">Genieten van de natuur, zwemmen in het meer, BBQ's, kampvuur, chillen met de boys!</p>
+                    </div>
+
+                    <!-- Photo Gallery -->
+                    <div style="margin-top: 25px;">
+                        <h4 style="color: #f4e4c1; margin-bottom: 15px; font-size: 1.2em;">📸 Foto Impressie</h4>
+                        <div class="photo-gallery">
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-1.avif" alt="Zweeds houten huisje aan het meer">
+                                <div class="photo-caption">
+                                    <p>🏡 Het authentieke Zweedse huisje</p>
+                                </div>
+                            </div>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-2.avif" alt="Hottub bij zonsondergang aan het meer">
+                                <div class="photo-caption">
+                                    <p>🛁 Hottub met uitzicht op het meer</p>
+                                </div>
+                            </div>
+                            <div class="photo-card">
+                                <img src="images/zweden-trip/Houtenhuisje-3.avif" alt="Sauna met uitzicht">
+                                <div class="photo-caption">
+                                    <p>🔥 Sauna met panoramisch uitzicht</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="margin-top: 15px; padding: 15px; background: rgba(0, 113, 194, 0.1); border-radius: 10px; border-left: 4px solid #0071c2;">
+                            <p style="margin: 0; color: #f4e4c1; font-weight: 500;">✨ <strong>Unieke voorzieningen:</strong> Privé sauna, hottub aan het water, BBQ area, kajakken, visstek en kampvuurplek!</p>
+                        </div>
+                    </div>
+
+                    <div class="mini-map">
+                        <iframe 
+                            width="100%" 
+                            height="100%" 
+                            frameborder="0" 
+                            style="border:0" 
+                            src="https://maps.google.com/maps?q=Söderhamn,Sweden&t=&z=11&ie=UTF8&iwloc=&output=embed"
+                            allowfullscreen>
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Cars Section -->
+        <div class="card">
+            <h2><span class="icon">🚗</span> Huurauto's</h2>
+            <div class="info-grid">
+                <div class="info-box" style="background: linear-gradient(135deg, #5c7f3d 0%, #3d5a2a 100%); color: #f4e4c1;">
+                    <strong>Aantal auto's</strong>
+                    2 huurauto's
+                </div>
+                <div class="info-box" style="background: linear-gradient(135deg, #8b7355 0%, #5c4a3a 100%); color: #f4e4c1;">
+                    <strong>Totale kosten</strong>
+                    €300,- (€42,86 pp)
+                </div>
+                <div class="info-box" style="background: linear-gradient(135deg, #6b5434 0%, #4a3a24 100%); color: #f4e4c1;">
+                    <strong>Ophalen</strong>
+                    Zondag 23 augustus in Stockholm
+                </div>
+                <div class="info-box" style="background: linear-gradient(135deg, #8B4513 0%, #654321 100%); color: #f4e4c1;">
+                    <strong>⛽ Brandstof</strong>
+                    ~€30,- extra
+                </div>
+            </div>
+            <p style="margin-top: 20px; padding: 15px; background: rgba(61, 51, 40, 0.5); border-radius: 10px; border: 1px solid #8b7355; color: #f4e4c1;">
+                ℹ️ <strong>Route:</strong> Na Stockholm pakken we de auto's en rijden naar de cabin in Söderhamn (ca. 2,5 uur rijden). Roadtrip door Zweden! 🛣️
+            </p>
+        </div>
+
+        <!-- Cost Summary -->
+        <div class="card">
+            <h2><span class="icon">💰</span> Totale Kosten</h2>
+            <div class="cost-summary">
+                <div>Totale kosten per persoon</div>
+                <div class="total">€800,00</div>
+                <div style="font-size: 0.9em; margin-top: 10px;">
+                    Inclusief: vluchten + accommodaties + auto's + brandstof
+                </div>
+            </div>
+
+            <div style="margin-top: 30px;">
+                <h3 style="margin-bottom: 15px; color: #d4af37;">Kostenspecificatie:</h3>
+                <div class="info-grid">
+                    <div class="info-box" style="background: rgba(61, 51, 40, 0.5); border: 1px solid #8b7355; color: #f4e4c1;">
+                        <strong>✈️ Vluchten</strong>
+                        ~ €230,00
+                    </div>
+                    <div class="info-box" style="background: rgba(61, 51, 40, 0.5); border: 1px solid #8b7355; color: #f4e4c1;">
+                        <strong>🏛️ Stockholm (2n)</strong>
+                        €140,93
+                    </div>
+                    <div class="info-box" style="background: rgba(61, 51, 40, 0.5); border: 1px solid #8b7355; color: #f4e4c1;">
+                        <strong>🏡 Cabin (3n)</strong>
+                        €237,80
+                    </div>
+                    <div class="info-box" style="background: rgba(61, 51, 40, 0.5); border: 1px solid #8b7355; color: #f4e4c1;">
+                        <strong>🚗 Auto + Brandstof</strong>
+                        ~ €70
+                    </div>
+                    <div class="info-box" style="background: rgba(61, 51, 40, 0.5); border: 1px solid #8b7355; color: #f4e4c1;">
+                        <strong>Activiteiten </strong>
+                        €121,27
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Map Section -->
+        <div class="card">
+            <h2><span class="icon">🗺️</span> Route & Locaties</h2>
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 15px; margin-bottom: 20px; background: rgba(61, 51, 40, 0.5); border: 2px solid #8b7355;">
+                <h3 style="color: #d4af37; margin-bottom: 15px;">📍 Stockholm → Söderhamn</h3>
+                <div class="info-grid">
+                    <div class="info-box" style="background: rgba(139, 115, 85, 0.3); border: 1px solid #d4af37; color: #f4e4c1;">
+                        <strong>🚗 Afstand</strong>
+                        ~250 km
+                    </div>
+                    <div class="info-box" style="background: rgba(139, 115, 85, 0.3); border: 1px solid #d4af37; color: #f4e4c1;">
+                        <strong>⏱️ Reistijd</strong>
+                        ~2,5 uur
+                    </div>
+                    <div class="info-box" style="background: rgba(139, 115, 85, 0.3); border: 1px solid #d4af37; color: #f4e4c1;">
+                        <strong>🛣️ Route</strong>
+                        E4 richting noorden
+                    </div>
+                </div>
+            </div>
+            <div class="map-container">
+                <iframe 
+                    width="100%" 
+                    height="100%" 
+                    frameborder="0" 
+                    style="border:0" 
+                    src="https://maps.google.com/maps?saddr=Stockholm,Sweden&daddr=61.3056,17.0628&output=embed" 
+                    allowfullscreen>
+                </iframe>
+            </div>
+            <div style="text-align: center; padding: 40px; background: linear-gradient(135deg, #3d2f1f 0%, #2a2010 100%); border-radius: 10px; color: #f4e4c1; margin-top: 20px; border: 3px solid #d4af37;">
+                <h3 style="margin-bottom: 20px; font-size: 1.5em; color: #d4af37;">🗺️ Bekijk de interactieve route</h3>
+                <div style="margin-top: 20px;">
+                    <a href="https://www.google.com/maps/dir/Stockholm,+Sweden/61.3056,17.0628/" target="_blank" class="btn" style="background: linear-gradient(135deg, #d4af37 0%, #8b7355 100%); color: #1a1a1a; font-size: 1.2em; padding: 15px 30px; margin: 5px; border: 2px solid #f4e4c1;">
+                        📍 Open Route in Google Maps
+                    </a>
+                    <a href="https://www.google.com/maps/search/S%C3%B6derhamn/@61.3056,17.0628,12z/" target="_blank" class="btn" style="background: rgba(139, 115, 85, 0.5); color: #f4e4c1; font-size: 1.1em; margin: 5px; border: 2px solid #8b7355;">
+                        📌 Bekijk Söderhamn
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Final Message -->
+        <div class="card" style="background: linear-gradient(135deg, #3d2f1f 0%, #2a2010 100%); color: #f4e4c1; text-align: center; border: 3px solid #d4af37;">
+            <h2 style="color: #d4af37;">🎆 Let's Go Boys! 🎆</h2>
+            <p style="font-size: 1.3em; margin: 20px 0; font-style: italic;">
+                Dit wordt LEGENDARY! Lichtepikkuhhh! 🔥
+            </p>
+            <div style="margin-top: 30px; font-size: 1.1em;">
+                <div>📅 Save the date: 21-26 Augustus 2026</div>
+                <div style="margin-top: 10px;">🇸🇪 Destination: Sweden</div>
+                <div style="margin-top: 10px;">👥 Squad: 7 man</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Intro overlay en muziek beheer
+        window.addEventListener('DOMContentLoaded', function() {
+            const overlay = document.getElementById('intro-overlay');
+            const startButton = document.getElementById('start-button');
+            const music = document.getElementById('halo-music');
+            const video = document.getElementById('intro-video');
+            
+            // Block scrolling initially
+            document.body.style.overflow = 'hidden';
+            
+            // Start experience on button click
+            startButton.addEventListener('click', function() {
+                // Verberg knop
+                startButton.classList.add('hidden');
+                
+                // Start video en muziek
+                video.play().catch(e => console.log('Video play prevented:', e));
+                music.play().catch(e => console.log('Audio play prevented:', e));
+                
+                // Na 5 seconden: verberg overlay met fade out
+                setTimeout(() => {
+                    overlay.classList.add('fade-out');
+                    
+                    // Verwijder overlay volledig na fade animation
+                    setTimeout(() => {
+                        overlay.style.display = 'none';
+                    }, 1000);
+                    
+                    // Enable scrolling
+                    document.body.style.overflow = 'auto';
+                }, 5000);
+            });
+        });
+    </script>
+</body>
+</html>

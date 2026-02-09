@@ -1,0 +1,203 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "YES!Delft",
+        "category": "Incubator",
+        "address": "Molengraaffsingel 12, 2629 JD Delft"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.3717, 51.9989] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "YES!Delft (Rotterdam)",
+        "category": "Incubator",
+        "address": "Burgemeester Oudlaan 50, 3062 PA Rotterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.5297, 51.9175] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "YES!Delft (Den Haag)",
+        "category": "Incubator",
+        "address": "Waldorpstraat 5, 2521 CA Den Haag"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.3270, 52.0677] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "UtrechtInc",
+        "category": "Incubator",
+        "address": "Princetonlaan 6, 3584 CB Utrecht"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.1760, 52.0938] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "HighTechXL",
+        "category": "Venture Builder",
+        "address": "High Tech Campus 27, 5656 AE Eindhoven"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.4560, 51.4133] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Delft Enterprises",
+        "category": "University Venture Arm",
+        "address": "Van der Burghweg 1, 2628 CS Delft"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.3725, 51.9990] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Utrecht Holdings",
+        "category": "University Venture Arm",
+        "address": "Heidelberglaan 8, 3584 CS Utrecht"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.1755, 52.0855] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "RUG Ventures",
+        "category": "University Venture Arm",
+        "address": "Kadijk 4, 9747 AT Groningen"
+      },
+      "geometry": { "type": "Point", "coordinates": [6.5333, 53.2194] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Rockstart",
+        "category": "Accelerator/VC",
+        "address": "Overhoeksplein 1, 1031 KS Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9036, 52.3792] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Slingshot Ventures",
+        "category": "VC (Pre-seed/Seed)",
+        "address": "Duivendrechtsekade 80B, 5e verdieping, 1096 AH Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9230, 52.3460] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Curiosity VC",
+        "category": "VC (Pre-seed/Seed)",
+        "address": "Eerste Kostverlorenkade 4, 1052 EL Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.8850, 52.3570] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Dutch Founders Fund",
+        "category": "VC (Pre-seed/Seed)",
+        "address": "Fred. Roeskestraat 115, 1076 EE Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.8780, 52.3530] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ACT Venture Partners",
+        "category": "VC (Pre-seed/Seed)",
+        "address": "Keizersgracht 482, 1017 EG Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.8909, 52.3642] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "SHIFT Invest",
+        "category": "VC (Seed/Early-stage)",
+        "address": "Bisonspoor 3002-D801, 3605 LT Maarssen (Utrecht area)"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.0410, 52.1390] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Shamrock Ventures",
+        "category": "VC (Pre-seed/Seed)",
+        "address": "Prins Hendrikkade 21E, 1012 TL Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9005, 52.3770] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "ASIF Ventures",
+        "category": "Student VC",
+        "address": "Science Park 402, 1098 XH Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9510, 52.3560] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Antler Amsterdam",
+        "category": "Pre-seed VC",
+        "address": "Prins Hendrikkade 21E, 1012 TL Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.9005, 52.3770] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "TU Delft",
+        "category": "University",
+        "address": "Mekelweg 5, 2628 CC Delft"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.3717, 51.9995] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "University of Twente",
+        "category": "University",
+        "address": "Drienerlolaan 5, 7522 NB Enschede"
+      },
+      "geometry": { "type": "Point", "coordinates": [6.8497, 52.2396] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Leiden University",
+        "category": "University",
+        "address": "Rapenburg 70, 2311 EZ Leiden"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.4909, 52.1601] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "VU Amsterdam",
+        "category": "University",
+        "address": "De Boelelaan 1105, 1081 HV Amsterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.8656, 52.3342] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Erasmus University Rotterdam",
+        "category": "University",
+        "address": "Burgemeester Oudlaan 50, 3062 PA Rotterdam"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.5297, 51.9175] }
+    }
+  ]
+}
